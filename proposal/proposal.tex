@@ -1,0 +1,97 @@
+\documentclass[a4paper,11pt,english]{article}
+\usepackage[english]{babel} 
+\usepackage[T1]{fontenc}    
+\usepackage[utf8]{inputenc} 
+\usepackage{graphicx}       
+\usepackage{hyperref}      
+
+
+\begin{document}
+
+\title{Active strategies for object discovery}
+\author{Philip Bradfield \and Jan Fabian Schmid}
+	
+\maketitle 
+
+\section{Introduction}
+In this project, we want to develop a software for object discovery that is then implemented in a mobile robot.
+The idea of object discovery is to find candidates for possible objects in the visual input. A good object discovery algorithm is able to calculate a list of visual descriptors for the areas in the workspace that are most likely to correspond to discrete objects.
+Each visual descriptor contains at least information about the spatial position and the shape of the object candidate.
+
+Object detection is a typical problem of image processing. The majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
+In a mobile system, however, we are not restricted to use only single images, which represent a single view on the environment. Instead we are able to move the robot with its optical devices to obtain a different view on the same scene.
+Therefore object discovery on mobile systems introduces degrees of freedom that are not available in single images.
+Additional degrees of freedom may allow to find better solutions to a problem, but at the same time often the problem gets more complicated.
+In our it its not only necessary to analyze a view of a scene for object candidates, but to evaluate the situation to find the most interesting next view.
+This second aspect is a problem from active sensing, which describes a class a problems where a decision making process is modeled that should lead a system, when its suggestions are followed, to a state that corresponds to a low value of an uncertainty metric.
+In other words, we want to find the best active strategy that will give us the best object candidates possible.\medskip
+
+A related problem was examined by Atanasov et al. \cite{atanasov2014nonmyopic}. They used active sensing for improved object recognition in comparison to single view approaches.
+For object recognition object candidates have to be known beforehand, the task is then to find one or multiple of the known objects in a scene.
+
+Multiple hypothesis are developed and updated during the application of their method. The next sensor configuration is then chosen to help to gain or lose confidence in the different hypotheses.
+They use a nonmyopic planning approach which means that not only the next sensor configuration is considered when deciding for a move, but a whole sequence is considered at once. 
+Termination of the process will happen if moving to an additional viewpoint won't increase the confidence in the best hypotheses anymore.
+For the object classification and pose estimation a partially observable Markov decision process is used.
+
+In our project we will have to solve similar problems as in this work.
+We will have to decide between myopic and nonmyopic planning and choose a termination criterion for example. The main difference is only for what process the different viewpoints should be optimal, in their case for object recognition, in our case for object discovery.\medskip
+
+Apart from the application of active sensing for object discovery in a robot system, we might be able to contribute to the knowledge in image processing in mobile systems in multiple other ways:
+Mobile systems are restricted in their computational processing power, therefore one important research question will be, how much of the available data can be processed and on what aspects it is best to focus on. 
+We will also have to find a way to weigh up the energy cost for an operation against the possible benefit that it might provide to solve the task.
+
+\section{Working plan}
+
+\subsection{Generating labeled test data}
+To evaluate the performance of different active strategies and to compare our solution against traditional single image object discovery.
+
+Probably a whole 3D scene has to be retrieved in which structures are then labeled as objects.
+
+\subsection{Perform object discovery on single images}
+E.g. with oversegmentation, grouping and evaluation with Gestalt principles. Get a list of the best object candidates.
+
+This is the central method for object discovery.
+
+Evaluation with benchmark tests of labeled images.
+
+\subsection{Active sensing}
+Depending on current knowledge of the scene and previous actions determine the next viewpoint.
+
+Evaluation by testing vs random movements (that are still directed to the scene).
+
+\subsection{Fuse data of multiple images/views together}
+1. For example by using an estimation of Cartesian coordinates multiple, the same area has to be recognized in multiple images of different viewpoints.
+2. Creating a 3D Model of the scene?
+3. Evaluate objectness with the fused data
+
+The data obtained by taking different viewpoints is used for a better estimation of object candidates.
+
+No evaluation?
+
+\subsection{Evaluation of results}
+How much better is the object discovery with our active strategy versus single images.
+
+Benchmark against different single image object discovery algorithms (is this too time-consuming?)
+
+\section{Materials}
+In this section, describe in detail the tools and methods that will be applied to accomplish each of the subtasks listed in the previous section.
+
+\section{Final output}
+What were the critical problems to solve.
+
+Where there aspects we didn't think of in this first plan.
+
+Hopefully a presentation of the robot in action.
+
+A benchmark comparing our results to traditional approaches. 
+
+
+\newpage
+\bibliographystyle{plain}
+\addcontentsline{toc}{section}{Bibliography}% Add to the TOC
+\bibliography{bib}
+
+
+
+\end{document}
