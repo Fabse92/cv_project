@@ -18,7 +18,8 @@ In this project, we want to develop a software for object discovery that is then
 The idea of object discovery is to find candidates for possible objects in the visual input. A good object discovery algorithm is able to calculate a list of visual descriptors for the areas in the workspace that are most likely to correspond to discrete objects.
 Each visual descriptor contains at least information about the spatial position and the shape of the object candidate.
 
-Object detection is a typical problem of image processing. The majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
+Object detection is a problem of image processing. The task of finding all objects in a scene without previous knowledge about the scene and the objects is still a largely unsolved problem \cite{garcia2013computational}.
+Also the majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
 In a mobile system, however, we are not restricted to use only single images, which represent a single view on the environment. Instead we are able to move the robot with its optical devices to obtain a different view on the same scene.
 Therefore object discovery on mobile systems introduces degrees of freedom that are not available in single images.
 Additional degrees of freedom may allow to find better solutions to a problem, but at the same time often the problem gets more complicated.
