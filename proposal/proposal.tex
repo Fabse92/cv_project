@@ -48,51 +48,62 @@ Therefore in each of the following subsections one subtask is examined in the fo
 \subsection{Generating labeled test data}
 We will create a benchmark dataset that contains for multiple scenes manually labeled objects.
 
-A ground truth is needed to evaluate the performance of different possible methods and parameters used in our approach. We will also be able to compare our solution against traditional single image object discovery approaches.
+A ground truth is needed to evaluate the performance of different possible methods and parameters used in our approach. We will also be able to compare our solution against traditional single image object discovery approaches. For this comparison corresponding single image algorithms can be applied to different views on the scene.
 
 \subsection{Perform object discovery on single images}
 The central method will be to determine object candidates from a single viewpoint.
-As result from the algorithm we will obtain segments that have a probability for each of their neighbors associated whether they belong together or not. 
 
 From the analysis of the obtained object candidates the next viewpoint will be determined.
 In the further processing the data of multiple viewpoints can be fused to get better object candidates.
 
-
-E.g. with oversegmentation, grouping and evaluation with Gestalt principles. Get a list of the best object candidates.
-
-
-
-Evaluation with benchmark tests of labeled images.
+The evaluation of our object discovery method for single images can be compared directly with other approaches on the corresponding benchmark tests.
 
 \subsection{Active sensing}
 Depending on current knowledge of the scene and previous actions determine the next viewpoint.
 
-Evaluation by testing vs random movements (that are still directed to the scene).
+It is essential to find the next best view point that is expected to maximize the information gain.
+The ressources of energy and time are limited in our usecase therefore random movements without specific intention should be avoided.
 
-\subsection{Fuse data of multiple images/views together}
-1. For example by using an estimation of Cartesian coordinates multiple, the same area has to be recognized in multiple images of different viewpoints.
-2. Creating a 3D Model of the scene?
-3. Evaluate objectness with the fused data
+We can evaluate our method by benchmarking the overall performance of the system using our method against the performance with random movements.
 
-The data obtained by taking different viewpoints is used for a better estimation of object candidates.
+\subsection{Fuse data of multiple views together}
+Our 2D object candidates from a single view have to be mapped to the 3D map of the scene.
+Only then is it possible to be consistent over multiple viewpoints.
+Then the calculated object candidate estimations from different views have to be fused.
 
-No evaluation?
+Without this method the object discovery ability of our robot won't benefit from the different views.
+The object candidates calculated from a view would just be overwritten by the the candidates from the next view for example.
 
-\subsection{Move the roboter to a desired goal point}
+\subsection{Move the robot to a desired goal point}
+Let the robot move to a specific destination.
+For simplicity we might restrict the possible movements to a circle around the scene of interest as it is done ine \cite{atanasov2014nonmyopic}.
+
+This functionality is obviously necessary to reach the next viewpoint that we want to have.
 
 \subsection{Evaluation of results}
-How much better is the object discovery with our active strategy versus single images.
+Once the method is working in general, we can search for the best parametrization for the different sub-methods used.
+Also, we can benchmark our performance against the performance of traditional single image object discovery methods.
 
-Benchmark against different single image object discovery algorithms (is this too time-consuming?)
+This subtask is necessary, because there will be many different parameters that we have to set and it will not be obvious which values are the best especially in interaction with all aspects of our system.
 
 \section{Materials}
 In this section, describe in detail the tools and methods that will be applied to accomplish each of the subtasks listed in the previous section.\medskip
 
 To create a ground truth data set, we will have to define the spatial location and the boundaries for each object in a scene.
 It is necessary that the same object can be identified as such from arbitrary viewpoints.
-The objects could be defined as volumes of a specific form and size at a specific location. 
-This can be done by measuring the used objects in size and defining the spatial location of them in the scene.
+We can create a 3D map of the scene and label points of different objects manually.
 
+The computation of object candidates for each individual view can be done with an visual attention system \cite{Frintrop 2013}.
+First a bottom up saliency map is calculated from the color stream of our camera and then the most salient regions are fixated in sequence.
+Each of the most salient regions corresponds to one proto object with a certain label.
+
+To map our 2D object candidates from the color stream of the camera to a 3D map of the scene we can use the additional depth stream. The KinectFusion algorithm allows to build such a 3D map of the environment by integrating the data of a moving depth sensor.
+The labeling process ca be done as in \cite{Frintrop 2013}:
+Each voxel of the same proto object from one view gets the same label assigned to it.
+The label that all voxels in the currently fixated proto object get depends on the labels the contained voxels already have.
+If most voxels are unlabeled a new label is used for the proto object.
+Otherwise the most frequent label is used.
+If one voxel is continuosly assigned with the same label the confidence in that label increases, if many different labels are assigned to it it is more likely not part of any object.
 
 \section{Final output}
 What were the critical problems to solve.
