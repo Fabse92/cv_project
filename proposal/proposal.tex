@@ -42,16 +42,25 @@ Mobile systems are restricted in their computational processing power, therefore
 We will also have to find a way to weigh up the energy cost for an operation against the possible benefit that it might provide to solve the task.
 
 \section{Working plan}
+In this section we explain how the project is systematically divided into subtasks.
+Therefore in each of the following subsections one subtask is examined in the following three aspects: What is achieved by solving the task, why is that necessary for our project and how is this part of the project evaluated (if relevant for the subtask).
 
 \subsection{Generating labeled test data}
-To evaluate the performance of different active strategies and to compare our solution against traditional single image object discovery.
+We will create a benchmark dataset that contains for multiple scenes manually labeled objects.
 
-Probably a whole 3D scene has to be retrieved in which structures are then labeled as objects.
+A ground truth is needed to evaluate the performance of different possible methods and parameters used in our approach. We will also be able to compare our solution against traditional single image object discovery approaches.
 
 \subsection{Perform object discovery on single images}
+The central method will be to determine object candidates from a single viewpoint.
+As result from the algorithm we will obtain segments that have a probability for each of their neighbors associated whether they belong together or not. 
+
+From the analysis of the obtained object candidates the next viewpoint will be determined.
+In the further processing the data of multiple viewpoints can be fused to get better object candidates.
+
+
 E.g. with oversegmentation, grouping and evaluation with Gestalt principles. Get a list of the best object candidates.
 
-This is the central method for object discovery.
+
 
 Evaluation with benchmark tests of labeled images.
 
@@ -69,13 +78,21 @@ The data obtained by taking different viewpoints is used for a better estimation
 
 No evaluation?
 
+\subsection{Move the roboter to a desired goal point}
+
 \subsection{Evaluation of results}
 How much better is the object discovery with our active strategy versus single images.
 
 Benchmark against different single image object discovery algorithms (is this too time-consuming?)
 
 \section{Materials}
-In this section, describe in detail the tools and methods that will be applied to accomplish each of the subtasks listed in the previous section.
+In this section, describe in detail the tools and methods that will be applied to accomplish each of the subtasks listed in the previous section.\medskip
+
+To create a ground truth data set, we will have to define the spatial location and the boundaries for each object in a scene.
+It is necessary that the same object can be identified as such from arbitrary viewpoints.
+The objects could be defined as volumes of a specific form and size at a specific location. 
+This can be done by measuring the used objects in size and defining the spatial location of them in the scene.
+
 
 \section{Final output}
 What were the critical problems to solve.
