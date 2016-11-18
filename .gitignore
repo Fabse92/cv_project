@@ -1,0 +1,31 @@
+# Ignore LaTeX auxiliary files
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+
+# Ignore BibTeX auxiliary files
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.brf
+*.run.xml
+
+# Ignore compiled LaTeX output
+*.synctex*
+proposal/proposal.pdf
+
+# Ignore Sublime project files
+*.sublime*
+
+# Ignore JabRef temp files
+*.bib.*
