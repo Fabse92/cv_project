@@ -14,24 +14,24 @@
 \maketitle 
 
 \section{Introduction}
-In this project, we want to develop a software for object discovery that is then implemented in a mobile robot.
+In this project, we want to develop software for object discovery that is then implemented in a mobile robot.
 The idea of object discovery is to find candidates for possible objects in the visual input. A good object discovery algorithm is able to calculate a list of visual descriptors for the areas in the workspace that are most likely to correspond to discrete objects.
 Each visual descriptor contains at least information about the spatial position and the shape of the object candidate.
 
 Object detection is a problem of image processing. The task of finding all objects in a scene without previous knowledge about the scene and the objects is still a largely unsolved problem \cite{garcia2013computational}.
 Also the majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
-In a mobile system, however, we are not restricted to use only single images, which represent a single view on the environment. Instead we are able to move the robot with its optical devices to obtain a different view on the same scene.
-Therefore object discovery on mobile systems introduces degrees of freedom that are not available in single images.
+In a mobile system, however, we are not restricted to using only single images, which represent a single view on the environment. Instead we are able to move the robot with its optical devices to obtain a different view on the same scene.
+Therefore, object discovery on mobile systems introduces degrees of freedom that are not available in single images.
 Additional degrees of freedom may allow to find better solutions to a problem, but at the same time often the problem gets more complicated.
-In our it its not only necessary to analyze a view of a scene for object candidates, but to evaluate the situation to find the most interesting next view.
-This second aspect is a problem from active sensing, which describes a class a problems where a decision making process is modeled that should lead a system, when its suggestions are followed, to a state that corresponds to a low value of an uncertainty metric.
-In other words, we want to find the best active strategy that will give us the best object candidates possible.\medskip
+In our case it is not only necessary to analyze a view of a scene for object candidates, but to evaluate the situation to find the most interesting next view.
+This second aspect is a problem from active sensing, which describes a class of problems where a decision making process is modeled that should lead a system, when its suggestions are followed, to a state that corresponds to a low value of an uncertainty metric.
+In other words, we want to find the active strategy that will give us the best object candidates possible.\medskip
 
 A related problem was examined by Atanasov et al. \cite{atanasov2014nonmyopic}. They used active sensing for improved object recognition in comparison to single view approaches.
-For object recognition object candidates have to be known beforehand, the task is then to find one or multiple of the known objects in a scene.
+For object recognition the object candidates have to be known beforehand; the task is then to find one or more of the known objects in a scene.
 
-Multiple hypothesis are developed and updated during the application of their method. The next sensor configuration is then chosen to help to gain or lose confidence in the different hypotheses.
-They use a nonmyopic planning approach which means that not only the next sensor configuration is considered when deciding for a move, but a whole sequence is considered at once. 
+Multiple hypotheses are developed and updated during the application of their method. The next sensor configuration is then chosen to help to gain or lose confidence in the different hypotheses.
+They use a nonmyopic planning approach which means that not only is the next sensor configuration considered when deciding for a move, but a whole sequence is considered at once. 
 Termination of the process will happen if moving to an additional viewpoint won't increase the confidence in the best hypotheses anymore.
 For the object classification and pose estimation a partially observable Markov decision process is used.
 
@@ -39,7 +39,7 @@ In our project we will have to solve similar problems as in this work.
 We will have to decide between myopic and nonmyopic planning and choose a termination criterion for example. The main difference is only for what process the different viewpoints should be optimal, in their case for object recognition, in our case for object discovery.\medskip
 
 Apart from the application of active sensing for object discovery in a robot system, we might be able to contribute to the knowledge in image processing in mobile systems in multiple other ways:
-Mobile systems are restricted in their computational processing power, therefore one important research question will be, how much of the available data can be processed and on what aspects it is best to focus on. 
+Mobile systems are restricted in their computational processing power, therefore one important research question will be how much of the available data can be processed and which aspects it is best to focus on. 
 We will also have to find a way to weigh up the energy cost for an operation against the possible benefit that it might provide to solve the task.
 
 \section{Working plan}
@@ -47,12 +47,12 @@ In this section we explain how the project is systematically divided into subtas
 Therefore in each of the following subsections one subtask is examined in the following three aspects: What is achieved by solving the task, why is that necessary for our project and how is this part of the project evaluated (if relevant for the subtask).
 
 \subsection{Generating labeled test data}
-We will create a benchmark dataset that contains for multiple scenes manually labeled objects.
+We will create a benchmark dataset that contains multiple scenes containing manually labeled objects.
 
 A ground truth is needed to evaluate the performance of different possible methods and parameters used in our approach. We will also be able to compare our solution against traditional single image object discovery approaches. For this comparison corresponding single image algorithms can be applied to different views on the scene.
 
 \subsection{Perform object discovery on single images}
-The central method will be to determine object candidates from a single viewpoint.
+The central aim of this subtask will be to determine object candidates from a single viewpoint.
 
 From the analysis of the obtained object candidates the next viewpoint will be determined.
 In the further processing the data of multiple viewpoints can be fused to get better object candidates.
@@ -60,10 +60,10 @@ In the further processing the data of multiple viewpoints can be fused to get be
 The evaluation of our object discovery method for single images can be compared directly with other approaches on the corresponding benchmark tests.
 
 \subsection{Active sensing}
-Depending on current knowledge of the scene and previous actions determine the next viewpoint.
+This subtask aims to develop a process to determine the next desired viewpoint of the robot, depending on current knowledge of the scene and previous actions.
 
 It is essential to find the next best view point that is expected to maximize the information gain.
-The ressources of energy and time are limited in our usecase therefore random movements without specific intention should be avoided.
+The resources of energy and time are limited in our usecase therefore random movements without specific intention should be avoided.
 
 We can evaluate our method by benchmarking the overall performance of the system using our method against the performance with random movements.
 
@@ -77,12 +77,12 @@ The object candidates calculated from a view would just be overwritten by the th
 
 \subsection{Move the robot to a desired goal point}
 Let the robot move to a specific destination.
-For simplicity we might restrict the possible movements to a circle around the scene of interest as it is done ine \cite{atanasov2014nonmyopic}.
+For simplicity we might restrict the possible movements to a circle around the scene of interest as it is done in \cite{atanasov2014nonmyopic}.
 
 This functionality is obviously necessary to reach the next viewpoint that we want to have.
 
 \subsection{Evaluation of results}
-Once the method is working in general, we can search for the best parametrization for the different sub-methods used.
+Once the method is working in general, we can search for the best parameterization for the different sub-methods used.
 Also, we can benchmark our performance against the performance of traditional single image object discovery methods.
 
 This subtask is necessary, because there will be many different parameters that we have to set and it will not be obvious which values are the best especially in interaction with all aspects of our system.
@@ -94,17 +94,17 @@ To create a ground truth data set, we will have to define the spatial location a
 It is necessary that the same object can be identified as such from arbitrary viewpoints.
 We can create a 3D map of the scene and label points of different objects manually.
 
-The computation of object candidates for each individual view can be done with an visual attention system \cite{Frintrop 2013}.
+The computation of object candidates for each individual view can be done with a visual attention system \cite{garcia2013computational}.
 First a bottom up saliency map is calculated from the color stream of our camera and then the most salient regions are fixated in sequence.
 Each of the most salient regions corresponds to one proto object with a certain label.
 
-To map our 2D object candidates from the color stream of the camera to a 3D map of the scene we can use the additional depth stream. The KinectFusion algorithm allows to build such a 3D map of the environment by integrating the data of a moving depth sensor.
-The labeling process ca be done as in \cite{Frintrop 2013}:
+To map our 2D object candidates from the color stream of the camera to a 3D map of the scene we can use the additional depth stream. The KinectFusion algorithm allows us to build such a 3D map of the environment by integrating the data of a moving depth sensor.
+The labeling process can be done as in \cite{garcia2013computational}:
 Each voxel of the same proto object from one view gets the same label assigned to it.
 The label that all voxels in the currently fixated proto object get depends on the labels the contained voxels already have.
 If most voxels are unlabeled a new label is used for the proto object.
 Otherwise the most frequent label is used.
-If one voxel is continuosly assigned with the same label the confidence in that label increases, if many different labels are assigned to it it is more likely not part of any object.
+If one voxel is continuously assigned with the same label the confidence in that label increases, if many different labels are assigned to it then it is more likely not part of any object.
 
 \section{Final output}
 What were the critical problems to solve.
