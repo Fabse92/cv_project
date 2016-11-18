@@ -102,16 +102,4 @@
   url       = {http://arxiv.org/abs/1502.02474},
 }
 
-@Article{Valimaki2016,
-  author    = {Tuomas V{\"{a}}lim{\"{a}}ki and Risto Ritala},
-  title     = {Optimizing Gaze Direction in a Visual Navigation Task},
-  journal   = {CoRR},
-  year      = {2016},
-  volume    = {abs/1602.04981},
-  bibsource = {dblp computer science bibliography, http://dblp.org},
-  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/ValimakiR16},
-  timestamp = {Tue, 01 Mar 2016 17:47:25 +0100},
-  url       = {http://arxiv.org/abs/1602.04981},
-}
-
 @Comment{jabref-meta: databaseType:bibtex;}
