@@ -20,23 +20,63 @@ Each visual descriptor contains at least information about the spatial position 
 
 Object detection is a problem of image processing. The task of finding all objects in a scene without previous knowledge about the scene and the objects is still a largely unsolved problem \cite{garcia2013computational}.
 Also the majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
-In a mobile system, however, we are not restricted to using only single images, which represent a single view on the environment. Instead we are able to move the robot with its optical devices to obtain a different view on the same scene.
+In a mobile system, however, we are not restricted to using only single images, which represent a single view on the environment. Instead, we are able to move the robot with its optical devices to obtain a different view on the same scene.
 Therefore, object discovery on mobile systems introduces degrees of freedom that are not available in single images.
 Additional degrees of freedom may allow to find better solutions to a problem, but at the same time often the problem gets more complicated.
-In our case it is not only necessary to analyze a view of a scene for object candidates, but to evaluate the situation to find the most interesting next view.
-This second aspect is a problem from active sensing, which describes a class of problems where a decision making process is modeled that should lead a system, when its suggestions are followed, to a state that corresponds to a low value of an uncertainty metric.
-In other words, we want to find the active strategy that will give us the best object candidates possible.\medskip
+In our case it is not only necessary to analyze a view of a scene for object candidates (1), but also to combine the data of multiple views (2) and to evaluate our current knowledge to find the most interesting next view (3).
 
-A related problem was examined by Atanasov et al. \cite{atanasov2014nonmyopic}. They used active sensing for improved object recognition in comparison to single view approaches.
-For object recognition the object candidates have to be known beforehand; the task is then to find one or more of the known objects in a scene.
+The first task (1) is the traditional single view object discovery problem. For the second task (2) the SLAM-problem has to be solved, which stands for \textbf{S}imultaneous \textbf{L}ocalization \textbf{A}nd \textbf{M}apping. This problem occurs, because to map the whole scene the robot has to move, to be able to then fuse data from the current view with the data from previous views it has to be known from which pose the view has been taken \cite{surmann2003autonomous}. 
+The last mentioned aspect (3) is a problem from active sensing, which describes a class of problems where a decision making process is modeled that should lead a system to a state that corresponds to a low value of an uncertainty metric.
+Our active sensing problem is referred to as the \textbf{N}ext \textbf{B}est \textbf{V}iew (NBV) problem.
+The NBV describes a pose that is near and accessible for the robot and promises high information gain \cite{surmann2003autonomous}.
+This problem has also be solved for the task of scanning all surfaces of an object \cite{pito1999solution}.
 
-Multiple hypotheses are developed and updated during the application of their method. The next sensor configuration is then chosen to help to gain or lose confidence in the different hypotheses.
-They use a nonmyopic planning approach which means that not only is the next sensor configuration considered when deciding for a move, but a whole sequence is considered at once. 
-Termination of the process will happen if moving to an additional viewpoint won't increase the confidence in the best hypotheses anymore.
-For the object classification and pose estimation a partially observable Markov decision process is used.
+\subsection{Related work}
+García and Frintrop build a framework for 3D object detection by utilizing a visual attention system \cite{garcia2013computational}.
+They work with a recorded video stream of a RGB-D camera. The color and depth stream are separately processed. 
+The color stream is used to create so called proto-objects, which are basically areas with high probability of being part of an object. These proto-objects correspond to the peaks in the calculated saliency map. 
+The areas of interest defined by the proto-objects are then segmented and similar segments form then an object candidate. Simultaneously the depth stream is used to build a map of the scene.
+By projecting the object candidates into the 3d map they are able to label voxels as associated to a certain object in the scene.
+An inhibition of return (IOR) mechanism for three dimensional scenes is used to allow the algorithm to focus on one salient region after the other.
 
-In our project we will have to solve similar problems as in this work.
-We will have to decide between myopic and nonmyopic planning and choose a termination criterion for example. The main difference is only for what process the different viewpoints should be optimal, in their case for object recognition, in our case for object discovery.\medskip
+We can use this framework as a starting point for our project.
+As the framework is used for pre-recorded videos, the active sensing part that we need is missing.
+Apart from that we can use the described methods for object candidate creation and the fusion of data from multiple views.
+For our project it might not be necessary to implement a 3D IOR map. This is, because we don't have to use a continuously moving video stream, instead we can stop movement and take a picture that is then used for object candidate creation. 
+However, one of the algorithms we use for the next best view determination might need such a 3d IOR map.\medskip
+
+Meger et al. created with Curious George a mobile system that has been successful in the past in object recognition tasks \cite{meger2010curious}.
+The robot is given a set of objects, it will then compute a visual classifier for each in a training phase.
+Afterwards the robot drives autonomously through an environment and searches for the known objects.
+They use an attention system with a saliency map comparable to the previously described one to guide the robot through the environment. This is necessary as many possible views are redundant or promise only a very low information gain.
+Therefore visual saliency is used to evaluate the potential information gain of an area, supplementary the environmental structure is analyzed to find areas like desks where a high amount of objects is to be expected.
+Curious George continuously updates a map of the environment to check if everything has been explored.
+
+For our project it might also be an interesting idea to use visual attention to find the next best view.
+Also we should check in our map of the scene whether we have viewed all areas at least once.\medskip
+
+Surmann et al. developed a system for autonomous digitalization of 3D indoor environments \cite{surmann2003autonomous}.
+This system consists of three core modules: A mapping algorithm, a view planner and a navigator to move the robot to a desired goal.
+To compute the next best view they generate multiple horizontal 2D layers of their 3D map of the environment.
+They use Hough transformation to find lines in the layer which represent the obstacles (e.g. walls) they already detected.
+The lines are connected to form an estimation of the room. Then possible viewpoints are randomly generated.
+For each viewpoint the information gain is calculated as a measure of how many unseen/assumed lines can be seen from it.
+As next viewpoint a compromise between traveling distance and information gain is then used.
+
+This approach might be a good NBV algorithm for us. As we might not want the robot to explore a whole room, but only a specific area, we would have to find a way to only consider views on the relevant area.
+
+%A related problem was examined by Atanasov et al. \cite{atanasov2014nonmyopic}. They used active sensing for improved object recognition in comparison to single view approaches.
+%For object recognition the object candidates have to be known beforehand; the task is then to find one or more of the known objects in a scene.
+%
+%Multiple hypotheses are developed and updated during the application of their method. The next sensor configuration is then chosen to help to gain or lose confidence in the different hypotheses.
+%They use a nonmyopic planning approach which means that not only is the next sensor configuration considered when deciding for a move, but a whole sequence is considered at once. 
+%Termination of the process will happen if moving to an additional viewpoint won't increase the confidence in the best hypotheses anymore.
+%For the object classification and pose estimation a partially observable Markov decision process is used.
+%
+%In our project we will have to solve similar problems as in this work.
+%We will have to decide between myopic and nonmyopic planning and choose a termination criterion for example. The main difference is only for what process the different viewpoints should be optimal, in their case for object recognition, in our case for object discovery.\medskip
+
+\subsection{Relevance of our work for image processing in mobile systems}
 
 Apart from the application of active sensing for object discovery in a robot system, we might be able to contribute to the knowledge in image processing in mobile systems in multiple other ways:
 Mobile systems are restricted in their computational processing power, therefore one important research question will be how much of the available data can be processed and which aspects it is best to focus on. 
@@ -116,7 +156,7 @@ Hopefully a presentation of the robot in action.
 A benchmark comparing our results to traditional approaches. 
 
 
-\newpage
+%\newpage
 \bibliographystyle{plain}
 \addcontentsline{toc}{section}{Bibliography}% Add to the TOC
 \bibliography{bib}
