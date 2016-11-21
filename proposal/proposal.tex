@@ -108,7 +108,7 @@ In the further processing the data of multiple viewpoints and the 3D map will be
 The evaluation of our object discovery method for single images can be compared directly with other common approaches on the corresponding benchmark tests.
 
 \subsection{Determining the next best view}
-This subtask aims to develop a process to determine the next desired viewpoint of the robot, depending on current knowledge of the scene and possibly also on previous actions.
+This subtask aims to develop an active sensing strategy, which provides a good approximation to the next best view depending on current knowledge of the scene and possibly also on previous actions.
 
 It is essential to find the next best viewpoint that is expected to maximize the information gain.
 At some point all important views should have been used at least once to find good object candidates.
@@ -147,13 +147,16 @@ This camera will be mounted in a fixed position on a simple mobile platform robo
 (\textbf{2.1}) To create a ground truth data set, we will have to define the spatial location and the boundaries for each object in a scene.
 For this, we can create a 3D map of the scene and label points of different objects manually.\\
 (\textbf{2.2}) The computation of object candidates for each individual view can be done with a visual attention system \cite{garcia2013computational}.
-First a bottom up saliency map is calculated from the color stream of our camera and then the most salient regions are fixated in sequence. This method is described more detailed in the related work section.\\
+This method is described more detailed in the related work section.\\
 (\textbf{2.3}) Determining the next best view is probably the most difficult task to solve as there are numerous different aspects that can be incorporated to solve it.
 The NBV should for example view previously unseen parts of the scene, it should focus on areas with high uncertainty in the labeling and the pose should be close to the current one.
-One approach we can use is method from Surmann et al. described in the related work part \cite{surmann2003autonomous}.
-\textbf{Another approach is to use a POMDP}...\\
-(\textbf{2.4}) To build a 3D map of the environment the Iterative Closest Points algorithm can be used.
-However, the KinectFusion algorithm already provides this functionality of building a 3D map by integrating the data of the moving depth sensor.
+One approach we can use is to adapt the method from Surmann et al. described in the related work part \cite{surmann2003autonomous}.
+Exploration driven methods like frontier-based exploration are probably not a good approach for our system, because we want to analyze a small area in detail instead of getting an overview of a bigger environment.
+Another approach we might be able to use are \textbf{P}artially \textbf{O}bservable \textbf{M}arkov \textbf{D}ecision \textbf{P}roblems (POMDPs) with a information-theoretic objective function \cite{lauri2015planning}.
+The solution to the POMDP is a control policy which maps the current belief states of the robot to a certain action.
+(\textbf{2.4}) To build a 3D map we have to solve the SLAM problem, the robot has to be aware of its position and then data from multiple views can be fused together with registration.
+The sensors of the robot are not arbitrarily precise so we are not aware of its exact position. Therefore, for the registration process the geometric structure of different overlapping views has to be considered, which can be done with the Iterative Closest Points algorithm \cite{surmann2003autonomous}.
+We might be able to use the KinectFusion algorithm which provides the functionality of building a map by integrating the data of the moving depth sensor.
 To map our 2D object candidates from the color stream of the camera to a 3D map of the scene we can use the additional depth stream.
 Labeling of 3D object candidates can be done as in \cite{garcia2013computational}:
 Each voxel of the same proto-object from one view gets the same label assigned to it.
@@ -169,6 +172,8 @@ What were the critical problems to solve.
 Where there aspects we didn't think of in this first plan.
 
 Hopefully a presentation of the robot in action.
+
+Which active sensing strategies were successful and why?
 
 A benchmark comparing our results to traditional approaches. 
 
