@@ -9,74 +9,83 @@
 \begin{document}
 
 \title{Active strategies for object discovery}
-\author{Philip Bradfield \and Jan Fabian Schmid}
+\author{Phil Bradfield \and Jan Fabian Schmid}
 	
 \maketitle 
 
-\section{Introduction}
+\section{Introduction}\label{intro}
 In this project, we want to develop software for object discovery that is then implemented in a mobile robot.
-The idea of object discovery is to find candidates for possible objects in the visual input. A good object discovery algorithm is able to calculate a list of visual descriptors for the areas in the workspace that are most likely to correspond to discrete objects.
+The idea of object discovery is to find candidates for possible objects in the visual input.
+A good object discovery algorithm is able to calculate a list of visual descriptors for the areas in the workspace that are most likely to correspond to discrete objects.
 Each visual descriptor contains at least information about the spatial position and the shape of the object candidate.
 
-Object detection is a problem of image processing. The task of finding all objects in a scene without previous knowledge about the scene and the objects is still a largely unsolved problem \cite{garcia2013computational}.
+The task of finding all objects in a scene without previous knowledge about the scene and the objects is still a largely unsolved problem \cite{garcia2013computational}.
 Also the majority of research towards object detection considers only single images, as Atanasov et al. state \cite{atanasov2014nonmyopic}.
-In a mobile system, however, we are not restricted to using only single images, which represent a single view on the environment. Instead, we are able to move the robot with its optical devices to obtain a different view on the same scene.
+In a mobile system, however, we are not restricted to using only single images, which represent a single view on the environment.
+Instead, we are able to move the robot to obtain different views on the same scene.
 Therefore, object discovery on mobile systems introduces degrees of freedom that are not available in single images.
-Additional degrees of freedom may allow to find better solutions to a problem, but at the same time often the problem gets more complicated.
-In our case it is not only necessary to analyze a view of a scene for object candidates (1), but also to combine the data of multiple views (2) and to evaluate our current knowledge to find the most interesting next view (3).
+% Additional degrees of freedom may allow us to find better solutions to a problem, but at the same time often the problem gets more complicated.
+In our case it is not only necessary to analyze a view of a scene for object candidates (1), but also to combine the data of multiple views (2) and to evaluate our current knowledge of both the scene and the surrounding environment in order to find the most interesting next view (3).
 
-The first task (1) is the traditional single view object discovery problem. For the second task (2) the SLAM-problem has to be solved, which stands for \textbf{S}imultaneous \textbf{L}ocalization \textbf{A}nd \textbf{M}apping. This problem occurs, because the robot starts with an unknown position in an unknown environment. Localization is then necessary to fuse the data from the current view with the data from previous views. Knowing the corresponding robot pose to the views allows to calculate the relative locations of data points from different views, which can be used to form a map with the data \cite{surmann2003autonomous}. 
-The last mentioned aspect (3) is a problem from active sensing, which describes a class of problems where a decision making process is modeled that should lead a system to a state that corresponds to a low value of an uncertainty metric.
+The first task (1) is the traditional single view object discovery problem. 
+For the second task (2) the SLAM (\textbf{S}imultaneous \textbf{L}ocalization \textbf{A}nd \textbf{M}apping) problem has to be solved.
+This problem occurs, because the robot starts with an unknown position in an unknown environment. 
+Localization is then necessary to fuse the data from the current view with the data from previous views. 
+Knowing the corresponding robot pose to the views allows to calculate the relative locations of data points from different views, which can be used to form a map \cite{surmann2003autonomous}. 
+(3) is a problem from active sensing, which describes a class of problems where a decision making process is modeled that should lead a system to a state that corresponds to a low value of an uncertainty metric.
 Our active sensing problem can be referred to as the \textbf{N}ext \textbf{B}est \textbf{V}iew (NBV) problem.
 The NBV describes a pose that is near and accessible for the robot and promises high information gain \cite{surmann2003autonomous}.
 For example, this problem has to be solved for the task of scanning all surfaces of an object \cite{pito1999solution}.
 
-\subsection{Related work}
+\subsection{Related work}\label{relatedwork}
 García and Frintrop build a framework for 3D object detection by utilizing a visual attention system \cite{garcia2013computational}.
-They work with a recorded video stream of a RGB-D camera. The color and depth stream are separately processed. 
-The color stream is used to create so called proto-objects, which are basically areas with high probability of being part of an object. These proto-objects correspond to the peaks in the calculated saliency map. 
+They work with a recorded video stream from an RGB-D camera. The color and depth stream are separately processed. 
+The color stream is used to create so called proto-objects, which are areas with high probability of being part of an object. These proto-objects correspond to the peaks in the calculated saliency map. 
 The areas of interest defined by the proto-objects are then segmented.
 Afterwards, similar segments can be used to form an object candidate.
-Simultaneously the depth stream is used to build a map of the scene.
+Simultaneously, the depth stream is used to build a map of the scene.
 By projecting the object candidates into the 3D map they are able to label voxels as associated to a certain object in the scene.
 An inhibition of return (IOR) mechanism for three dimensional scenes is used to allow the algorithm to focus on one salient region after the other.
 
 We can use this framework as a starting point for our project.
 As the framework is used for pre-recorded videos, the active sensing part that we need is missing.
 Apart from that, we can use the described methods for object candidate creation and the fusion of data from multiple views.
-For our project it should not be necessary to implement a 3D IOR map. This is, because we don't have to use a continuously moving video stream to find object candidates. In our case it is possible to stop movement at our desired viewpoints and take a picture from which object candidates are determined. \medskip
+For our project it may not be necessary to implement a 3D IOR map. This is because we don't have to use a continuously moving video stream to find object candidates. In our case it is possible to stop movement at our desired viewpoints and take a picture from which object candidates are determined. \medskip
 
 Surmann et al. developed a system for autonomous digitalization of 3D indoor environments \cite{surmann2003autonomous}.
 This system consists of three core modules: A mapping algorithm, a view planner and a navigator to move the robot to a desired goal.
 A view planner is necessary, because many possible views promise only a very low information gain and the amount of views we can use is limited by time and energy constraints.
 To compute the next best view they generate multiple horizontal 2D layers of their 3D map of the environment.
-They use Hough transformation to find lines in the layer which represent the obstacles (e.g. walls) they already detected.
-The lines are connected to form an estimation of the room. Then possible viewpoints are randomly generated.
+They use the Hough transform to find lines in the layer which represent the obstacles (e.g. walls) they already detected.
+The lines are then connected to form an estimate of the layout of the room.
+Then possible viewpoints are randomly generated.
 For each viewpoint the information gain is calculated as a measure of how many unseen/assumed lines can be seen from it.
-As next viewpoint a compromise between traveling distance and information gain is then used.
+A compromise between traveling distance and information gain is then used to decide on the next viewpoint.
 
 This approach might be a starting point for a good NBV algorithm for us. As we might not want the robot to explore a whole room, but only a specific area, we would have to find a way to only consider views on the relevant area.
 
-\subsection{Relevance of our work for image processing in mobile systems}
+\subsection{Relevance of our work for image processing in mobile systems}\label{relevanceimageprocessing}
 Mobile systems are restricted in their computational processing power, therefore one important research question will be how much of the available data can be processed and which aspects are best to focus on. 
-
 This is especially true for the task of solving the NBV problem, because active sensing algorithms can be arbitrarily complex.
-The optimal solution to the NBV problem is most likely not available for applications in real environments, therefore we can only compute approximations. For the best approximations it might be necessary to consider huge amounts of data.
+
+The optimal solution to the NBV problem is most likely not available for applications in real environments, therefore we can only compute approximations.
+For the very best approximations it might be necessary to consider huge amounts of data.
 However, in our scenario it might be most important to just move somehow to an unused view. The difference between a good and the best NBV could be insignificant.
-Computing very good approximations to the NBV problem takes time and energy that might not be proportional to the improvement of the data gained through it.
+Finding a good balance between solving the NBV problem sufficiently well, and saving processing time and energy will likely be an important part of our work.
 
 We will also have to find termination criteria which determine at which point no further investigation of the scene should be performed.
 Therefore we could find a way to weigh up the energy cost for an operation against the possible benefit that it might provide to solve the task.
-If the energy is more valuable than the information gain the process stops.
+If there is no operation available for which the information gain is more valuable than the energy then the process stops.
 
-\section{Working plan}
+\section{Working plan}\label{workingplan}
 In this section we explain how the project is systematically divided into subtasks.
 Therefore in each of the following subsections one subtask is examined in three aspects: What is achieved by solving the task, why is that necessary for our project and how can it be evaluated (if relevant for the subtask).
 
 \subsection{Generating labeled test data}
-We will create a benchmark dataset that contains multiple scenes with manually labeled objects.
+We will create a benchmark dataset that contains multiple scenes with manually labeled objects. Initial investigations may be possible using publicly available datasets such as those listed by Firman \cite{firman2016}, but at minimum we will need to build one or more scenes of our own in order to evaluate our systems on the physical robot system.
 
-A ground truth is needed to evaluate the performance of different possible methods and parameters used in the overall system. We will also be able to compare our solution against traditional single image object discovery approaches. For this comparison corresponding single image algorithms can be applied to different views on the scene.
+A ground truth is needed to evaluate the performance of different possible methods and parameters.
+We will also be able to compare our solution against traditional single image object discovery approaches.
 
 \subsection{Perform object discovery on single images}
 The central aim of this subtask will be to determine object candidates from a single viewpoint.
@@ -87,11 +96,11 @@ In the further processing the data of multiple viewpoints and the 3D map will be
 The evaluation of our object discovery method for single images can be compared directly with other common approaches on the corresponding benchmark tests.
 
 \subsection{Determining the next best view}
-This subtask aims to develop an active sensing strategy, which provides a good approximation to the next best view depending on current knowledge of the scene and possibly also on previous actions.
+This subtask aims to develop an active sensing strategy which provides a good approximation to the next best view depending on current knowledge of the scene and possibly also on previous actions.
 
-It is essential for our system to find a good next viewpoint that corresponds to a high information gain.
+It is essential for our system to find a next viewpoint that corresponds to a high information gain.
 At some point all important views should have been used at least once to find good object candidates.
-Also, the resources of energy and time are limited in our use case therefore random movements without specific intention should be avoided.
+Also, the resources of energy and time are limited in our use case, therefore movements without specific intention should be avoided and the distance traveled between the viewpoints should be minimized.
 
 We can evaluate our method by benchmarking the overall performance of the system using our method against the performance with random movements.
 
@@ -116,39 +125,40 @@ Also, we can benchmark the performance of our system against the performance of 
 
 This subtask is necessary, because there will be many different parameters that we have to set and it will not be obvious which values are the best especially in interaction with all aspects of our system.
 
-\section{Materials}
+\section{Materials}\label{materials}
 In this section, some details to the used hardware components and methods will be described.
 \subsection{Hardware}
-We will use a RGB-D camera like the Kinect to have both color and depth information available.
+We will use a RGB-D camera to have both color and depth information available.
 This camera will be mounted in a fixed position on a simple mobile platform robot like the TurtleBot.
 
 \subsection{Software}
 (\textbf{2.1}) To create a ground truth data set, we will have to define the spatial location and the boundaries for each object in a scene.
 For this, we can create a 3D map of the scene and label points of different objects manually.\\
-(\textbf{2.2}) The computation of object candidates for each individual view can be done with a visual attention system \cite{garcia2013computational}.
-This method is described more detailed in the related work section.\\
-(\textbf{2.3}) Determining the next best view is probably the most difficult task to solve as there are numerous different aspects that can be incorporated to solve it.
+(\textbf{2.2}) The computation of object candidates for each individual view can be done with a visual attention system \cite{garcia2013computational} (see section \ref{relatedwork}).\\
+(\textbf{2.3}) Determining the next best view is probably the most difficult task as there are numerous different aspects to it.
 The NBV should for example view previously unseen parts of the scene, it should focus on areas with high uncertainty in the labeling and the pose should be close to the current one.
-An easy approach could be to define low-level behavior rules from these requirements and build a subsumption architecture \cite{brooks1986robust} with it.
-Another approach we can use is to adapt the method from Surmann et al. described in the related work part \cite{surmann2003autonomous}.
-Exploration driven methods like frontier-based exploration are probably not a good approach for our system, because we want to analyze a small area in detail instead of getting an overview of a bigger environment.
+An easy approach could be to define low-level behavior rules from these requirements and build a subsumption architecture \cite{brooks1986robust} from them.
+Alternatively, we could adapt the method from Surmann et al. \cite{surmann2003autonomous} described in section \ref{relatedwork}.
 Another approach we might be able to use are \textbf{P}artially \textbf{O}bservable \textbf{M}arkov \textbf{D}ecision \textbf{P}roblems (POMDPs) with a information-theoretic objective function \cite{lauri2015planning}.
-The solution to the POMDP is a control policy which maps the current belief states of the robot to a certain action. 
-
+Exploration driven methods like frontier-based exploration may not be a good approach for our system because we want to analyze a small area in detail, not get an overview of a bigger environment.
 We plan to test different active sensing strategies for our system.\\
-(\textbf{2.4}) To build a 3D map we have to solve the SLAM problem, the robot has to be aware of its position and then data from multiple views can be fused together with registration.
+(\textbf{2.4}) To build a 3D map we have to solve the SLAM problem, the robot has to be aware of its position and then data from multiple views can be fused together by registration.
 The sensors of the robot are not arbitrarily precise so we are not aware of its exact position. Therefore, for the registration process the geometric structure of different overlapping views has to be considered, which can be done with the Iterative Closest Points algorithm \cite{surmann2003autonomous}.
 We might be able to use the KinectFusion algorithm which provides the functionality of building a map by integrating the data of the moving depth sensor.
 To map our 2D object candidates from the color stream of the camera to a 3D map of the scene we can use the additional depth information.
-Labeling of 3D object candidates can be done as in \cite{garcia2013computational}:
-Each voxel of the same proto-object from one view gets the same label assigned to it.
-The label that all voxels in the currently fixated proto-object get depends on the labels the contained voxels already have.
-If most voxels are unlabeled a new label is used for the proto-object.
-Otherwise the most frequent label is used.
-If one voxel is continuously assigned with the same label the confidence in that label increases, if many different labels are assigned to it then it is more likely not part of any object.\\
-(\textbf{2.5}) We will communicate with the robot via ROS. For the movement control of the robot the ROS Navigation Stack package can probably be used.
+Labeling of 3D object candidates can be done as in \cite{garcia2013computational}.
+% :
+% Each voxel of the same proto-object from one view gets the same label assigned to it.
+% The label that all voxels in the currently fixated proto-object get depends on the labels the contained voxels already have.
+% If most voxels are unlabeled a new label is used for the proto-object.
+% Otherwise the most frequent label is used.
+% If one voxel is continuously assigned with the same label the confidence in that label increases, if many different labels are assigned to it then it is more likely not part of any object.\\
+(\textbf{2.5}) We will communicate with the robot via ROS.
+For the movement control of the robot the ROS Navigation Stack package will probably be sufficient.
 
-\section{Final output}
+\section{Final output}\label{finaloutput}
+
+At the end of the project, we aim to deliver the following:
 
 \begin{enumerate}
 	
