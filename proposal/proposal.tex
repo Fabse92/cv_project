@@ -149,22 +149,34 @@ If one voxel is continuously assigned with the same label the confidence in that
 (\textbf{2.5}) We will communicate with the robot via ROS. For the movement control of the robot the ROS Navigation Stack package can probably be used.
 
 \section{Final output}
-What were the critical problems to solve.
 
-Where there aspects we didn't think of in this first plan.
+\begin{enumerate}
+	
+	\item A system, implemented on a physical mobile robot platform, which can successfully:
+	\begin{itemize}
+		\item perform object discovery on a scene;
+		\item calculate the optimum next best view;
+		\item move to the calculated viewing point;
+		\item and repeat the above until an accurate assessment of the number and position of items in the scene has been reached.
+	\end{itemize}
+	The final assessment should be reached within a reasonable timeframe.
 
-Hopefully a presentation of the robot in action.
+	\item A report on the system, including:
+	\begin{itemize}
+		\item details of the algorithms implemented;
+		\item evaluation of both the algorithms used in the final demonstration and any alternative algorithms examined, with discussion as to their strengths and weaknesses;
+		\item evaluation of the final chosen algorithms against existing approaches, with discussion as to their strengths and weaknesses;
+		\item general discussion of the strengths and weaknesses of the system as a whole, including the hardware platform;
+		\item discussion and evaluation of the design and implementation process.
+	\end{itemize}
 
-Which active sensing strategies were successful and why?
-
-A benchmark comparing our results to traditional approaches. 
+\end{enumerate}
 
 
 \newpage
 \bibliographystyle{plain}
 \addcontentsline{toc}{section}{Bibliography}% Add to the TOC
 \bibliography{bib}
-
 
 
 \end{document}
