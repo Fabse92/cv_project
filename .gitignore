@@ -10,6 +10,8 @@
 *.fot
 *.cb
 *.cb2
+*.snm
+*.nav
 
 # Ignore BibTeX auxiliary files
 *.bbl
@@ -23,6 +25,7 @@
 # Ignore compiled LaTeX output
 *.synctex*
 proposal/proposal.pdf
+proposal_presentation/proposal-presentation.pdf
 
 # Ignore Sublime project files
 *.sublime*

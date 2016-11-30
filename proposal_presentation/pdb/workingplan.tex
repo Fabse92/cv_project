@@ -1,19 +1,38 @@
 %!TEX root = ../proposal-presentation.tex
 
-\begin{frame}[c] \frametitle{1. Test Data}
+\begin{frame}[t] \frametitle{1. Test Data}
 
 	\textbf{Aim: to have appropriate data for development}
 
 	\vfill
 
-	For initial development:
+	\onslide<+->
+	{
 
-	\begin{itemize}\itemsep10pt
-		\item Publicly available RGB-D datasets
-		\item \cite{firman2016}
-	\end{itemize}
+	\begin{columns}[c]
+
+	\column{0.5\linewidth}
+		For initial development:
+
+		\begin{itemize}\itemsep10pt
+			\item Publicly available RGB-D datasets
+			\item cf. \cite{firman2016}
+		\end{itemize}
+
+	\column{0.5\linewidth}
+		\begin{figure}
+		\includegraphics[width=\linewidth]{src/toydataset.png}
+		\caption{Toy dataset \cite{ikkala2016}}
+		\end{figure}
+
+	\end{columns}
+
+	}
 
 	\vfill
+
+	\onslide<+->
+	{
 
 	For embodied testing:
 
@@ -21,32 +40,40 @@
 		\item Create at least one physical scene
 	\end{itemize}
 
-	\missingfigure{Example image(s)}
+	}
 
 	\vfill
 
 \end{frame}
 
 
-\begin{frame}[c] \frametitle{2. Object Discovery on Single Images}
+\begin{frame}[t] \frametitle{2. Object Discovery on Single Images}
 
 	\textbf{Aim: to be able to accurately detect objects in a static image}
 
-	Saliency-based system \cite{garcia2013computational}
+	\vfill
+
+	\begin{itemize}
+		\item Saliency-based system \cite{garcia2013computational}
+	\end{itemize}
+
+	\vfill
+
+	\centering
+
+	\begin{figure}
+	\includegraphics[width=0.8\linewidth]{src/garcia2013fig4.png}
+	\end{figure}
 
 \end{frame}
 
 
-\begin{frame}[c] \frametitle{3. Determining the Next Best View}
+\begin{frame}[t] \frametitle{3. Determining the Next Best View}
 
-	\textbf{Aim: to be able to calculate the viewing which maximises information gain}
+	\textbf{Aim: to be able to calculate the optimal viewing angle}
 
-	But...
-
-	\begin{itemize}
-		\item Limited energy
-		\item Limited time
-	\end{itemize}
+	\onslide<+->
+	{
 
 	Possible implementations:
 
@@ -56,65 +83,91 @@
 		\item POMDPs \cite{lauri2015planning}
 	\end{itemize}
 
+	}
+
+	\onslide<+->
+	{
+
+	Possible baselines:
+
+	\begin{itemize}
+		\item No movement
+		\item Randomised movements
+		\item Hardcoded path
+	\end{itemize}
+
+	}
+
 	\vfill
 
+	\onslide<+->
+	{
 	\textbf{Question:} update while the robot is moving?
+	}
 
 \end{frame}
 
 
-\begin{frame}[c] \frametitle{4. Fusing Multiple Views}
+\begin{frame}[t] \frametitle{4. Fusing Multiple Views}
 
-	\textbf{Aim: to be able to create a 3D model from multiple images}
+	\textbf{Aim: to be able to create a 3D model from multiple 2D images}
 
 	\medskip
 
-	\begin{enumerate}
+	\begin{itemize}
 
-		\item Solve SLAM problem
+		% \item Solve SLAM problem
 
-		\begin{itemize}\itemsep10pt
-			\item FastSLAM
-			\item RatSLAM
-			\item \ldots
-		\end{itemize}
+		% \begin{itemize}\itemsep10pt
+		% 	\item FastSLAM
+		% 	\item RatSLAM
+		% 	\item \ldots
+		% \end{itemize}
 
+		% \medskip
+
+		\item KinectFusion
 		\medskip
-
-		\item Fuse 2D images to 3D model
-
-		\begin{itemize}\itemsep10pt
-			\item KinectFusion
+		\begin{itemize}
+			\item Implemented in PCL ("KinFu")
 		\end{itemize}
 
-		\vfill
+		% \item Fuse 2D images to 3D model
 
-		\centering
-		\includegraphics[width=.8\linewidth]{src/kinectfusion.png}
+		% \begin{itemize}\itemsep10pt
+		% 	\item KinectFusion
+		% \end{itemize}
 
-	\end{enumerate}
+	\end{itemize}
+
+	\vfill
+
+	\centering
+	\includegraphics[width=.8\linewidth]{src/kinectfusion.png}
 
 
 
 \end{frame}
 
 
-\begin{frame}[c] \frametitle{5. Moving the Robot}
+\begin{frame}[t] \frametitle{5. Moving the Robot}
 
 	\textbf{Aim: to be able to move the robot to a specific point}
 
 	\bigskip
 
-	% \begin{itemize}
-	% 	\item ROS
+	\begin{itemize}\itemsep16pt
+		\item ROS navigation stack
+		\medskip
 		\begin{itemize}\itemsep10pt
 			\item \texttt{MoveBaseAction}
 			\item \texttt{actionlib}
 		\end{itemize}
-	% \end{itemize}
+	\end{itemize}
 
 	\vfill
 
+	\flushright
 	\includegraphics[width=0.8\linewidth]{src/ros.png}
 
 	\vfill
@@ -122,14 +175,23 @@
 \end{frame}
 
 
-\begin{frame}[c] \frametitle{6. System Evaluation}
+\begin{frame}[t] \frametitle{6. System Evaluation}
 
 	\textbf{Aim: optimisation and comparison}
 
-	\begin{itemize}\itemsep10pt
+	\vfill
+
+	\begin{itemize}\itemsep16pt
 		\item Find optimal parameters
-		\item Compare different approaches
-		\item Compare to previously published approaches
+		\item Compare next best view approaches
+		\medskip
+		\begin{itemize}\itemsep10pt
+			\item Random movements
+			\item Hardcoded path
+			\item Previously mentioned approaches
+		\end{itemize}
 	\end{itemize}
+
+	\vfill
 
 \end{frame}
