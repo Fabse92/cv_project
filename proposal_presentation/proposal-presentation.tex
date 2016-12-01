@@ -42,7 +42,7 @@
 }
 
 
-\title{  Active strategies for object discovery } 
+\title{  Active Strategies for Object Discovery } 
 \author[]{Phil Bradfield, Jan Fabian Schmid}
 \date[]{} 
 \institute[UHH] {Computer Vision Project\\ Winter 2016}
@@ -124,18 +124,17 @@
 		\begin{itemize}
 			\item Limited computational processing power
 			\item Limited energy
-			\item Limited time
 		\end{itemize}
 	\end{block}
 	\begin{itemize}
 		\item Focus on relevant aspects of the data
-		\begin{itemize}
-			\item Next \textbf{best} view is not available
+		%\begin{itemize}
+			%\item Next \textbf{best} view is not available
 			% The optimal solution to the NBV problem is most likely not available for		applications in real environments, therefore we can only compute approximations. For the very best approximations it might be necessary to consider huge amounts of data.
-			\item Don't process every image
+		\item Don't process every image
 			% We will probably use the input from the depth stream in every (or most) timestep to update our 3D map. However, object detection will only be initiated at our desired viewpoints
-		\end{itemize}		
-		\item Find termination criteria
+		%\end{itemize}		
+		%\item Find termination criteria
 		% at which point no further investigation of the scene should be performed. Therefore we could find a way to weigh up the energy cost for an operation against the possible benefit that it might provide to solve the task. If there is no operation available for which the information gain is more valuable than the energy then the process stops.
 	\end{itemize}
 \end{frame}
