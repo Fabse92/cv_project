@@ -165,7 +165,7 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
     if (meanSaliency < 120) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
-    meanSaliency = meanSaliency;
+    meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);    
   }
@@ -176,7 +176,7 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
     if (meanSaliency < 120) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
-    meanSaliency = meanSaliency;  
+    meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);
   }
@@ -197,6 +197,11 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
       }
     }
   }
+  
+  for (unsigned j = 0; j < salientBlobs.size(); ++j){    
+    //std::cout << means[j] << std::endl;
+  }
+  
   cout << "Number of different salient blobs: " << salientBlobs.size() << endl;   
   /*for (i = 0; i < salientBlobs.size(); ++i){
     cout << means[i] << endl;
@@ -223,7 +228,7 @@ std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segm
   salmap.convertTo(salmap,CV_8U);
   blobs = getSalientBlobs(salmap, msrs);
   cout << "Saliency calculated" << endl;
-  segmentedImage = runEgbisOnMat(img, 0, 200, 100, &num_ccs, segments);
+  segmentedImage = runEgbisOnMat(img, 1, 200, 100, &num_ccs, segments);
   std::cout << "Number of segments: " << segments.size() << " == " << num_ccs << endl;
   
   for(unsigned i = 0; i < segments.size(); ++i){
@@ -317,7 +322,7 @@ void benchmark(){
 
 int main(int argc, char* argv[]) {
   //std::string file = "../test-image-MSRA-3_97_97769.jpg";
-  std::string file = "../235.jpg";
+  std::string file = "../sd_color_rect_frame0001.png";
   
   cv::Mat img, segmentedImage, salmap, predictedObjects;
   std::vector<cv::Mat> blobs, colorCandidates;
@@ -336,7 +341,11 @@ int main(int argc, char* argv[]) {
   cv::imshow("Segments", segmentedImage);  
   cv::imshow("Original image", img);
   cv::imshow("Saliency", salmap);
-  //cv::imshow("Colour candidates0", colorCandidates[0]*255);
+  for (unsigned j = 0; j < colorCandidates.size(); ++j){
+    cv::imshow("Colour candidates"+std::to_string(j), colorCandidates[j]*255);
+  }
+  
+
   //cv::imshow("blob", blobs[0]*255.f);
   cv::imshow("predictedObjects", predictedObjects*255);
   
