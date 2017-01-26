@@ -1,0 +1,100 @@
+\documentclass[a4paper,11pt,english]{article}
+\usepackage[english]{babel} 
+\usepackage[T1]{fontenc}    
+\usepackage[utf8]{inputenc} 
+\usepackage{graphicx}       
+\usepackage{hyperref}      
+
+
+\begin{document}
+
+\title{Active strategies for object discovery}
+\author{Phil Bradfield \and Jan Fabian Schmid}
+	
+\maketitle 
+
+\section{Introduction}
+Our project is to develop an autonomous mobile system for object detection.
+Instead of using only single images to find positions and shapes of objects in an environment, we can use a sequence of images from different viewpoints.
+A autonomous robot that is working in an unknown environment has to solve the problem of finding relevant places and things before he can even think about how to use them for specific task.
+An object detection algorithm would provide a list of object proposals that are worth to be analyzed in further detail.
+Such restrictions to the search space are necessary, because every mobile system bears certain limitations to its capabilities. 
+Mostly processing power, energy and time are limited.
+
+Usually object detection algorithms only work on single 2D images \cite{atanasov2014nonmyopic}
+
+
+Use this template as a starting point for preparing your group's intermediate report.
+For more information on \LaTeX, please consult, e.g., the online book at \url{https://en.wikibooks.org/wiki/LaTeX}.
+Refer also to material on scientific writing.
+
+The recommended length of the intermediate report should be around 15 pages: 5 is most likely too little, 30 is definitely too much.
+The plan must contain the following sections:
+\begin{enumerate}
+	\item Introduction, which describes the motivation and specific goal of your project. To ensure that you have done sufficient background study, a section on related work must be included. Include references to scientific papers that are relevant to your topic, and explain how they connect to the topic. 
+	\item Theoretical background, which provides the descriptions on what existing theories and ideas that are related to your problem statement. The purpose of this section is to ensure that you are knowledgeable about the related key concepts, theories and models. 
+	\item System description and progress, which provides 1) the description of your designed system 2) your current work progress.
+	\item Timeline, which provides a timeline plan for completing the rest of the project.
+\end{enumerate}
+
+\section{Theoretical background}
+This section should the descriptions on what existing theories and ideas that are related to your problem statement.
+In the subsections below, you can see how to insert equations, figures, tables, or references into your document.
+Replace them by adding one subsection for each subtask in your project.
+
+\subsection{...Equations}
+The function $f$ defined as
+\begin{equation}
+f(x) = c_1 \sum_{i=1}^n {\frac{x+x^n}{c_2 \sqrt{x}}}
+\label{eq:gleichung}
+\end{equation}
+\noindent 
+with $c_1$ and $c_2$ being constants and $n$ being the number of elements of an imaginary set $S$. 
+
+\subsection{...Figures}
+If you introduce figures, don't forget to reference them in the text and be aware of the resolution or use vector graphics like in Figure \ref{fig:logo}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\linewidth]{uhhlogo.pdf} 
+\caption{An example figure.}
+\label{fig:logo}
+\end{center}
+\end{figure}
+
+\subsection{...Tables}
+Some results of equation \ref{eq:gleichung} are shown in Table \ref{tab:results}.
+
+\begin{table}[t] 
+\begin{center}
+\caption{Some results of equation \ref{eq:gleichung} using the sets $S = \{1,2,3\}$ and varying constants ($c_1$, $c_2$).}
+\label{tab:results}
+\begin{tabular}{|c|l|c|r|} 
+\hline
+  & $c_1 = 1, c_2 = 1$  & $c_1 = 2, c_2 = 1$  & $c_1 = 1, c_2 = 2$  \\
+\hline
+$f(1)$  & use  & your  & calculator  \\
+$f(2)$  & we were  & too  & lazy  \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{...References}
+If you use many references, learn how to use BiBTeX! It is not hard and automatically takes care that only references cited in your text are included in the reference list. See e.g. \url{https://en.wikibooks.org/wiki/LaTeX/Bibliography_Management}.
+
+This is how you can cite literature: a classic paper on face detection is the work of Viola and Jones \cite{viola_jones04}. As \cite{frintrop_phd05} shows, saliency can be used for some nice applications.
+
+
+\section{System description and progress}
+In this section, the description of your designed system as well as your current work progress are provided.
+
+\section{Timeline}
+A timeline plan for completing the project.
+
+\newpage
+\bibliographystyle{plain}
+\addcontentsline{toc}{section}{Bibliography}% Add to the TOC
+\bibliography{bib}
+
+\end{document}
