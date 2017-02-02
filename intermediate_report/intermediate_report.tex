@@ -81,10 +81,13 @@ And as a first approach for a simple NBV-planner we could use a frontier-based e
 \section{Theoretical background}
 \label{background}
 \subsection{Saliency based object discovery}
-
+\label{background:saliencyobjectdiscovery}
 \subsection{Fast SLAM}
+\label{background:slam}
 \subsection{Surman approach}
+\label{background:surman}
 \subsection{Subsumption architecture}
+\label{background:subsumption}
 
 \section{System description and progress}
 \label{system}
@@ -144,8 +147,44 @@ The ROS wrapper provides topics to retrieve the build 2D occupancy map and the c
 
 \subsection{Fuse data of multiple views together}
 \label{system:fusion}
+
 \subsection{Determining the next best view}
 \label{system:nbv}
+After processing the image data from one viewpoint the robot has to decide where to go next.
+This step is the core of our system and our main research focus.
+The goal is to find as many and as precise as possible object candidates.
+The computation of the NBV determines the strategy how to reach this goal.
+
+Desirable properties of the NBV algorithm are:
+\begin{itemize}
+	\item The computed NBVs should maximize the information gain on the scene. It is not necessary to take the same or similar viewpoints multiple times. Also the view should focus on the region of interest containing objects. If the remaining energy of the robot has a value associated with it, at some point the predicted information gain has less value then the required energy to reach the NBV. At this point our system can terminate.
+	\item The computational cost should be reasonable. Because of the constraints of energy and time in mobile systems the value of a very good NBV against an mediocre NBV has to be pondered against the additional effort to compute the better NBV. It is probably not appropriate if the energy consumption for calculating a very good NBV and moving to it is as high as calculating and moving to two mediocre NBVs. This is especially important in our use case, because exploring the whole scene is already the main goal of the NBV.
+\end{itemize}
+
+We want to implement and evaluate multiple NBV-algorithms during our project.
+Therefore, we will use the following metrics:
+\begin{itemize}
+	\item Intersection over Union (IoU). We calculate the percentage of the surface area of the object proposals that has been correctly classified as part of an object.
+	\item How many of the individual objects in the scene have been identified, which means that it has an individual label assigned to it.
+	\item Time and energy consumption until termination
+\end{itemize}
+
+In the following subsections we will explain in detail the different NBV algorithms that we plan to implement.
+
+\subsubsection{TODO: Frontier-Based Exploration}
+This approach very simple without much computation going into the NBV.
+The only goal of this algorithm is to explore the whole scene, which is something an autonomous robot has to do in a new environment somehow or other.
+The performance of this simple approach will be used as baseline to evaluate the gain of more sophisticated approaches.
+
+Frontier-Based Exploration operates like this ... http://robotfrontier.com/frontier/index.html
+TODO
+
+\subsubsection{TODO: Subsumption Architecture}
+Another baseline approach based on behavior robotics.
+
+\subsubsection{TODO: Surman approach}
+This approach uses the in section \ref{background:surman} described idea.
+
 \subsection{Navigation}
 \label{system:navigation}
 \subsection{Extensions}
