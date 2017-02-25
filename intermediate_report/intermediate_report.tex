@@ -80,13 +80,42 @@ And as a first approach for a simple NBV-planner we could use a frontier-based e
 
 \section{Theoretical background}
 \label{background}
+In this section we will introduce some more general methods that we will utilize for our system.
+
 \subsection{Saliency based object discovery}
 \label{background:saliencyobjectdiscovery}
+We perform 2D object discovery on RGB images with a saliency based approached.
+Our method is strongly oriented on the approach of García et al. \cite{garcia2015saliency}, which is summarized in the following.
+
+In their paper they introduce a saliency-based object discovery method on RGB-D data with a late-fusion approach, which means that color and depth object candidates are computed separately and then combined.
+This method stands in contrast to early-fusion approaches in which the computation of object candidates is directly performed on the RGB-D data. As it is done in the Voxel Cloud Connectivity Segmentation \cite{papon2013voxel} for example. 
+
+The method of García et al. consists of four steps:
+
+\begin{enumerate}
+	\item First, salient blobs in the image are calculated.
+	A salient region is a region in the image with high contrast to the surrounding.
+	The contrast for a specific region can be calculated in respect to different features in parallel.
+	To find salient blobs their first step is to calculate a saliency map with the VOCUS2 system \cite{frintrop2015traditional}, which considers red/green, blue/yellow and intensity center-surround contrasts.
+	Then the salient blobs are computed with seeded region growing on the local maxima in the saliency map.
+	\item The second step, which is done simultaneously to the salient region extraction, is to segment the image.
+	They use four different segmentation methods. The Felzenszwalb and Huttenlocher algorithm \cite{felzenszwalb2004efficient} that only considers color. Surface clustering searches for surface patches in the depth data. The already mentioned Voxel Cloud Connectivity Segmentation for an early-fusion approach. And as a fourth method they use the late-fusion approach of combining the candidates from color and surface segments.
+	\item For candidate generation the information of salient regions and segments is brought together.
+	An object candidate consists of multiple segments, which allows precise boundaries of the candidates.
+	For each salient region the set of overlapping segments are selected as an object candidate.
+	\item The last step is to rank the computed candidates. They compare three different ranking methods.
+	The most simple approach is to rank the candidates by a score calculated as average saliency times square of the area size of the candidate.
+	The second uses 3D convexity as a measure and the third considers a range of features that are learned by a SVM.
+\end{enumerate}
+
+They conclude from the comparison of the different used methods that the late-fusion approach performs best.
+The SVM for candidate ranking has a much higher precision when only considering a few object candidates; however, the performance of the three different approaches is more similar for recall and it converges with a higher number of object candidates.
+
 \subsection{Fast SLAM}
 \label{background:slam}
-\subsection{Surman approach}
+\subsection{TODO Fabian: Surman approach}
 \label{background:surman}
-\subsection{Subsumption architecture}
+\subsection{TODO Phil: Subsumption architecture}
 \label{background:subsumption}
 
 \section{System description and progress}
@@ -133,10 +162,22 @@ During movement the SLAM algorithm is constantly processing the camera data to u
 Once the viewpoint is reached the next iteration of the described process is done.
 
 After describing the individual parts of our system in more detail, the last subsection of this chapter provides a list of possible extensions to the system, that we will work on if time permits.
+
 \subsection{Object discovery}
 \label{system:obj_discovery}
+To find object candidates, we use a part of the method from García et al. described in Section \ref{background:saliencyobjectdiscovery}.
+For simplicity we will only use color candidates; the use of depth candidates that are then fused with the color candidates is a possible extension for our project.
+Our object discovery works as follows: First we calculate a saliency map with VOCUS2 \cite{frintrop2015traditional}, then we iterate over local maxima in the map to calculate salient blobs with seeded region growing.
+That means that all pixels neighboring the current local maximum are considered as part of the salient region if their saliency value is at least x\% or more of the maximum.
+This process is done once with 60\% and once with 70\% similarity requirement.
+A salient region is only kept if they have at least a value of 120 (from a maximum of 255) mean saliency to only keep actually interesting regions.
+Some of the salient regions will overlap each other, if the overlap is greater than 50\% only the one with higher saliency score is kept, which is calculated as mean saliency times square root of the area of the corresponding region.
+The segmentation is done with a C++ implementation of the Felzenszwalb and Huttenlocher algorithm \cite{felzenszwalb2004efficient} by Christoffer Holmstedt \footnote{\url{https://github.com/christofferholmstedt/opencv-wrapper-egbis}}.
+For each remaining salient region a object candidate is now calculated by finding all segments that overlap to at least 30\% with the region.
 
-\subsection{Solving SLAM}
+This part of our system is already fully implemented and working.
+
+\subsection{TODO: Solving SLAM}
 \label{system:slam}
 To solve the simultaneous localization and mapping we use a ROS wrapper for OpenSlam's GMapping algorithm, which is an implementation of Fast SLAM.
 It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
@@ -179,13 +220,13 @@ The performance of this simple approach will be used as baseline to evaluate the
 Frontier-Based Exploration operates like this ... http://robotfrontier.com/frontier/index.html
 TODO
 
-\subsubsection{TODO: Subsumption Architecture}
+\subsubsection{TODO Phil: Subsumption Architecture}
 Another baseline approach based on behavior robotics.
 
-\subsubsection{TODO: Surman approach}
+\subsubsection{TODO Fabian: Surman approach}
 This approach uses the in section \ref{background:surman} described idea.
 
-\subsection{Navigation}
+\subsection{TODO: Navigation}
 \label{system:navigation}
 \subsection{Extensions}
 \label{system:extensions}
@@ -194,6 +235,7 @@ The extensions could improve the system, but they shouldn't be essential for the
 
 \begin{itemize}
 	\item Include depth information for the computation of object proposals.
+	As described in Section \ref{system:obj_discovery} we only use color candidates, but the work of García et al. we summarized in Section \ref{background:saliencyobjectdiscovery} showed that the additional usage of depth information that is integrated in a late-fusion approach can significantly improve the accuracy of saliency based object discovery.
 	\item An additional NBV planning algorithm that exploits POMDPs.
 \end{itemize}
 
