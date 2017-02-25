@@ -78,6 +78,8 @@ We have to solve SLAM as well. Therefore, we will also use GMapping. Our robot h
 The two steps of exploring is an interesting approach that we can keep in mind for our system.
 And as a first approach for a simple NBV-planner we could use a frontier-based exploration algorithm. \medskip
 
+TODO: http://campar.in.tum.de/pub/cli2016iros/cli2016iros.pdf
+
 \section{Theoretical background}
 \label{background}
 In this section we will introduce some more general methods that we will utilize for our system.
@@ -111,10 +113,37 @@ The method of García et al. consists of four steps:
 They conclude from the comparison of the different used methods that the late-fusion approach performs best.
 The SVM for candidate ranking has a much higher precision when only considering a few object candidates; however, the performance of the three different approaches is more similar for recall and it converges with a higher number of object candidates.
 
-\subsection{Fast SLAM}
+\subsection{TODO: Fast SLAM}
 \label{background:slam}
-\subsection{TODO Fabian: Surman approach}
+\subsection{sSurman approach}
 \label{background:surman}
+Surmann et al. developed a system for autonomous digitalization of 3D indoor environments \cite{surmann2003autonomous}.
+This system consists of three core modules: A mapping algorithm, a view planner and a navigator to move the robot to a desired goal.
+Especially interesting for us is how they compute a NBV.
+A view planner is necessary in the  scenario, because many possible views promise only a very low information gain and the amount of views that can be used is limited by time and energy constraints.
+An visualization of the steps of their method can be seen in Figure \ref{fig:surmann}.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.8\textwidth]{src/nbv.png}
+		\caption{Overview of the system}
+		\label{fig:surmann}
+	\end{center}
+\end{figure}
+
+To compute the next best view they generate multiple horizontal 2D layers of their 3D map of the environment.
+An example of one of these layers is pictured in the first frame in Figure \ref{fig:surmann}.
+The green crosses represent single data points of the laser range finder.
+They use the Hough transform to find lines in the layer which represent the obstacles (e.g. walls) they already detected (frame 2).
+The lines are then connected to form an estimate of the layout of the room (frame 3).
+In frame 4 it is shown how the connections between lines are calculated on the example of the line between lines 1 and 2. 
+The endpoints of the lines are sorted with increasing polar angle counterclockwise.
+Lines with neighboring endpoints in that sorting are then connected.
+The next step is to randomly generate possible viewpoints in the already discovered space, which are pictured as green squares in frame 5.
+For each viewpoint $p$ the information gain $V(p)$ is calculated as a measure of how many unseen/assumed lines can be seen from it.
+A compromise between traveling distance and information gain is then used to decide on the next viewpoint.
+The score $S(p)$ for the viewpoint $p$ is calculated as $S(p) = V(p) exp(-c_1||r-p||)exp(-c_2||\Theta_r-\Theta_p||)$, where r is the position of the robot and $\Theta_r$ its current orientation, p the position of the viewpoint and $\Theta_p$ the orientation of the viewpoint. The terms can be weighted with the constants $c_1$ and $c_2$.
+
 \subsection{TODO Phil: Subsumption architecture}
 \label{background:subsumption}
 
