@@ -113,20 +113,18 @@ The method of García et al. consists of four steps:
 They conclude from the comparison of the different used methods that the late-fusion approach performs best.
 The SVM for candidate ranking has a much higher precision when only considering a few object candidates; however, the performance of the three different approaches is more similar for recall and it converges with a higher number of object candidates.
 
-\subsection{TODO: Fast SLAM}
-\label{background:slam}
-\subsection{sSurman approach}
-\label{background:surman}
+\subsection{Surmann approach}
+\label{background:surmann}
 Surmann et al. developed a system for autonomous digitalization of 3D indoor environments \cite{surmann2003autonomous}.
 This system consists of three core modules: A mapping algorithm, a view planner and a navigator to move the robot to a desired goal.
 Especially interesting for us is how they compute a NBV.
 A view planner is necessary in the  scenario, because many possible views promise only a very low information gain and the amount of views that can be used is limited by time and energy constraints.
 An visualization of the steps of their method can be seen in Figure \ref{fig:surmann}.
 
-\begin{figure}
+\begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=0.8\textwidth]{src/nbv.png}
-		\caption{Overview of the system}
+		\includegraphics[width=1\textwidth]{src/nbv.png}
+		\caption{Next best view planning as it is done in the approach of Surmann et al.}
 		\label{fig:surmann}
 	\end{center}
 \end{figure}
@@ -206,16 +204,18 @@ For each remaining salient region a object candidate is now calculated by findin
 
 This part of our system is already fully implemented and working.
 
-\subsection{TODO: Solving SLAM}
+\subsection{Solving SLAM}
 \label{system:slam}
-To solve the simultaneous localization and mapping we use a ROS wrapper for OpenSlam's GMapping algorithm, which is an implementation of Fast SLAM.
+To solve the simultaneous localization and mapping we use a ROS wrapper for OpenSlam's GMapping algorithm \footnote{\url{http://wiki.ros.org/gmapping}}, which is an implementation of Fast SLAM.
 It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
 The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
-We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to such laser scan data.
+We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
+Therefore we have to define the height for which the horizontal laser range data is computed.
+Because the data is used for navigation the height should be at ground level.
 
 The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
 
-\subsection{Fuse data of multiple views together}
+\subsection{TODO Phil: Fuse data of multiple views together}
 \label{system:fusion}
 
 \subsection{Determining the next best view}
@@ -241,19 +241,36 @@ Therefore, we will use the following metrics:
 
 In the following subsections we will explain in detail the different NBV algorithms that we plan to implement.
 
-\subsubsection{TODO: Frontier-Based Exploration}
+\subsubsection{Frontier-Based Exploration}
 This approach very simple without much computation going into the NBV.
-The only goal of this algorithm is to explore the whole scene, which is something an autonomous robot has to do in a new environment somehow or other.
+The goal of this method is to find viewpoints that are suitable to explore the whole scene, which is something an autonomous robot has to do in a new environment anyhow.
+In this method no additional effort is taken to focus on objects in the environment, objects are discovered as a side-product of the exploration process.
 The performance of this simple approach will be used as baseline to evaluate the gain of more sophisticated approaches.
 
-Frontier-Based Exploration operates like this ... http://robotfrontier.com/frontier/index.html
-TODO
+In Frontier-Based Exploration the robot is always moving to the nearest reachable frontier.
+A frontier is a border region between explored free space and unexplored space.
+A frontier is reachable if a path from the current robot position through the known free space to the frontier position exists.
+
+Frontier based exploration has been implemented in a ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}} that we should be able to use.
 
 \subsubsection{TODO Phil: Subsumption Architecture}
 Another baseline approach based on behavior robotics.
 
-\subsubsection{TODO Fabian: Surman approach}
-This approach uses the in section \ref{background:surman} described idea.
+\subsubsection{Surmann approach}
+This NBV method is based on the approach described in Section\ref{background:surman}.
+The basic functionality of this approach is to explore an indoor environment.
+As NBV this approach samples the already discovered environment for the nearest viewpoint which allows a view on as many unseen areas (lines) as possible.
+Exploration is an important aspect that has to be considered by our NBV planner, because the robot can only find all objects when it has at least looked in all general areas of the room once.
+In our system we a occupancy grid map is computed for navigation purposes, to use the Surmann approach, we compute another 2D grid map for the height at which the objects are located.
+The whole method is then performed on this 2D grid map.
+
+We adapt the process at the point of calculating the information gain for all samples.
+For example, a high information gain can be expected to appear when looking at a region with high uncertainty of the object labels.
+This might be a region that is close to two objects and the system couldn't figure out to which object this region belongs.
+Further adaptations to the information gain measure could be to extrapolate from the already found object surfaces. 
+For example the system could predict that the surface won't abruptly change its outlines and therefore a high possibility exists for continuation of the object into a certain region that has not already been viewed.
+
+We will test out different adaptations to the information gain measure. This part is not implemented yet.
 
 \subsection{TODO: Navigation}
 \label{system:navigation}
