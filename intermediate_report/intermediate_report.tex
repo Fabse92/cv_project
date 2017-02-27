@@ -201,7 +201,7 @@ Once the viewpoint is reached the next iteration of the described process is don
 
 After describing the individual parts of our system in more detail, the last subsection of this chapter provides a list of possible extensions to the system, that we will work on if time permits.
 
-\subsection{Object discovery}
+\subsection{Object discovery in two dimensions}
 \label{system:obj_discovery}
 To find object candidates, we use a part of the method from García et al. described in Section \ref{background:saliencyobjectdiscovery}.
 For simplicity we will only use color candidates; the use of depth candidates that are then fused with the color candidates is a possible extension for our project.
@@ -215,6 +215,14 @@ For each remaining salient region a object candidate is now calculated by findin
 
 This part of our system is already fully implemented and working.
 
+\subsection{Object discovery in three dimensions}
+\label{system:fusion}
+Once object proposals have been generated from the RGB image using the saliency system, the pixel-based object proposals will be translated into 3D voxel-based proposals.
+This will by done by combining the pixel-based labels with the Kinect's depth map in order to decide which voxel each label matches to.
+
+For each new viewpoint that the robot reaches, new 2D object proposals will be generated and these will be used to update the currently existing 3D proposals.
+First, the 2D object proposals will be projected into the 3D model and labels
+
 \subsection{Solving SLAM}
 \label{system:slam}
 To solve the simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
@@ -226,9 +234,8 @@ Because the data is used for navigation the height should be at ground level.
 
 The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
 
-\subsection{TODO Phil: Fuse data of multiple views together}
-\label{system:fusion}
-A particular challenge for the system will be to integrate new information with its existing object model in order to refine its proposals.
+
+
 
 \subsection{Determining the next best view}
 \label{system:nbv}
@@ -283,6 +290,15 @@ We will test out different adaptations to the information gain measure. This par
 
 \subsection{TODO: Navigation}
 \label{system:navigation}
+Navigation will be handled using the ROS Navigation Stack\footnote{\url{http://wiki.ros.org/navigation}}.
+Once the next best view processor has decided where the robot should next observe the scene from, this target pose will be sent to the navigation stack along with the applicable co-ordinate frame.
+The navigation stack will then plan a path to the target position and formulate the motor commands to move the robot along the path.
+
+In the table scenario, successfully moving the robot to the target position should be relatively straightforward because we will be able to keep the robot's area of navigation clear, meaning there are no obstacles for the robot to avoid.
+The scattered objects scenario represents a greater challenge to the navigation system as the objects which the system is trying to detect also automatically become obstacles that it has to avoid, and thus the robot's path planning becomes more complex.
+
+This part of the system is not implemented yet. It is expected that the effort required to implement this is low, as we are simply using existing ROS functionality and do not need to customize the navigation system ourselves in any way.
+
 \subsection{Extensions}
 \label{system:extensions}
 In the following list we present possible extension to the core system that has been described so far in this chapter. 
