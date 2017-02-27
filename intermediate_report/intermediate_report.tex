@@ -78,7 +78,20 @@ We have to solve SLAM as well. Therefore, we will also use GMapping. Our robot h
 The two steps of exploring is an interesting approach that we can keep in mind for our system.
 And as a first approach for a simple NBV-planner we could use a frontier-based exploration algorithm. \medskip
 
-TODO: http://campar.in.tum.de/pub/cli2016iros/cli2016iros.pdf
+Li et al. presented an online system for incremental scene modeling \cite{li2016incremental}.
+They combine the capabilities of a SLAM-based scene understanding framework with semantic segmentation and object pose estimation.
+Their goal was to build a multi-view recognition system that is working fast and with the necessary accuracy required for robotic application scenarios.
+A problem for single-view recognition systems are cluttered scenes where several objects are occluding each other.
+Multiple observations of the same scene are usually available for the robot, therefore they want to use these to improve recognition abilities.
+They train object models on a large set of partial views, also the model constructs a background class through a provided sequence of scene views without any objects in them.
+During application a set of object hypotheses is updated with every new frame from a RGB-D camera sequence.
+To find corresponding spatial areas at the different viewpoints they use the estimated current camera pose from a dense SLAM method.
+In their results they reach improved performance in respect to single-view methods for semantic segmentation and object pose estimation.
+
+In our use case the robot doesn't get object models to learn classifiers that can be used during application.
+Therefore, this approach is not feasible for us.
+However, their work shows the advantage of multi-view object recognition over single-view methods.
+The method of fusing multiple views through knowledge of the current camera position seems to be the standard approach, which we can be apply to solve this problem in our system.
 
 \section{Theoretical background}
 \label{background}
