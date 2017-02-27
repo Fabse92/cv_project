@@ -1,10 +1,11 @@
 \documentclass[a4paper,11pt,english]{article}
 \usepackage[english]{babel} 
-\usepackage[T1]{fontenc}    
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
 \usepackage{hyperref}      
-
+\usepackage{todonotes}
 
 \begin{document}
 
@@ -155,9 +156,6 @@ For each viewpoint $p$ the information gain $V(p)$ is calculated as a measure of
 A compromise between traveling distance and information gain is then used to decide on the next viewpoint.
 The score $S(p)$ for the viewpoint $p$ is calculated as $S(p) = V(p) exp(-c_1||r-p||)exp(-c_2||\Theta_r-\Theta_p||)$, where r is the position of the robot and $\Theta_r$ its current orientation, p the position of the viewpoint and $\Theta_p$ the orientation of the viewpoint. The terms can be weighted with the constants $c_1$ and $c_2$.
 
-\subsection{TODO Phil: Subsumption architecture}
-\label{background:subsumption}
-
 \section{System description and progress}
 \label{system}
 A general overview of our system is given in figure \ref{fig:overview}.
@@ -219,7 +217,7 @@ This part of our system is already fully implemented and working.
 
 \subsection{Solving SLAM}
 \label{system:slam}
-To solve the simultaneous localization and mapping we use a ROS wrapper for OpenSlam's GMapping algorithm \footnote{\url{http://wiki.ros.org/gmapping}}, which is an implementation of Fast SLAM.
+To solve the simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
 It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
 The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
 We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
@@ -230,6 +228,7 @@ The ROS wrapper provides topics to retrieve the build 2D occupancy map and the c
 
 \subsection{TODO Phil: Fuse data of multiple views together}
 \label{system:fusion}
+A particular challenge for the system will be to integrate new information with its existing object model in order to refine its proposals.
 
 \subsection{Determining the next best view}
 \label{system:nbv}
@@ -266,11 +265,8 @@ A frontier is reachable if a path from the current robot position through the kn
 
 Frontier based exploration has been implemented in a ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}} that we should be able to use.
 
-\subsubsection{TODO Phil: Subsumption Architecture}
-Another baseline approach based on behavior robotics.
-
 \subsubsection{Surmann approach}
-This NBV method is based on the approach described in Section\ref{background:surman}.
+This NBV method is based on the approach described in Section\ref{background:surmann}.
 The basic functionality of this approach is to explore an indoor environment.
 As NBV this approach samples the already discovered environment for the nearest viewpoint which allows a view on as many unseen areas (lines) as possible.
 Exploration is an important aspect that has to be considered by our NBV planner, because the robot can only find all objects when it has at least looked in all general areas of the room once.
