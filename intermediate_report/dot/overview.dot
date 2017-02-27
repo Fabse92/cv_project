@@ -1,22 +1,23 @@
 digraph G {
   graph [ dpi = 300 ];
-	"Turtlebot" -> "Kinect"
-	"Turtlebot" -> "Odometry"
+	"Mobile platform" -> "Kinect"
+	"Mobile platform" -> "Odometry"
 	"Kinect" -> "RGB image"
 	"Kinect" -> "Depth image"
 	"Odometry" -> "SLAM"
-	"Depth image" -> "Laserscan" [label = " transform"]
+	"Depth image" -> "Point Cloud"
+	"Point Cloud" -> "Laserscan" [label = " transform"]
+	"Point Cloud" -> "3D map with object proposals"
 	"Laserscan" -> "SLAM"
 	"RGB image" -> "2D Object proposals"
 	"SLAM" -> "2D occupancy grid map"
 	"SLAM" -> "Estimate of robot pose"
 	"2D Object proposals" -> "3D map with object proposals"
 	"Estimate of robot pose" -> "3D map with object proposals"
-	"Depth image" -> "3D map with object proposals"
 	"3D map with object proposals" -> "NBV planning"
 	"2D occupancy grid map" -> "NBV planning"
 	"NBV planning" -> "Navigation"
 	"2D occupancy grid map" -> "Navigation"
 	"Estimate of robot pose" -> "Navigation"
-	"Navigation" -> "Turtlebot" [label = " Motor control"]
+	"Navigation" -> "Mobile platform" [label = " Motor control"]
 }

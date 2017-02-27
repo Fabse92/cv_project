@@ -4,7 +4,7 @@
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
 \usepackage{hyperref}      
-
+\usepackage{pgfgantt}
 
 \begin{document}
 
@@ -300,6 +300,46 @@ The extensions could improve the system, but they shouldn't be essential for the
 
 \section{Timeline}
 \label{timeline}
+
+In the following Gantt chart we present our time plan for the project.
+The chart contains the different tasks we still have to work on and a rough time schedule for them.
+The two black diamonds represent milestones at which a significant part of our system is working.\medskip
+
+\noindent\resizebox{\textwidth}{!}{
+	\begin{ganttchart}{13}{28}
+		\gantttitle{Calender week 2017}{16} \\
+		\gantttitlelist{13,...,28}{1} \\
+		\ganttbar{Simulation environment setup}{13}{16} \\
+		\ganttlinkedbar{Navigation and 2D map building}{17}{18} \\
+		\ganttmilestone{Running simulated robot}{18} \ganttnewline
+		\ganttbar{Object detection - ROS wrapper}{19}{20} \\
+		\ganttbar{Fusion of views into a 3D map}{19}{20} \\
+		\ganttlinkedbar{Simple NBV planning}{21}{21} \\
+		\ganttmilestone{Prototype of system is working}{21} \ganttnewline
+		\ganttbar{Sophisticated NBV planning}{22}{24} \\
+		\ganttlinkedbar{Real world testing}{25}{25} \\
+		\ganttlinkedbar{Evaluation}{26}{27} \\
+		\ganttlinkedbar{Final presentation}{28}{28} \\
+	\end{ganttchart}
+}
+
+For easy testing we decided that it would be best to setup a simulation environment.
+With Gazebo \footnote{\url{http://gazebosim.org/}} an easy to use simulation environment is available which already contains modules for mobile platforms and the Kinect camera.
+Additionally we will need models of the objects we want to use, which should be available.
+We plan to work in the simulation only until the last weeks in the summer semester.
+Because of knowledge about the exact positions of the objects in the simulation evaluation of the system will be simpler.
+
+Once the simulation environment is working, we will implement the abilities of building a 2D occupancy grid map and to navigate through the explored space.
+At this point we reach our first milestone, we have a working simulation environment in which the robot can roam around freely and explore the scene.
+
+The next step is to implement the saliency based object detection into ROS. The wrapper should subscribe to a topic at which RGB images are provided and then a topic is published which provides the 2D object candidates.
+At the same time we can implement the fusion of multiple views which contains the mapping of the 2D object proposals into a 3D data structure that is then updated from viewpoint to viewpoint.
+At this point we can implement frontier-based exploration as baseline NBV planning approach.
+Then we have reached our second milestone at which the whole system is working already.
+
+The last implementation is the information based NBV planning.
+After that we can finally test our system on a real robot and then evaluate the performance of our system. 
+
 
 \newpage
 \bibliographystyle{plain}
