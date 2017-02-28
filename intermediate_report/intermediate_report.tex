@@ -222,21 +222,7 @@ Once object proposals have been generated from the RGB image using the saliency 
 This will by done by combining the pixel-based labels with the Kinect's depth map in order to decide which voxel each label matches to.
 
 For each new viewpoint that the robot reaches, new 2D object proposals will be generated and these will be used to update the currently existing 3D proposals.
-First, the 2D object proposals will be projected into the 3D model and labels
-
-\subsection{Solving SLAM}
-\label{system:slam}
-To solve the simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
-It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
-The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
-We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
-Therefore we have to define the height for which the horizontal laser range data is computed.
-Because the data is used for navigation the height should be at ground level.
-
-The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
-
-
-
+First, the 2D object proposals will be projected into the 3D model and the appropriate voxels labeled.
 
 \subsection{Determining the next best view}
 \label{system:nbv}
@@ -289,7 +275,18 @@ For example the system could predict that the surface won't abruptly change its 
 
 We will test out different adaptations to the information gain measure. This part is not implemented yet.
 
-\subsection{TODO: Navigation}
+\subsection{SLAM}
+\label{system:slam}
+To solve the simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
+It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
+The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
+We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
+Therefore we have to define the height for which the horizontal laser range data is computed.
+Because the data is used for navigation the height should be at ground level.
+
+The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
+
+\subsection{Navigation}
 \label{system:navigation}
 Navigation will be handled using the ROS Navigation Stack\footnote{\url{http://wiki.ros.org/navigation}}.
 Once the next best view processor has decided where the robot should next observe the scene from, this target pose will be sent to the navigation stack along with the applicable co-ordinate frame.
