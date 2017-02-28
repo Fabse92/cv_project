@@ -344,43 +344,109 @@ The extensions could improve the system and may be implemented if time permits, 
 
 The Gantt chart in figure \ref{fig:timeline} presents our time plan for the project.
 The chart contains the different tasks we still have to work on and a rough time schedule for them.
-The two black diamonds represent milestones at which a significant part of our system is working.
+The two black diamonds represent significant milestones for the project.
+The chart only begins on the 27th March to reflect the fact that the project is likely to be largely dormant until then.
 
-For easy testing we decided that it would be best to set up a simulation environment.
-With Gazebo \footnote{\url{http://gazebosim.org/}} an easy to use simulation environment is available which already contains modules for mobile platforms and the Kinect camera.
-Additionally we will need models of the objects we want to use, which should be available.
-We will build our application scenarios inside the simulation.
-We plan to work in the simulation only until the last weeks in the summer semester.
-Because of knowledge about the exact positions of the objects in the simulation evaluation of the system will be simpler.
+\paragraph{Simulation environment}
+In addition to implementing the system as described in section \ref{system}, for the purposes of rapid testing we will also be setting up a simulation environment using Gazebo\footnote{\url{http://gazebosim.org/}}.
+Gazebo already contains modules for simulating small mobile platforms like we shall be using and also the input from a Kinect camera; we shall create application scenarios in Gazebo using models of the objects in our dataset.
+An advantage of using ROS for our system is that aside from the work of actually creating the application scenarios in Gazebo, there is very little overhead involved in creating this simulation environment.
+Any code, launch files etc. which we create which work in the simulation should not need any major structural changes to work on the real robot, although obviously the extra noise and uncertainty present in real world environments means significant real world testing will still be required.
+The transition from simulation to real world testing is currently scheduled for the middle of May (see below).
 
-Once the simulation environment is working, we will implement the abilities of building a 2D occupancy grid map and to navigate through the explored space.
-At this point we reach our first milestone, we have a working simulation environment in which the robot can roam around freely and explore the scene.
+The work of creating this simulation environment is currently in progress.
 
-The next step is to implement the saliency based object detection into ROS. The wrapper should subscribe to a topic at which RGB images are provided and then a topic is published which provides the 2D object candidates.
-At the same time we can implement the fusion of multiple views which contains the mapping of the 2D object proposals into a 3D data structure that is then updated from viewpoint to viewpoint.
-At this point we can implement frontier-based exploration as baseline NBV planning approach.
-Then we have reached our second milestone at which the whole system is working already.
+Planned completion date: week ending 23\textsuperscript{rd} April.
 
-The last implementation is the information based NBV planning.
-After that we can finally test our system on a real robot and then evaluate the performance of our system. 
+% For the purposes of testing we decided that it would be best to set up a simulation environment.
+% With Gazebo \footnote{\url{http://gazebosim.org/}} an easy to use simulation environment is available which already contains modules for mobile platforms and the Kinect camera.
+% Additionally we will need models of the objects we want to use, which should be available.
+% We will build our application scenarios inside the simulation.
+% We plan to work in the simulation only until the last weeks in the summer semester.
+% Because of knowledge about the exact positions of the objects in the simulation evaluation of the system will be simpler.
+
+\paragraph{Navigation and map building}
+Once the simulation environment is created, we will implement the abilities of building a 2D occupancy grid map and navigating through the space.
+At this point we reach our first milestone, which is to have a working simulation environment in which the robot can freely roam around and explore.
+
+Planned completion date: week ending 7\textsuperscript{th} May.
+
+\paragraph{Object discovery}
+The next step is to create a wrapper to integrate our existing saliency based object detection system into ROS.
+The wrapper should subscribe to a topic at which RGB images are provided and then publish a topic which provides the 2D object candidates.
+Alongside this we can implement the fusion of multiple views which maps the 2D object proposals into a 3D data structure that is then updated from viewpoint to viewpoint.
+We plan to work on these two modules concurrently as changes in either one may well affect the messaging required between them.
+
+Planned completion date: week ending 21\textsuperscript{st} May.
+
+\paragraph{Frontier-based next best view planning}
+With the object discovery system in place, we can implement frontier-based exploration as a baseline NBV planning approach.
+This marks our second milestone, which is to have a fully functional system using our baseline NBV planner.
+At this point, we may perform some brief confidence testing on the real robot system in order to make sure that there are no large, unexpected differences between the simulation environment and the real world which we need to be aware of in implementing our planners.
+
+Planned completion date: week ending 28\textsuperscript{th} May.
+
+\paragraph{Information gain-based next best view planning}
+The final implementation stage is to implement our information gain-based planners.
+As it is likely that one of the planners will be ready before the other, this phase will in reality probably overlap with the following testing and evaluation phases, as one of us can be testing one NBV planner while the other person is still developing the second planner.
+
+Planned completion date: week ending 18\textsuperscript{th} June.
+
+\paragraph{Testing}
+In this phase, we will test our system on the real robot platform and make any adjustments necessary to successfully make the transition from simulation to real world operation, such as exploring different possible parameterizations.
+
+Planned completion date: week ending 25\textsuperscript{th} June.
+
+\paragraph{Evaluation}
+Finally, we shall perform comparative evaluations in the real world, measuring the performance of the different NBV planners, and prepare the results for presentation.
+
+Planned completion date: week ending 16\textsuperscript{th} July.
 
 \begin{landscape}
-% \noindent\resizebox{\paperheight}{!}{
+% \begin{figure}[htbp]
+% 	\begin{ganttchart}[x unit=10mm]{13}{28}
+% 		\gantttitle{Calender week 2017}{16} \\
+% 		\gantttitlelist{13,...,28}{1} \\
+% 		\ganttbar{Simulation environment setup}{13}{16} \\
+% 		\ganttlinkedbar{Navigation and 2D map building}{17}{18} \\
+% 		\ganttmilestone{Running simulated robot}{18} \ganttnewline
+% 		\ganttbar{Object detection - ROS wrapper}{19}{20} \\
+% 		\ganttbar{Fusion of views into a 3D map}{19}{20} \\
+% 		\ganttlinkedbar{Simple NBV planning}{21}{21} \\
+% 		\ganttmilestone{Prototype of system is working}{21} \ganttnewline
+% 		\ganttbar{Sophisticated NBV planning}{22}{24} \\
+% 		\ganttlinkedbar{Real world testing}{25}{25} \\
+% 		\ganttlinkedbar{Evaluation}{26}{27} \\
+% 		\ganttlinkedbar{Final presentation}{28}{28} \\
+% 	\end{ganttchart}
+% 	\caption{Planned timeline of the remainder of the project}
+% 	\label{fig:timeline}
+% \end{figure}
+
+% \newpage
 \begin{figure}[htbp]
-	\begin{ganttchart}[x unit=10mm]{13}{28}
-		\gantttitle{Calender week 2017}{16} \\
-		\gantttitlelist{13,...,28}{1} \\
-		\ganttbar{Simulation environment setup}{13}{16} \\
-		\ganttlinkedbar{Navigation and 2D map building}{17}{18} \\
-		\ganttmilestone{Running simulated robot}{18} \ganttnewline
-		\ganttbar{Object detection - ROS wrapper}{19}{20} \\
-		\ganttbar{Fusion of views into a 3D map}{19}{20} \\
-		\ganttlinkedbar{Simple NBV planning}{21}{21} \\
-		\ganttmilestone{Prototype of system is working}{21} \ganttnewline
-		\ganttbar{Sophisticated NBV planning}{22}{24} \\
-		\ganttlinkedbar{Real world testing}{25}{25} \\
-		\ganttlinkedbar{Evaluation}{26}{27} \\
-		\ganttlinkedbar{Final presentation}{28}{28} \\
+	\begin{ganttchart}[
+		title label font=\tiny,
+		x unit=1.5mm,
+		time slot format=isodate,
+		vgrid={*6{white},{gray,dashed}},
+		hgrid={gray,dashed}
+		]{2017-03-27}{2017-07-16}
+		% \gantttitle{Date} \\
+		% \gantttitlelist{13,...,28}{1} \\
+		\gantttitlecalendar{month=name, week=13} \\
+		% \gantttitlelist{13,...,28}{1} \\
+		\ganttbar{Simulation setup}{2017-03-27}{2017-04-23} \\
+		\ganttlinkedbar{Navigation, map building}{2017-04-24}{2017-05-07} \\
+		\ganttmilestone{Running simulated robot}{2017-05-07} \ganttnewline
+		\ganttbar{Object detection - ROS wrapper}{2017-05-08}{2017-05-21} \\
+		\ganttbar{Proposal fusion into 3D map}{2017-05-08}{2017-05-21} \\
+		\ganttlinkedbar{Simple NBV planning}{2017-05-22}{2017-05-28} \\
+		\ganttmilestone{Prototype working}{2017-05-28} \ganttnewline
+		\ganttbar{Sophisticated NBV planning}{2017-05-29}{2017-06-18} \\
+		\ganttlinkedbar{Real world testing}{2017-06-19}{2017-06-25} \\
+		\ganttlinkedbar{Evaluation}{2017-06-26}{2017-07-09} \\
+		\ganttlinkedbar{Final presentation}{2017-07-10}{2017-07-16} \\
 	\end{ganttchart}
 	\caption{Planned timeline of the remainder of the project}
 	\label{fig:timeline}
