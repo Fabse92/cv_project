@@ -1,4 +1,5 @@
 \documentclass[a4paper,11pt,english]{article}
+\usepackage{amsmath}
 \usepackage[english]{babel} 
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}   
@@ -186,21 +187,27 @@ Before we start explaining the graph in detail, it is useful to have a look at t
 
 Independent of the used application scenario the robot starts with no available knowledge of the scene.
 Therefore, we are completely dependent on the system input to infer information.
-At the beginning only an initial RGB-D image of the robot viewpoint at the start is available.
 
-One processing line is now using the RGB image to find any possible objects in the view, this is described in detail in Section \ref{system:obj_discovery}.
+At the beginning only an initial RGB-D image of the robot viewpoint at the start is available.
+One processing line uses the RGB image to find any possible objects in the view, this is described in detail in Section \ref{system:obj_discovery}.
+
 Simultaneously the depth image of the Kinect camera is processed.
-From the depth data a point cloud is computed is used to simulate laser-scan data, which consists of depth data of one horizontal line in the robot view. 
-This laser scan data is used together with the odometry data to solve the Simultaneous Localization And Mapping (SLAM) problem. This part is described in more detail in Section \ref{system:slam}.
-The SLAM-algorithm provides a 2D occupancy grid map, which is a kind of floor plan, containing information about obstacles and free space in the already discovered environment. A second output of SLAM is an estimate of the current robot pose.
+From the depth data a point cloud is computed; this is used to simulate laser-scan data, which consists of depth data of one horizontal line in the robot view. 
+This laser scan data is used together with the odometry data to perform simultaneous localization and mapping (SLAM).
+This part is described in more detail in Section \ref{system:slam}.
+
+The SLAM algorithm provides a 2D occupancy grid map, which is a kind of floor plan, containing information about obstacles and free space in the already discovered environment. A second output of SLAM is an estimate of the current robot pose.
 This pose is used together with the new found object proposals of the current view and the current depth image to update the 3D map that contains a labeling of voxels to object proposals. This procedure is specified in Section \ref{system:fusion}. 
+
 The next step is to compute a NBV for the robot that should maximize the information gain about the environment.
 For this computation all data that has been gathered to this point can be used, particularly the positions of already found object proposals and the current floor map will be used for this step. Details can be found in Section \ref{system:nbv}.
+
 Once a desired view point is calculated, it is used together with the current occupancy grid map and pose estimation to plan movement of the robot to this point in space.
 This part is described in Section \ref{system:navigation}.
-The output of the navigation module is the motor control to move the system.
+
+The output of the navigation module is the motor commands to move the system.
 During movement the SLAM algorithm is constantly processing the camera data to update the map and keep track of the robot position.
-Once the viewpoint is reached the next iteration of the described process is done.
+Once the viewpoint is reached the next iteration of the described process starts.
 
 After describing the individual parts of our system in more detail, the last subsection of this chapter provides a short list of possible extensions to the system, that we will work on if time permits.
 
@@ -209,7 +216,7 @@ After describing the individual parts of our system in more detail, the last sub
 To find object candidates, we use a part of the method from García et al. described in Section \ref{background:saliencyobjectdiscovery}.
 For simplicity, we will only use color candidates; the use of depth candidates that are then fused with the color candidates is a possible extension for our project.
 Our object discovery works as follows: First we calculate a saliency map with VOCUS2 \cite{frintrop2015traditional}, then we iterate over local maxima in the map to calculate salient blobs with seeded region growing.
-That means that all pixels neighboring the currently considered local maximum are taken as part of the salient region if their saliency value is at least x\% or more of the saliency value of the maximum.
+That means that all pixels neighboring the currently considered local maximum are taken as part of the salient region if their saliency value is at least \(x\)\% or more of the saliency value of the maximum.
 This process is done once with 60\% and once with 70\% similarity requirement.
 A salient region is only kept if they have at least a value of 120 (from a maximum of 255) mean saliency to only keep actually interesting regions.
 Some of the salient regions will overlap each other, if the overlap is greater than 50\% only the one with higher saliency score is kept, which is calculated as mean saliency times square root of the area of the corresponding region.
@@ -220,7 +227,23 @@ This part of our system is already implemented as a C++ class and is working. To
 
 \subsection{Object discovery in three dimensions}
 \label{system:fusion}
-IN PROGRESS
+Once object proposals have been generated from the RGB image using the saliency system, the pixel-based object proposals will be translated into 3D voxel-based proposals.
+This will by done by using the Kinect's depth map to project the 2D object proposals into a 3D space; each voxel in the 3D space which corresponds to part of a proposed object surface will be assigned the label of that proposed object, and a score representing the confidence with which we are labeling that voxel with each different label.
+
+For each new viewpoint that the robot reaches, new 2D object proposals will be generated and these will be used to update the existing voxel labels.
+First, the 2D object proposals will be projected into the 3D model, as before.
+We will then compare the newly generated proposals to the existing ones, taking our basic schema from \cite{garcia2013computational}:
+
+\begin{itemize}
+	\item If less than 5\% of the voxels in the new proposal are already labeled, then the voxels corresponding to the new proposal will be assigned to a new label and confidence score, as before.
+	\item Otherwise, we will search over the voxels in the new proposal and find the existing label \(l\) which occurs most often (i.e. the existing proposal which is the closest match to the new one).
+	Any voxels in the new proposal which are not labeled as \(l\) will be assigned label \(l\) with an initial confidence level.
+	For each voxel in the new proposal, all labels which are not \(l\) will have their confidence levels decreased.
+	If a label's confidence score falls below a threshold then it is deleted.
+\end{itemize}
+
+The initial confidence score of a newly-added label will be low, as the idea of the fusion process is that proposals which truly correspond to objects will be repeated often and thus build up confidence quickly, while false proposals which are not replicated should be quickly flushed from the system in order to keep the computation manageable.
+The exact initial value of the confidence score, and the magnitude of the increase or decrease in confidence at each update, will need to be empirically determined.
 
 \subsection{Determining the next best view}
 \label{system:nbv}
@@ -240,7 +263,7 @@ Therefore, we will evaluate their ability to find objects in the scene and how l
 
 In the following subsections we will explain in detail the different NBV algorithms that we plan to implement.
 
-\subsubsection{Frontier-Based Exploration}
+\subsubsection{Frontier-based exploration}
 This approach is very simple without much computation going into the NBV.
 The goal of this method is to find viewpoints that are suitable to explore the whole scene, which is something an autonomous robot has to do in a new environment anyhow.
 No further effort is taken to focus on objects in the environment, objects are discovered as a side-product of the exploration process.
