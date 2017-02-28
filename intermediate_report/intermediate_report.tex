@@ -4,9 +4,9 @@
 \usepackage{lmodern}   
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
-\usepackage{hyperref}      
-\usepackage{todonotes}
+\usepackage{hyperref}
 \usepackage{pgfgantt}
+\usepackage{lscape}
 
 \begin{document}
 
@@ -220,11 +220,7 @@ This part of our system is already implemented as a C++ class and is working. To
 
 \subsection{Object discovery in three dimensions}
 \label{system:fusion}
-Once object proposals have been generated from the RGB image using the saliency system, the pixel-based object proposals will be translated into 3D voxel-based proposals.
-This will by done by combining the pixel-based labels with the Kinect's depth map in order to decide which voxel each label matches to.
-
-For each new viewpoint that the robot reaches, new 2D object proposals will be generated and these will be used to update the currently existing 3D proposals.
-First, the 2D object proposals will be projected into the 3D model and the appropriate voxels labeled.
+IN PROGRESS
 
 \subsection{Determining the next best view}
 \label{system:nbv}
@@ -257,20 +253,33 @@ A frontier is reachable if a path from the current robot position through the kn
 Frontier based exploration has been implemented in a ROS-package \footnote{\url{http://wiki.ros.org/frontier_exploration}} that we plan to use.
 
 \subsubsection{Information gain approach}
-This NBV method is based on the approach described in Section\ref{background:surman}.
-The basic functionality of this approach is to explore an indoor environment.
-As NBV this approach samples the already discovered environment for the nearest viewpoint which allows a view on as many unseen areas (lines) as possible.
+This NBV method is based on the approach described in Section\ref{background:surmann}.
+We plan to implement two variations of this approach: one directly using Surmann et al.'s method of calculating information gain based on the number of unseen lines a potential next viewpoint can see; another which calculates information gain based on attempting to reduce the uncertainty in our labeling.
+A combination of the two approaches will also be attempted.
+
+\paragraph{Unseen lines}
+The basic intention of Surmann et al.'s approach is to explore an indoor environment.
+In applying the approach to NBV, our system will sample the already discovered environment and find the viewpoints which allow a view on as many unseen areas (lines) as possible.
+The system will then calculate a trade-off between the potential information gain offered by a certain pose and the amount of time it would take the robot to get there.
 Exploration is an important aspect that has to be considered by our NBV planner, because the robot can only find all objects when it has at least looked in all general areas of the room once.
-In our system we a occupancy grid map is computed for navigation purposes, to use the Surmann approach, we compute another 2D grid map for the height at which the objects are located.
+In our system we a occupancy grid map is computed at ground level for navigation purposes; to use the Surmann et al. approach, we compute another 2D grid map for the height at which the objects are located.
 The whole method is then performed on this 2D grid map.
 
-We adapt the process at the point of calculating the information gain for all samples.
-For example, a high information gain can be expected to appear when looking at a region with high uncertainty of the object labels.
-This might be a region that is close to two objects and the system couldn't figure out to which object this region belongs.
-Further adaptations to the information gain measure could be to extrapolate from the already found object surfaces. 
-For example the system could predict that the surface won't abruptly change its outlines and therefore a high possibility exists for continuation of the object into a certain region that has not already been viewed.
+\paragraph{Label uncertainty}
+For the purposes of NBV calculation, an alternative formulation of information gain would be to look at the uncertainty of the labels in our voxel map.
+Areas of the map which have high uncertainty would be areas which have either not been viewed at all (which would have maximum uncertainty) or areas in which our system has previously generated contradictory labels, denoting an area which needs further investigation.
+As with the unseen lines approach, the system would calculate the information gain for each sampled viewpoint, and then select the next viewpoint by means of a trade-off between the viewpoint's potential information gain and its distance from the robot's current location.
 
-We will test out different adaptations to the information gain measure. This part is not implemented yet.
+\paragraph{Combination}
+The two approaches above could also be complementary, with information gain being calculated using the sum of both measures, possibly with a weighting factor.
+
+% \paragraph{}Further adaptations to the information gain measure could also be possible, such as extending the unseen lines approach by extrapolating from the already found object surfaces.
+% Rather than simply positing straight lines between points, the system could use heuristics to generate the unseen lines, for example assuming that a flat surface which vanishes into unseen space continues to be a flat surface in that unseen space.
+% Similarly, a partially-seen surface with constant curvature could be assumed to continue to have the same curvature in in its unseen sections.
+% This idea is tangentially related to Gestalt principles
+
+\paragraph{}
+This part is not implemented yet.
 
 \subsection{SLAM}
 \label{system:slam}
@@ -296,41 +305,24 @@ This part of the system is not implemented yet. It is expected that the effort r
 
 \subsection{Extensions}
 \label{system:extensions}
-In the following list we present possible extensions to the core system that has been described so far in this chapter. 
-The extensions could improve the system, but they shouldn't be essential for its abilities.
+In the following list we present possible extensions to the core system that has been described so far. 
+The extensions could improve the system and may be implemented if time permits, but they shouldn't be essential for its abilities.
 
 \begin{itemize}
-	\item Include depth information for the computation of object proposals.
+	\item Depth information for the computation of object proposals.
 	As described in Section \ref{system:obj_discovery} we only use color candidates, but in the work of García et al. we summarized in Section \ref{background:saliencyobjectdiscovery} they showed that the additional usage of depth information which is integrated in a late-fusion approach can significantly improve the accuracy of saliency based object discovery.
+	\item An extension to the unseen lines approach which uses heuristics to improve on the estimation of unseen surfaces, e.g. by assuming that a flat surface which disappears into unknown space continues to be flat and that a curved surface continues with the same curvature.
 	\item An additional NBV planning algorithm that exploits POMDPs.
 \end{itemize}
 
 \section{Timeline}
 \label{timeline}
 
-In the following Gantt chart we present our time plan for the project.
+The Gantt chart in figure \ref{fig:timeline} presents our time plan for the project.
 The chart contains the different tasks we still have to work on and a rough time schedule for them.
-The two black diamonds represent milestones at which a significant part of our system is working.\medskip
+The two black diamonds represent milestones at which a significant part of our system is working.
 
-\noindent\resizebox{\textwidth}{!}{
-	\begin{ganttchart}{13}{28}
-		\gantttitle{Calender week 2017}{16} \\
-		\gantttitlelist{13,...,28}{1} \\
-		\ganttbar{Simulation environment setup}{13}{16} \\
-		\ganttlinkedbar{Navigation and 2D map building}{17}{18} \\
-		\ganttmilestone{Running simulated robot}{18} \ganttnewline
-		\ganttbar{Object detection - ROS wrapper}{19}{20} \\
-		\ganttbar{Fusion of views into a 3D map}{19}{20} \\
-		\ganttlinkedbar{Simple NBV planning}{21}{21} \\
-		\ganttmilestone{Prototype of system is working}{21} \ganttnewline
-		\ganttbar{Sophisticated NBV planning}{22}{24} \\
-		\ganttlinkedbar{Real world testing}{25}{25} \\
-		\ganttlinkedbar{Evaluation}{26}{27} \\
-		\ganttlinkedbar{Final presentation}{28}{28} \\
-	\end{ganttchart}
-}
-
-For easy testing we decided that it would be best to setup a simulation environment.
+For easy testing we decided that it would be best to set up a simulation environment.
 With Gazebo \footnote{\url{http://gazebosim.org/}} an easy to use simulation environment is available which already contains modules for mobile platforms and the Kinect camera.
 Additionally we will need models of the objects we want to use, which should be available.
 We will build our application scenarios inside the simulation.
@@ -348,6 +340,28 @@ Then we have reached our second milestone at which the whole system is working a
 The last implementation is the information based NBV planning.
 After that we can finally test our system on a real robot and then evaluate the performance of our system. 
 
+\begin{landscape}
+% \noindent\resizebox{\paperheight}{!}{
+\begin{figure}[htbp]
+	\begin{ganttchart}[x unit=10mm]{13}{28}
+		\gantttitle{Calender week 2017}{16} \\
+		\gantttitlelist{13,...,28}{1} \\
+		\ganttbar{Simulation environment setup}{13}{16} \\
+		\ganttlinkedbar{Navigation and 2D map building}{17}{18} \\
+		\ganttmilestone{Running simulated robot}{18} \ganttnewline
+		\ganttbar{Object detection - ROS wrapper}{19}{20} \\
+		\ganttbar{Fusion of views into a 3D map}{19}{20} \\
+		\ganttlinkedbar{Simple NBV planning}{21}{21} \\
+		\ganttmilestone{Prototype of system is working}{21} \ganttnewline
+		\ganttbar{Sophisticated NBV planning}{22}{24} \\
+		\ganttlinkedbar{Real world testing}{25}{25} \\
+		\ganttlinkedbar{Evaluation}{26}{27} \\
+		\ganttlinkedbar{Final presentation}{28}{28} \\
+	\end{ganttchart}
+	\caption{Planned timeline of the remainder of the project}
+	\label{fig:timeline}
+\end{figure}
+\end{landscape}
 
 \newpage
 \bibliographystyle{plain}
