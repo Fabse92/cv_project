@@ -12,6 +12,7 @@
 *.cb2
 *.snm
 *.nav
+*.fdb_latexmk
 
 # Ignore BibTeX auxiliary files
 *.bbl
@@ -26,6 +27,7 @@
 *.synctex*
 proposal/proposal.pdf
 proposal_presentation/proposal-presentation.pdf
+intermediate_report/intermediate_report.pdf
 
 # Ignore Sublime project files
 *.sublime*
