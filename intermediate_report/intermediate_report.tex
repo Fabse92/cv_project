@@ -225,18 +225,30 @@ For each remaining salient region an object candidate is now calculated by findi
 
 This part of our system is already implemented as a C++ class and is working. To use it in our system, we will have to write a wrapper for ROS for it.
 
+\subsection{SLAM}
+\label{system:slam}
+To perform simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
+It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
+The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
+We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
+Therefore we have to define the height for which the horizontal laser range data is computed.
+Because the data is used for navigation the height should be at ground level.
+
+The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
+
 \subsection{Object discovery in three dimensions}
 \label{system:fusion}
 Once object proposals have been generated from the RGB image using the saliency system, the pixel-based object proposals will be translated into 3D voxel-based proposals.
 This will by done by using the Kinect's depth map to project the 2D object proposals into a 3D space; each voxel in the 3D space which corresponds to part of a proposed object surface will be assigned the label of that proposed object, and a score representing the confidence with which we are labeling that voxel with each different label.
 
 For each new viewpoint that the robot reaches, new 2D object proposals will be generated and these will be used to update the existing voxel labels.
-First, the 2D object proposals will be projected into the 3D model, as before.
-We will then compare the newly generated proposals to the existing ones, taking our basic schema from \cite{garcia2013computational}:
+First, the 2D object proposals will be projected into the existing 3D space.
+The robot pose estimate from the SLAM system will give us the initial point and direction from which to perform the projection; combining this information with the depth map from the Kinect will give us the full transformation into the 3D space, telling us which voxels each new proposal occupies.
+We will then use the newly generated proposals to update the existing ones, taking our basic strategy from \cite{garcia2013computational}:
 
 \begin{itemize}
-	\item If less than 5\% of the voxels in the new proposal are already labeled, then the voxels corresponding to the new proposal will be assigned to a new label and confidence score, as before.
-	\item Otherwise, we will search over the voxels in the new proposal and find the existing label \(l\) which occurs most often (i.e. the existing proposal which is the closest match to the new one).
+	\item If less than 5\% of the voxels in the new proposal are already labeled, then the voxels in the new proposal will be assigned to a new label and confidence score, as before.
+	\item Otherwise, we will search over the voxels in the new proposal and find the existing label \(l\) which occurs most often (i.e. the existing proposal which most significantly overlaps the new one).
 	Any voxels in the new proposal which are not labeled as \(l\) will be assigned label \(l\) with an initial confidence level.
 	For each voxel in the new proposal, all labels which are not \(l\) will have their confidence levels decreased.
 	If a label's confidence score falls below a threshold then it is deleted.
@@ -303,17 +315,6 @@ The two approaches above could also be complementary, with information gain bein
 
 \paragraph{}
 This part is not implemented yet.
-
-\subsection{SLAM}
-\label{system:slam}
-To solve the simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
-It uses laser scan and odometry data to compute a 2D occupancy grid map of the discovered environment.
-The algorithm requires laser scan data of a horizontally-mounted laser range-finder.
-We don't have such a laser range-finder; however, we can transform the depth image provided by the Kinect camera to laser scan data.
-Therefore we have to define the height for which the horizontal laser range data is computed.
-Because the data is used for navigation the height should be at ground level.
-
-The ROS wrapper provides topics to retrieve the build 2D occupancy map and the current pose estimation of the robot in this map.
 
 \subsection{Navigation}
 \label{system:navigation}
