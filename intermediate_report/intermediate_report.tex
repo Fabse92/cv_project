@@ -25,7 +25,7 @@ Such restrictions are necessary, because every mobile system bears certain limit
 Mostly processing power, energy and time are limited.
 
 Usually object detection algorithms only work on single 2D images \cite{atanasov2014nonmyopic}.
-A mobile system, however, will produce a sequence of images during its process of exploring its environment.
+A mobile system, however, can produce a sequence of images of a scene during the exploration of its environment.
 This produces a number of additional challenges to the traditional 2D problem that we have to deal with.
 One is that at each taken viewpoint a new set of object proposals is calculated, these have to be fused with previous object proposals. The second big problem is that the robot has to decide where to look next. Which is the problem of finding the Next Best View (NBV). 
 For our project the goal is to analyze and evaluate multiple possible NBV-algorithms in their capability of finding good viewpoints to examine the environment.\medskip
@@ -40,9 +40,9 @@ In the last Chapter \ref{timeline} we will try to assess in a timeline how we wi
 \subsection{Application scenarios}
 Currently three scenarios of application with different complexity are planned.
 \begin{itemize}	
-	\item \textbf{Table scenario}: Objects of different size, shape and color are assembled on a table. Some objects are partially or completely occluded by other objects, therefore a single viewpoint is not sufficient to detect all objects. The mobile system has a RGB-D camera mounted at an appropriate hight to look on the table. It can move freely around the table to reach different viewpoints.
+	\item \textbf{Table scenario}: Objects of different size, shape and color are assembled on a table. Some objects are partially or completely occluded by other objects, therefore a single viewpoint is not sufficient to detect all objects. The mobile system has a RGB-D camera mounted at an appropriate height to look on the table. It can move freely around the table to reach different viewpoints.
 	\item \textbf{Pre-recorded images scenario}: This scenario is only an intermediate application for testing during the development of the system. We utilize the same setting as in the table scenario, but without an autonomous system. Using a RGB-D camera on a tripod, we take pictures from different viewpoints of the table. The system can use these images for object detection, computation of a NBV or movement of the system is not required.
-	\item \textbf{Scattered objects scenario}: For the most complex scenario objects lie scattered on the floor. The mobile system can move in between the objects to take views on different areas of the scene. This scenario is especially more demanding on the abilities of computing the NBV and moving the robot to the desired viewpoints, which should allow us to examine the pros and cons of different NBV-algorithms.
+	\item \textbf{Scattered objects scenario}: In this scenario objects lie scattered on the floor. The mobile system can move in between the objects to take views on different areas of the scene. This scenario is especially more demanding on the abilities of computing the NBV and moving the robot to the desired viewpoints, which should allow us to examine the pros and cons of different NBV-algorithms.
 \end{itemize} 
 
 \subsection{Related work}
@@ -52,7 +52,7 @@ García and Frintrop build a framework for 3D object detection by utilizing a vi
 They work with a recorded video stream from an RGB-D camera. The color and depth stream are separately processed. 
 The color stream is used to create so called proto-objects, which are areas with high probability of being part of an object. These proto-objects correspond to the peaks in the calculated saliency map. 
 Simultaneously, the image is segmented into areas of pixel with similar color. 
-For each proto-object the overlapping segments are considered to correspond to the proto-object. These segments are united to a object candidate.
+For each proto-object the overlapping segments are considered to correspond to the proto-object. These segments are united to an object candidate.
 
 At the same time, the depth stream is used to build a map of the scene.
 By projecting the object candidates into the 3D map they are able to label voxels as associated to a certain object in the scene.
@@ -75,16 +75,16 @@ They use an attention system with a saliency map comparable to the one in the ap
 Saliency is used to focus the attention of the system to relevant parts of the environment. This is necessary as many possible views are redundant or promise only a very low information gain.
 Therefore, visual saliency is used to evaluate the potential information gain of an area, supplementary the environmental structure is analyzed to find areas like desks where a high amount of objects is to be expected.
 
-Even though the system of Meger et al. does object recognition, some parts of the system can be adopted by us.
+Even though the system of Meger et al. does object recognition instead of object detection, some parts of the system can be adopted by us.
 We have to solve SLAM as well. Therefore, we will also use GMapping. Our robot has no laser range-finder to generate laser scan data, but with the depth data from Kinect we can simulate such data.
 The two steps of exploring is an interesting approach that we can keep in mind for our system.
-And as a first approach for a simple NBV-planner we could use a frontier-based exploration algorithm. \medskip
+And as a first approach for a simple NBV-planner we will use a frontier-based exploration algorithm. \medskip
 
 Li et al. presented an online system for incremental scene modeling \cite{li2016incremental}.
 They combine the capabilities of a SLAM-based scene understanding framework with semantic segmentation and object pose estimation.
 Their goal was to build a multi-view recognition system that is working fast and with the necessary accuracy required for robotic application scenarios.
 A problem for single-view recognition systems are cluttered scenes where several objects are occluding each other.
-Multiple observations of the same scene are usually available for the robot, therefore they want to use these to improve recognition abilities.
+Multiple observations of the same scene are usually available for a moving robot, therefore they want to use these to improve recognition abilities.
 They train object models on a large set of partial views, also the model constructs a background class through a provided sequence of scene views without any objects in them.
 During application a set of object hypotheses is updated with every new frame from a RGB-D camera sequence.
 To find corresponding spatial areas at the different viewpoints they use the estimated current camera pose from a dense SLAM method.
@@ -97,7 +97,7 @@ The method of fusing multiple views through knowledge of the current camera posi
 
 \section{Theoretical background}
 \label{background}
-In this section we will introduce some more general methods that we will utilize for our system.
+In this Section we will introduce some more general methods that we will utilize for our system.
 
 \subsection{Saliency based object discovery}
 \label{background:saliencyobjectdiscovery}
@@ -114,11 +114,11 @@ The method of García et al. consists of four steps:
 	A salient region is a region in the image with high contrast to the surrounding.
 	The contrast for a specific region can be calculated in respect to different features in parallel.
 	To find salient blobs their first step is to calculate a saliency map with the VOCUS2 system \cite{frintrop2015traditional}, which considers red/green, blue/yellow and intensity center-surround contrasts.
-	Then the salient blobs are computed with seeded region growing on the local maxima in the saliency map.
+	Then the salient blobs are computed with seeded region growing on the local maxima of the saliency map.
 	\item The second step, which is done simultaneously to the salient region extraction, is to segment the image.
 	They use four different segmentation methods. The Felzenszwalb and Huttenlocher algorithm \cite{felzenszwalb2004efficient} that only considers color. Surface clustering searches for surface patches in the depth data. The already mentioned Voxel Cloud Connectivity Segmentation for an early-fusion approach. And as a fourth method they use the late-fusion approach of combining the candidates from color and surface segments.
 	\item For candidate generation the information of salient regions and segments is brought together.
-	An object candidate consists of multiple segments, which allows precise boundaries of the candidates.
+	An object candidate consists of multiple segments, which results in precise boundaries of the candidates.
 	For each salient region the set of overlapping segments are selected as an object candidate.
 	\item The last step is to rank the computed candidates. They compare three different ranking methods.
 	The most simple approach is to rank the candidates by a score calculated as average saliency times square of the area size of the candidate.
@@ -134,7 +134,7 @@ Surmann et al. developed a system for autonomous digitalization of 3D indoor env
 This system consists of three core modules: A mapping algorithm, a view planner and a navigator to move the robot to a desired goal.
 Especially interesting for us is how they compute a NBV.
 A view planner is necessary in the  scenario, because many possible views promise only a very low information gain and the amount of views that can be used is limited by time and energy constraints.
-An visualization of the steps of their method can be seen in Figure \ref{fig:surmann}.
+An visualization of the steps of their method  to find the NBV can be seen in Figure \ref{fig:surmann}.
 
 \begin{figure}[h!]
 	\begin{center}
@@ -147,7 +147,7 @@ An visualization of the steps of their method can be seen in Figure \ref{fig:sur
 To compute the next best view they generate multiple horizontal 2D layers of their 3D map of the environment.
 An example of one of these layers is pictured in the first frame in Figure \ref{fig:surmann}.
 The green crosses represent single data points of the laser range finder.
-They use the Hough transform to find lines in the layer which represent the obstacles (e.g. walls) they already detected (frame 2).
+They use Hough transform to find lines in the layer which represent the obstacles (e.g. walls) they already detected (frame 2).
 The lines are then connected to form an estimate of the layout of the room (frame 3).
 In frame 4 it is shown how the connections between lines are calculated on the example of the line between lines 1 and 2. 
 The endpoints of the lines are sorted with increasing polar angle counterclockwise.
@@ -156,10 +156,11 @@ The next step is to randomly generate possible viewpoints in the already discove
 For each viewpoint $p$ the information gain $V(p)$ is calculated as a measure of how many unseen/assumed lines can be seen from it.
 A compromise between traveling distance and information gain is then used to decide on the next viewpoint.
 The score $S(p)$ for the viewpoint $p$ is calculated as $S(p) = V(p) exp(-c_1||r-p||)exp(-c_2||\Theta_r-\Theta_p||)$, where r is the position of the robot and $\Theta_r$ its current orientation, p the position of the viewpoint and $\Theta_p$ the orientation of the viewpoint. The terms can be weighted with the constants $c_1$ and $c_2$.
+The NBV is chosen as the sample with highest score.
 
 \section{System description and progress}
 \label{system}
-A general overview of our system is given in figure \ref{fig:overview}.
+A general overview of our system is given in Figure \ref{fig:overview}.
 
 \begin{figure}
 	\begin{center}
@@ -173,8 +174,8 @@ Before we start explaining the graph in detail, it is useful to have a look at t
 \begin{itemize}
 	\item \textbf{Input:}
 	\begin{itemize}
-		\item We will use a Turtlebot as mobile platform, which provides odometry data from the motion sensors.
-		\item Onto the Turtlebot a Kinect is mounted, which provides RGB-D images of the scene.
+		\item We will use a mobile platform like a Pioneer or Turtlebot, which provides odometry data from the motion sensors.
+		\item Onto the mobile platform we mount a Kinect camera, which provides RGB-D images of the scene.
 	\end{itemize}
 	\item \textbf{Output:}
 	\begin{itemize}
@@ -182,39 +183,40 @@ Before we start explaining the graph in detail, it is useful to have a look at t
 		\item The goal is to retrieve a 3D map with incorporated labels of all found object proposals.
 	\end{itemize}  
 \end{itemize}
+
 Independent of the used application scenario the robot starts with no available knowledge of the scene.
 Therefore, we are completely dependent on the system input to infer information.
-At the beginning only a RGB-D image of the robot viewpoint at the start is available.
+At the beginning only an initial RGB-D image of the robot viewpoint at the start is available.
 
-One processing line is now using the RGB image to find any possible objects in the view, this is described in detail in section \ref{system:obj_discovery}.
+One processing line is now using the RGB image to find any possible objects in the view, this is described in detail in Section \ref{system:obj_discovery}.
 Simultaneously the depth image of the Kinect camera is processed.
-The depth data is used to simulate a laser scanner, which provides depth data of one horizontal line in the robot view. 
-This laser scan data is used together with the odometry data to solve the Simultaneous Localization And Mapping (SLAM) problem. This part is described in more detail in section \ref{system:slam}.
+From the depth data a point cloud is computed is used to simulate laser-scan data, which consists of depth data of one horizontal line in the robot view. 
+This laser scan data is used together with the odometry data to solve the Simultaneous Localization And Mapping (SLAM) problem. This part is described in more detail in Section \ref{system:slam}.
 The SLAM-algorithm provides a 2D occupancy grid map, which is a kind of floor plan, containing information about obstacles and free space in the already discovered environment. A second output of SLAM is an estimate of the current robot pose.
-This pose is used together with the new found object proposals of the current view and the current depth image to update the 3D map that contains a labeling of voxels to object proposals. This procedure is specified in section \ref{system:fusion}. 
-The next step is to compute a next best viewpoint for the robot that should maximize the information gain about the environment.
-For this computation all data that has been gathered to this point can be used, particularly the positions of already found object proposals and the current floor map will be used for this step. Details can be found in section \ref{system:nbv}.
+This pose is used together with the new found object proposals of the current view and the current depth image to update the 3D map that contains a labeling of voxels to object proposals. This procedure is specified in Section \ref{system:fusion}. 
+The next step is to compute a NBV for the robot that should maximize the information gain about the environment.
+For this computation all data that has been gathered to this point can be used, particularly the positions of already found object proposals and the current floor map will be used for this step. Details can be found in Section \ref{system:nbv}.
 Once a desired view point is calculated, it is used together with the current occupancy grid map and pose estimation to plan movement of the robot to this point in space.
-This part is described in section \ref{system:navigation}.
+This part is described in Section \ref{system:navigation}.
 The output of the navigation module is the motor control to move the system.
 During movement the SLAM algorithm is constantly processing the camera data to update the map and keep track of the robot position.
 Once the viewpoint is reached the next iteration of the described process is done.
 
-After describing the individual parts of our system in more detail, the last subsection of this chapter provides a list of possible extensions to the system, that we will work on if time permits.
+After describing the individual parts of our system in more detail, the last subsection of this chapter provides a short list of possible extensions to the system, that we will work on if time permits.
 
 \subsection{Object discovery in two dimensions}
 \label{system:obj_discovery}
 To find object candidates, we use a part of the method from García et al. described in Section \ref{background:saliencyobjectdiscovery}.
-For simplicity we will only use color candidates; the use of depth candidates that are then fused with the color candidates is a possible extension for our project.
+For simplicity, we will only use color candidates; the use of depth candidates that are then fused with the color candidates is a possible extension for our project.
 Our object discovery works as follows: First we calculate a saliency map with VOCUS2 \cite{frintrop2015traditional}, then we iterate over local maxima in the map to calculate salient blobs with seeded region growing.
-That means that all pixels neighboring the current local maximum are considered as part of the salient region if their saliency value is at least x\% or more of the maximum.
+That means that all pixels neighboring the currently considered local maximum are taken as part of the salient region if their saliency value is at least x\% or more of the saliency value of the maximum.
 This process is done once with 60\% and once with 70\% similarity requirement.
 A salient region is only kept if they have at least a value of 120 (from a maximum of 255) mean saliency to only keep actually interesting regions.
 Some of the salient regions will overlap each other, if the overlap is greater than 50\% only the one with higher saliency score is kept, which is calculated as mean saliency times square root of the area of the corresponding region.
 The segmentation is done with a C++ implementation of the Felzenszwalb and Huttenlocher algorithm \cite{felzenszwalb2004efficient} by Christoffer Holmstedt \footnote{\url{https://github.com/christofferholmstedt/opencv-wrapper-egbis}}.
-For each remaining salient region a object candidate is now calculated by finding all segments that overlap to at least 30\% with the region.
+For each remaining salient region an object candidate is now calculated by finding all segments that overlap to at least 30\% with the region.
 
-This part of our system is already fully implemented and working.
+This part of our system is already implemented as a C++ class and is working. To use it in our system, we will have to write a wrapper for ROS for it.
 
 \subsection{Object discovery in three dimensions}
 \label{system:fusion}
@@ -233,34 +235,29 @@ The computation of the NBV determines the strategy how to reach this goal.
 
 Desirable properties of the NBV algorithm are:
 \begin{itemize}
-	\item The computed NBVs should maximize the information gain on the scene. It is not necessary to take the same or similar viewpoints multiple times. Also the view should focus on the region of interest containing objects. If the remaining energy of the robot has a value associated with it, at some point the predicted information gain has less value then the required energy to reach the NBV. At this point our system can terminate.
-	\item The computational cost should be reasonable. Because of the constraints of energy and time in mobile systems the value of a very good NBV against an mediocre NBV has to be pondered against the additional effort to compute the better NBV. It is probably not appropriate if the energy consumption for calculating a very good NBV and moving to it is as high as calculating and moving to two mediocre NBVs. This is especially important in our use case, because exploring the whole scene is already the main goal of the NBV.
+	\item The computed NBVs should maximize the information gain on the scene. It is not necessary to take the same or similar viewpoints multiple times. Also the view should focus on regions containing objects and on regions with high uncertainty about the object candidates. If the remaining energy of the robot has a value associated with it, at some point the predicted information gain has less value then the required energy to reach the NBV. At this point our system can terminate.
+	\item The computational cost should be reasonable. Because of the constraints of energy and time in mobile systems the value of a very good NBV against an mediocre NBV has to be pondered against the additional effort to compute the better NBV. It is probably not appropriate if the energy consumption for calculating a very good NBV and moving to it is as high as calculating and moving to two mediocre NBVs. This is especially important in our use case, because exploring the whole scene is already an very important aspect of a good next viewpoint.
 \end{itemize}
 
 We want to implement and evaluate multiple NBV-algorithms during our project.
-Therefore, we will use the following metrics:
-\begin{itemize}
-	\item Intersection over Union (IoU). We calculate the percentage of the surface area of the object proposals that has been correctly classified as part of an object.
-	\item How many of the individual objects in the scene have been identified, which means that it has an individual label assigned to it.
-	\item Time and energy consumption until termination
-\end{itemize}
+Therefore, we will evaluate their ability to find objects in the scene and how long and how much energy it took.
 
 In the following subsections we will explain in detail the different NBV algorithms that we plan to implement.
 
 \subsubsection{Frontier-Based Exploration}
-This approach very simple without much computation going into the NBV.
+This approach is very simple without much computation going into the NBV.
 The goal of this method is to find viewpoints that are suitable to explore the whole scene, which is something an autonomous robot has to do in a new environment anyhow.
-In this method no additional effort is taken to focus on objects in the environment, objects are discovered as a side-product of the exploration process.
+No further effort is taken to focus on objects in the environment, objects are discovered as a side-product of the exploration process.
 The performance of this simple approach will be used as baseline to evaluate the gain of more sophisticated approaches.
 
 In Frontier-Based Exploration the robot is always moving to the nearest reachable frontier.
 A frontier is a border region between explored free space and unexplored space.
 A frontier is reachable if a path from the current robot position through the known free space to the frontier position exists.
 
-Frontier based exploration has been implemented in a ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}} that we should be able to use.
+Frontier based exploration has been implemented in a ROS-package \footnote{\url{http://wiki.ros.org/frontier_exploration}} that we plan to use.
 
-\subsubsection{Surmann approach}
-This NBV method is based on the approach described in Section\ref{background:surmann}.
+\subsubsection{Information gain approach}
+This NBV method is based on the approach described in Section\ref{background:surman}.
 The basic functionality of this approach is to explore an indoor environment.
 As NBV this approach samples the already discovered environment for the nearest viewpoint which allows a view on as many unseen areas (lines) as possible.
 Exploration is an important aspect that has to be considered by our NBV planner, because the robot can only find all objects when it has at least looked in all general areas of the room once.
@@ -299,12 +296,12 @@ This part of the system is not implemented yet. It is expected that the effort r
 
 \subsection{Extensions}
 \label{system:extensions}
-In the following list we present possible extension to the core system that has been described so far in this chapter. 
-The extensions could improve the system, but they shouldn't be essential for the performance of it.
+In the following list we present possible extensions to the core system that has been described so far in this chapter. 
+The extensions could improve the system, but they shouldn't be essential for its abilities.
 
 \begin{itemize}
 	\item Include depth information for the computation of object proposals.
-	As described in Section \ref{system:obj_discovery} we only use color candidates, but the work of García et al. we summarized in Section \ref{background:saliencyobjectdiscovery} showed that the additional usage of depth information that is integrated in a late-fusion approach can significantly improve the accuracy of saliency based object discovery.
+	As described in Section \ref{system:obj_discovery} we only use color candidates, but in the work of García et al. we summarized in Section \ref{background:saliencyobjectdiscovery} they showed that the additional usage of depth information which is integrated in a late-fusion approach can significantly improve the accuracy of saliency based object discovery.
 	\item An additional NBV planning algorithm that exploits POMDPs.
 \end{itemize}
 
@@ -336,6 +333,7 @@ The two black diamonds represent milestones at which a significant part of our s
 For easy testing we decided that it would be best to setup a simulation environment.
 With Gazebo \footnote{\url{http://gazebosim.org/}} an easy to use simulation environment is available which already contains modules for mobile platforms and the Kinect camera.
 Additionally we will need models of the objects we want to use, which should be available.
+We will build our application scenarios inside the simulation.
 We plan to work in the simulation only until the last weeks in the summer semester.
 Because of knowledge about the exact positions of the objects in the simulation evaluation of the system will be simpler.
 
