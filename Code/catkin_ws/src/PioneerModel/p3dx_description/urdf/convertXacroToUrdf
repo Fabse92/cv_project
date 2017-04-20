@@ -1,0 +1,1 @@
+rosrun xacro xacro pioneer3dx.xacro > pioneer3dx.xml
