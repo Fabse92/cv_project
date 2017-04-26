@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /LaserScan1/Status1
       Splitter Ratio: 0.5
     Tree Height: 251
   - Class: rviz/Selection
@@ -135,6 +134,8 @@ Visualization Manager:
           Value: true
         front_sonar:
           Value: true
+        map:
+          Value: true
         odom:
           Value: true
         p3dx_left_hubcap:
@@ -155,23 +156,24 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        odom:
-          base_link:
-            front_sonar:
-              camera_link:
-                {}
-            p3dx_left_wheel:
-              p3dx_left_hubcap:
-                {}
-            p3dx_right_wheel:
-              p3dx_right_hubcap:
-                {}
-            swivel:
-              center_wheel:
-                center_hubcap:
+        map:
+          odom:
+            base_link:
+              front_sonar:
+                camera_link:
                   {}
-            top_plate:
-              {}
+              p3dx_left_wheel:
+                p3dx_left_hubcap:
+                  {}
+              p3dx_right_wheel:
+                p3dx_right_hubcap:
+                  {}
+              swivel:
+                center_wheel:
+                  center_hubcap:
+                    {}
+              top_plate:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -245,6 +247,15 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
