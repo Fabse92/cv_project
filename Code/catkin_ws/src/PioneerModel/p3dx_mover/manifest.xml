@@ -1,0 +1,17 @@
+<package>
+  <description brief="p3dx_mover">
+
+     p3dx_mover
+
+  </description>
+  <author>GMU Student</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/p3dx_mover</url>
+  <depend package="geometry_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
