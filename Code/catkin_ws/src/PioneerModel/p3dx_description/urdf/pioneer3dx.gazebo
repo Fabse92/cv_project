@@ -23,12 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <!-- properties (constants) -->
   <property name="ns" value="p3dx" />
 
-  <!-- ros_control plugin -->
+  <!-- ros_control plugin 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>/${ns}</robotNamespace>
     </plugin>
-  </gazebo>
+  </gazebo> -->
 
   <!-- base_link -->
 	<gazebo reference="base_link">
@@ -64,6 +64,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <material value="Gazebo/Yellow" />
   </gazebo>
   
+  <!-- lms100 -->
+	<gazebo reference="lms100">
+		<sensor type="ray" name="head_hokuyo_sensor">
+			<pose>0 0 0 0 0 0</pose>
+			<visualize>false</visualize>
+			<update_rate>50</update_rate>
+			<ray>
+				<scan>
+					<horizontal>
+						<samples>360</samples>
+						<resolution>1</resolution>
+						<min_angle>-1.570796</min_angle>
+						<max_angle>1.570796</max_angle>
+					</horizontal>
+				</scan>
+				<range>
+					<min>0.1</min>
+					<max>30.0</max>
+					<resolution>0.01</resolution>
+				</range>
+				<noise>
+					<type>gaussian</type>
+					<!-- Noise parameters based on published spec for Hokuyo laser achieving 
+						"+-30mm" accuracy at range < 10m. A mean of 0.0m and stddev of 0.01m will 
+						put 99.7% of samples within 0.03m of the true reading. -->
+					<mean>0.0</mean>
+					<stddev>0.01</stddev>
+				</noise>
+			</ray>
+			<plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+				<topicName>scan</topicName>
+				<frameName>lms100</frameName>
+			</plugin>
+		</sensor>
+  </gazebo>
+  
   <!-- camera -->
   <gazebo reference="camera_link">  
     <sensor type="depth" name="camera">
@@ -90,7 +126,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <pointCloudTopicName>depth/points</pointCloudTopicName>
         <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
         <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <frameName>camera_optical_frame</frameName>
         <baseline>0.1</baseline>
         <distortion_k1>0.0</distortion_k1>
         <distortion_k2>0.0</distortion_k2>
