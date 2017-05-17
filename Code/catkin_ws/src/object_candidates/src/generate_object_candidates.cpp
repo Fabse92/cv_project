@@ -15,7 +15,7 @@
 
 OBJECT_CANDIDATES::OBJECT_CANDIDATES() : it_(nh_)
 {
-    image_sub_ = it_.subscribe("/object_candidates/input", 1, &OBJECT_CANDIDATES::imageCb, this);
+    image_sub_ = it_.subscribe("/camera/rgb/image_raw", 1, &OBJECT_CANDIDATES::imageCb, this);
     image_pub_ = nh_.advertise<object_candidates::ArrayImages>("/object_candidates/output", 1000, true);
     
     VOCUS2_Cfg cfg;
