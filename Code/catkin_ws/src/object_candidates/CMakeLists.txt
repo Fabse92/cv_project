@@ -86,9 +86,11 @@ target_link_libraries(listener
 
 add_executable(snapshot_server src/snapshot_server.cpp)
 target_link_libraries(snapshot_server ${catkin_LIBRARIES})
+add_dependencies(snapshot_server ${object_candidates_EXPORTED_TARGETS})
 
 add_executable(snapshot_client src/snapshot_client.cpp)
 target_link_libraries(snapshot_client ${catkin_LIBRARIES})
+add_dependencies(snapshot_client ${object_candidates_EXPORTED_TARGETS})
 
 add_executable(object_candidates_server
   src/object_candidates_server.cpp
