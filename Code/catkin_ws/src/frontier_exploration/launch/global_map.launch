@@ -7,6 +7,7 @@
 
     <node pkg="frontier_exploration" type="explore_server" name="explore_server" output="screen" >
 
+        <!--<remap from="move_base/goal" to="wobtata"/>-->
         <param name="frequency" type="double" value="2.0"/>
         <param name="goal_aliasing" type="double" value="$(arg sensor_range)"/>
 

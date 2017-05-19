@@ -1,9 +1,11 @@
-#include "OBJECT_CANDIDATES.h"
 #include "egbis.h"
+#include "VOCUS2.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <image_transport/image_transport.h>
 
+#include "object_candidates/Objectcandidates.h"
 #include "object_candidates/ArrayImages.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
@@ -13,15 +15,6 @@
 #include <iostream>
 #include <sstream>
 
-
-OBJECT_CANDIDATES::OBJECT_CANDIDATES() : it_(nh_)
-{
-    image_sub_ = it_.subscribe("/camera/rgb/image_raw", 1, &OBJECT_CANDIDATES::imageCb, this);
-    image_pub_ = nh_.advertise<object_candidates::ArrayImages>("/object_candidates/output", 1000, true);
-    
-    VOCUS2_Cfg cfg;
-    vocus_ = VOCUS2(cfg);
-}
 
 //get most salient region
 vector<Point> seededRegionGrowing(Mat& salmap, Mat iorMap, Mat& considered, double& ma, double& meanSaliency, float candidateThreshold){
@@ -274,7 +267,8 @@ std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segm
 	return colorCandidates;
 }
 
-void OBJECT_CANDIDATES::imageCb(const sensor_msgs::ImageConstPtr& msg)
+bool generate_candidates(object_candidates::Objectcandidates::Request  &req,
+         object_candidates::Objectcandidates::Response &res)
 {      
     cv::Mat image, segmentedImage, salmap;
     std::vector<std::vector<cv::Point>> segments;
@@ -285,11 +279,12 @@ void OBJECT_CANDIDATES::imageCb(const sensor_msgs::ImageConstPtr& msg)
       
     try
     {      
-      image = cv_bridge::toCvShare(msg, "bgr8")->image;
+      //image = cv_bridge::toCvShare(*req.rgb_image, "bgr8")->image;
+      image = cv_bridge::toCvCopy(req.rgb_image, "bgr8")->image;
     }
     catch (cv_bridge::Exception& e)
     {
-      ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+      ROS_ERROR("Could not convert from '%s' to 'bgr8'.", req.rgb_image.encoding.c_str());
     }    
     
     colorCandidates = getObjectCandidates(image, salmap, segmentedImage, blobs);
@@ -306,9 +301,21 @@ void OBJECT_CANDIDATES::imageCb(const sensor_msgs::ImageConstPtr& msg)
       }
     }
     
-    image_pub_.publish(rosimgs);
-    
+    res.candidates = rosimgs;
+    ROS_INFO("Object candidates computed");
+    return true;
 }
 
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "object_candidates_server");
+  ros::NodeHandle n;
+
+  ros::ServiceServer service = n.advertiseService("get_object_candidates", generate_candidates);
+  ROS_INFO("Ready to produce object candidates");
+  ros::spin();
+
+  return 0;
+}
 
 

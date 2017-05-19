@@ -32,6 +32,12 @@ add_message_files(
   ArrayImages.msg
 )
 
+add_service_files(
+  FILES
+  Snapshot.srv
+  Objectcandidates.srv
+)
+
 generate_messages(
   DEPENDENCIES
   std_msgs
@@ -73,6 +79,32 @@ add_executable(listener
 add_dependencies(listener ${object_candidates_EXPORTED_TARGETS})
 
 target_link_libraries(listener
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+add_executable(snapshot_server src/snapshot_server.cpp)
+target_link_libraries(snapshot_server ${catkin_LIBRARIES})
+
+add_executable(snapshot_client src/snapshot_client.cpp)
+target_link_libraries(snapshot_client ${catkin_LIBRARIES})
+
+add_executable(object_candidates_server
+  src/object_candidates_server.cpp
+  src/VOCUS2.cpp
+  src/egbis.cpp
+  src/egbis/filter.cpp
+  src/egbis/misc.cpp
+  src/egbis/segment-graph.cpp
+  src/egbis/segment-image.cpp
+  src/egbis/disjoint-set.cpp
+)
+
+add_dependencies(object_candidates_server ${object_candidates_EXPORTED_TARGETS})
+
+target_link_libraries(
+  object_candidates_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
