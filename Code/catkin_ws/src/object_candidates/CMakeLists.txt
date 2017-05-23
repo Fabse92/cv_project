@@ -30,6 +30,7 @@ link_directories(
 add_message_files(
   FILES
   ArrayImages.msg
+  SnapshotMsg.msg
 )
 
 add_service_files(

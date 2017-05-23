@@ -11,7 +11,7 @@ bool snapshot(object_candidates::Snapshot::Request  &req,
 {
   sensor_msgs::Image rgb_image = *(ros::topic::waitForMessage<sensor_msgs::Image>("/camera/rgb/image_raw"));  
   res.rgb_image = rgb_image;
-  res.depth_image = *(ros::topic::waitForMessage<sensor_msgs::Image>("/camera/rgb/image_raw"));
+  res.depth_image = *(ros::topic::waitForMessage<sensor_msgs::Image>("/camera/depth/image_raw"));
   
   res.rgb_info = *(ros::topic::waitForMessage<sensor_msgs::CameraInfo>("/camera/rgb/camera_info"));
   //res.depth_info = *(ros::topic::waitForMessage<sensor_msgs::CameraInfo>("/camera/depth/camera_info"));
