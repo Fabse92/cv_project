@@ -38,3 +38,6 @@ intermediate_report/intermediate_report.pdf
 # Ignore catkin build folders
 Code/catkin_ws/build
 Code/catkin_ws/devel
+
+# Ignore my notes file
+notes.txt
