@@ -17,38 +17,6 @@ CandidateLocator::CandidateLocator() : it_(nh_)
   ROS_INFO("Constructed CandidateLocator.");
 }
 
-void CandidateLocator::getTransforms(const ros::Time& stamp)
-{
-  ROS_INFO("Requesting transforms for timestamp %d.%d", stamp.sec, stamp.nsec);
-  
-  try
-  {
-    tf_listener_.waitForTransform(
-      "/map",
-      "/camera_optical_frame",
-      stamp,
-      ros::Duration(2.0));
-
-    tf_listener_.lookupTransform(
-      "/map",
-      "/camera_optical_frame",
-      stamp,
-      map_transform_);
-
-    // tf_listener_.lookupTransform(
-    //   "/camera_optical_frame",
-    //   "/camera_depth_frame",
-    //   stamp,
-    //   camera_transform_);
-
-    ROS_INFO("Transforms received.");
-  }
-  catch (tf::TransformException &e)
-  {
-    ROS_ERROR("%s", e.what());
-  }
-}
-
 void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& msg)
 {
   ROS_INFO_STREAM("");
@@ -71,7 +39,7 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
   }
 
   // Get transforms
-  this->getTransforms(msg.rgb_image.header.stamp);
+  this->getTransforms(msg.depth_image.header.stamp);
 
   // Variables for candidate localisation
   cv::Mat candidate;
@@ -107,7 +75,6 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
     array_pc_msg.data.push_back(pc_msg);
   }
 
-  // TODO Set timestamp
   pub_point_clouds_.publish(array_pc_msg);
 
   //DEBUG
@@ -115,14 +82,35 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
 
 }
 
-void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)
+void CandidateLocator::getTransforms(const ros::Time& stamp)
 {
-  cam_model_.fromCameraInfo(info_msg);
-
-  if(cam_model_assigned == false)
+  ROS_INFO("Requesting transforms for timestamp %d.%d", stamp.sec, stamp.nsec);
+  
+  try
   {
-    cam_model_assigned = true;
-    ROS_INFO("Camera model assigned.");
+    tf_listener_.waitForTransform(
+      "/map",
+      "/camera_optical_frame",
+      stamp,
+      ros::Duration(2.0));
+
+    tf_listener_.lookupTransform(
+      "/map",
+      "/camera_optical_frame",
+      stamp,
+      map_transform_);
+
+    // tf_listener_.lookupTransform(
+    //   "/camera_optical_frame",
+    //   "/camera_depth_frame",
+    //   stamp,
+    //   camera_transform_);
+
+    ROS_INFO("Transforms received.");
+  }
+  catch (tf::TransformException &e)
+  {
+    ROS_ERROR("%s", e.what());
   }
 }
 
@@ -146,15 +134,12 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& I, pcl::PointCloud<pcl::Po
       if (p[j] != 0)
       {
         cv::Point imagePoint = cv::Point(i,j);
-        cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
-
-        // ROS_DEBUG_STREAM(depth_image_.at<uint>(imagePoint) << " ");
         
-        // TODO Pretty sure there's some kind of normalisation step I need to do before this multiplication
         // TODO The docs state this should be a *rectified* point, but I don't think it currently is
-        // point3d *= (depth_image_.at<int>(imagePoint));
+        cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
+        
+        // TODO Fiddle point3d to get the distance right
 
-        // points += point3d;
         point_cloud.points.push_back(pcl::PointXYZ(point3d.x, point3d.y, point3d.z));
 
         pixelCount++;
@@ -163,4 +148,15 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& I, pcl::PointCloud<pcl::Po
   }
 
   ROS_DEBUG_STREAM("Size of candidate: " << pixelCount << " pixels.");
+}
+
+void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)
+{
+  cam_model_.fromCameraInfo(info_msg);
+
+  if(cam_model_assigned == false)
+  {
+    cam_model_assigned = true;
+    ROS_INFO("Camera model assigned.");
+  }
 }

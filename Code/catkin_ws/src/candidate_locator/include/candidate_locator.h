@@ -38,10 +38,10 @@ private:
 	cv::Mat depth_image_;
 	bool cam_model_assigned = false;
 
-	void getTransforms(const ros::Time& stamp);
 	void candidatesCallback(const object_candidates::SnapshotMsg& msg);
-	void cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
+	void getTransforms(const ros::Time& stamp);
 	void calculateObjectPoints(cv::Mat& I, pcl::PointCloud<pcl::PointXYZ>& msg);
+	void cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
 };
 
 #endif
