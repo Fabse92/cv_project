@@ -30,6 +30,7 @@ private:
 
 	//DEBUG
 	ros::Publisher pub_debug_;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr debug_msg_;
 
 	image_geometry::PinholeCameraModel cam_model_;
 	tf::TransformListener tf_listener_;
@@ -40,7 +41,7 @@ private:
 
 	void candidatesCallback(const object_candidates::SnapshotMsg& msg);
 	void getTransforms(const ros::Time& stamp);
-	void calculateObjectPoints(cv::Mat& I, pcl::PointCloud<pcl::PointXYZ>& msg);
+	void calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& msg);
 	void cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
 };
 

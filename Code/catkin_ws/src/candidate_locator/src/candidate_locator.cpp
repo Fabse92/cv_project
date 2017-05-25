@@ -1,10 +1,9 @@
 #include <iostream>
 #include <sstream>
-#include <boost/foreach.hpp>
 
 #include "candidate_locator.h"
 
-CandidateLocator::CandidateLocator() : it_(nh_)
+CandidateLocator::CandidateLocator() : it_(nh_), debug_msg_(new pcl::PointCloud<pcl::PointXYZ>)
 {
   sub_candidates_ = nh_.subscribe("/candidates_snapshot", 1000, &CandidateLocator::candidatesCallback, this);
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
@@ -12,7 +11,7 @@ CandidateLocator::CandidateLocator() : it_(nh_)
   pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
 
   //DEBUG
-  pub_debug_ = nh_.advertise<sensor_msgs::PointCloud2>("/candidatePC", 1);
+  pub_debug_ = nh_.advertise< pcl::PointCloud<pcl::PointXYZ> >("/candidate_pcs_debug", 1);
 
   ROS_INFO("Constructed CandidateLocator.");
 }
@@ -46,6 +45,9 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
 
   ROS_INFO_STREAM("Number of candidates: " << msg.candidates.data.size());
 
+  //DEBUG
+  debug_msg_->points.clear();
+
   // Iterate through candidates and localise
   for(uint i = 0; i < msg.candidates.data.size(); i++)
   {
@@ -78,7 +80,8 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
   pub_point_clouds_.publish(array_pc_msg);
 
   //DEBUG
-  pub_debug_.publish(array_pc_msg.data[0]);
+  debug_msg_->header.frame_id = "/camera_optical_frame";
+  pub_debug_.publish(debug_msg_);
 
 }
 
@@ -114,35 +117,45 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
   }
 }
 
-void CandidateLocator::calculateObjectPoints(cv::Mat& I, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
+void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
 {
-  int channels = I.channels();
+  int channels = candidate.channels();
 
-  int nRows = I.rows;
-  int nCols = I.cols * channels;
+  int nRows = candidate.rows;
+  int nCols = candidate.cols * channels;
 
   int i,j;
   uchar* p;
   
   int pixelCount = 0;
 
-  for(i = 0; i < nRows; ++i)
+  for (i = 0; i < nRows; ++i)
   {
-    p = I.ptr<uchar>(i);
+    p = candidate.ptr<uchar>(i);
     for ( j = 0; j < nCols; ++j)
     {
       if (p[j] != 0)
       {
         cv::Point imagePoint = cv::Point(i,j);
+        ROS_DEBUG_STREAM("Image point: (" << i << "," << j << ")");
+        ROS_DEBUG_STREAM("Depth value: " << depth_image_.at<uint>(i, j));
         
         // TODO The docs state this should be a *rectified* point, but I don't think it currently is
         cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
-        
-        // TODO Fiddle point3d to get the distance right
+        ROS_DEBUG_STREAM("3d point: " << point3d << " " << norm(point3d));
 
-        point_cloud.points.push_back(pcl::PointXYZ(point3d.x, point3d.y, point3d.z));
+        // Normalize point so it's now a unit vector defining the direction of the surface
+        pcl::PointXYZ pclPoint = pcl::PointXYZ(point3d.x/norm(point3d), point3d.y/norm(point3d), point3d.z/norm(point3d));
+        ROS_DEBUG_STREAM("3d point (normalized): " << pclPoint << " " << 1 / (pow(pclPoint.x,2) + pow(pclPoint.y,2) + pow(pclPoint.z,2)));
+        
+        // TODO Multiply normalized point by distance from depth image, and add it to point cloud
+        // * (candidate.at(imagePoint) / 1000)
+        point_cloud.push_back(pclPoint);
 
         pixelCount++;
+
+        //DEBUG
+        debug_msg_->points.push_back(pclPoint);
       }
     }
   }
