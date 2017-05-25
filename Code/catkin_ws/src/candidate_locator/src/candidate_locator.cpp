@@ -3,7 +3,7 @@
 
 #include "candidate_locator.h"
 
-CandidateLocator::CandidateLocator() : it_(nh_), debug_msg_(new pcl::PointCloud<pcl::PointXYZ>)
+CandidateLocator::CandidateLocator() : it_(nh_)
 {
   sub_candidates_ = nh_.subscribe("/candidates_snapshot", 1000, &CandidateLocator::candidatesCallback, this);
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
@@ -46,7 +46,7 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
   ROS_INFO_STREAM("Number of candidates: " << msg.candidates.data.size());
 
   //DEBUG
-  debug_msg_->points.clear();
+  pc_debug_.clear();
 
   // Iterate through candidates and localise
   for(uint i = 0; i < msg.candidates.data.size(); i++)
@@ -80,8 +80,14 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
   pub_point_clouds_.publish(array_pc_msg);
 
   //DEBUG
-  debug_msg_->header.frame_id = "/camera_optical_frame";
-  pub_debug_.publish(debug_msg_);
+  sensor_msgs::PointCloud2 pc_debug_msg;
+  pcl::toROSMsg(pc_debug_, pc_debug_msg);
+  pcl_ros::transformPointCloud(
+      "/map",
+      map_transform_,
+      pc_debug_msg,
+      pc_debug_msg);
+  pub_debug_.publish(pc_debug_msg);
 
 }
 
@@ -155,7 +161,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         pixelCount++;
 
         //DEBUG
-        debug_msg_->points.push_back(pclPoint);
+        pc_debug_.push_back(pclPoint);
       }
     }
   }
