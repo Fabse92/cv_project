@@ -143,8 +143,9 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
       if (p[j] != 0)
       {
         cv::Point imagePoint = cv::Point(i,j);
+        float depth_value = depth_image_.at<float>(i, j);
         ROS_DEBUG_STREAM("Image point: (" << i << "," << j << ")");
-        ROS_DEBUG_STREAM("Depth value: " << depth_image_.at<uint>(i, j));
+        ROS_DEBUG_STREAM("Depth value: " << depth_value);
         
         // TODO The docs state this should be a *rectified* point, but I don't think it currently is
         cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
@@ -153,9 +154,16 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         // Normalize point so it's now a unit vector defining the direction of the surface
         pcl::PointXYZ pclPoint = pcl::PointXYZ(point3d.x/norm(point3d), point3d.y/norm(point3d), point3d.z/norm(point3d));
         ROS_DEBUG_STREAM("3d point (normalized): " << pclPoint << " " << 1 / (pow(pclPoint.x,2) + pow(pclPoint.y,2) + pow(pclPoint.z,2)));
+
+        // Multiply normalized point by the distance given in the depth image 
+        // TODO Is there *seriously* no operator for PointXYZ * float?
+        // pclPoint.x = pclPoint.x * depth_value;
+        // pclPoint.y = pclPoint.y * depth_value;
+        // pclPoint.z = pclPoint.z * depth_value;
+        pclPoint.getArray3fMap() = pclPoint.getArray3fMap() * depth_value;
+        ROS_DEBUG_STREAM("Point in world: " << pclPoint);
         
-        // TODO Multiply normalized point by distance from depth image, and add it to point cloud
-        // * (candidate.at(imagePoint) / 1000)
+        // Add the point to point cloud
         point_cloud.push_back(pclPoint);
 
         pixelCount++;
