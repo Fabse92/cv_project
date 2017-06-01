@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(frontier_exploration)
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  image_transport
   costmap_2d
   dynamic_reconfigure
   move_base_msgs
@@ -61,7 +63,10 @@ target_link_libraries(explore_costmap ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${P
 add_dependencies(explore_costmap ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(explore_server src/explore_server.cpp)
-target_link_libraries(explore_server ${catkin_LIBRARIES})
+target_link_libraries(explore_server
+ ${OpenCV_LIBRARIES}
+ ${Boost_LIBRARIES}
+ ${catkin_LIBRARIES})
 add_dependencies(explore_server ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(explore_client src/explore_client.cpp)

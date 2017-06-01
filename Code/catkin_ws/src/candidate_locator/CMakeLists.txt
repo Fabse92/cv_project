@@ -155,10 +155,13 @@ add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}_node.cpp
 	src/${PROJECT_NAME}.cpp
 )
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(${PROJECT_NAME}_client 
   src/${PROJECT_NAME}_client.cpp
   src/${PROJECT_NAME}.cpp
 )
+add_dependencies(${PROJECT_NAME}_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

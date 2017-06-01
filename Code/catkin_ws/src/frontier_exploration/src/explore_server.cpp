@@ -16,6 +16,12 @@
 
 #include <frontier_exploration/geometry_tools.h>
 
+
+#include "object_candidates/Snapshot.h"
+#include <sensor_msgs/image_encodings.h>
+#include <image_transport/image_transport.h>
+#include "object_candidates/ArrayImages.h"
+
 namespace frontier_exploration{
 
 /**
@@ -71,7 +77,6 @@ private:
 
     void executeCb(const frontier_exploration::ExploreTaskGoalConstPtr &goal)
     {
-
         success_ = false;
         moving_ = false;
 
@@ -103,6 +108,7 @@ private:
         //loop until all frontiers are explored
         ros::Rate rate(frequency_);
         while(ros::ok() && as_.isActive()){
+            ROS_INFO("next iteration");
 
             frontier_exploration::GetNextFrontier srv;
 
@@ -145,9 +151,10 @@ private:
                 goal_pose.pose.position = goal->explore_center.point;
                 goal_pose.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(eval_point.point, goal->explore_center.point) );
 
+            // change this service call for surmann approach
             }else if(getNextFrontier.call(srv)){ //if in boundary, try to find next frontier to search
 
-                ROS_DEBUG("Found frontier to explore");
+                ROS_INFO("Found frontier to explore");
                 success_ = true;
                 goal_pose = feedback_.next_frontier = srv.response.next_frontier;
                 retry_ = 5;
@@ -198,6 +205,28 @@ private:
                 while(ros::ok() && as_.isActive() && moving_){
                     ros::WallDuration(0.1).sleep();
                 }
+            }
+            while(ros::ok() && as_.isActive() && moving_){
+                ros::WallDuration(0.1).sleep();
+            }
+            
+            image_transport::ImageTransport it = image_transport::ImageTransport(nh_);
+            image_transport::Publisher image_pub = it.advertise("/candidate",1000);
+            
+            ros::ServiceClient snapshot_client = nh_.serviceClient<object_candidates::Snapshot>("get_snapshot");
+            object_candidates::Snapshot snap_srv;
+            
+            ROS_INFO("Requesting snapshot");
+            if (snapshot_client.call(snap_srv))
+            {
+              ROS_INFO("Received snapshot");
+              ros::WallDuration(0.1).sleep();
+              image_pub.publish(snap_srv.response.candidates.data[0]);
+              ros::WallDuration(0.1).sleep();
+            }
+            else
+            {
+              ROS_ERROR("Failed to call snapshot service");
             }
         }
 
