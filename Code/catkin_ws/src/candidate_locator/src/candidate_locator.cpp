@@ -98,14 +98,14 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
   try
   {
     tf_listener_.waitForTransform(
-      "/map",
-      "/camera_optical_frame",
+      "/odom",
+      "/camera_depth_frame",
       stamp,
       ros::Duration(2.0));
 
     tf_listener_.lookupTransform(
-      "/map",
-      "/camera_optical_frame",
+      "/odom",
+      "/camera_depth_frame",
       stamp,
       map_transform_);
 
@@ -138,7 +138,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
   for (i = 0; i < nRows; ++i)
   {
     p = candidate.ptr<uchar>(i);
-    for ( j = 0; j < nCols; ++j)
+    for (j = 0; j < nCols; ++j)
     {
       if (p[j] != 0)
       {
@@ -147,7 +147,6 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         ROS_DEBUG_STREAM("Image point: (" << i << "," << j << ")");
         ROS_DEBUG_STREAM("Depth value: " << depth_value);
         
-        // TODO The docs state this should be a *rectified* point, but I don't think it currently is
         cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
         ROS_DEBUG_STREAM("3d point: " << point3d << " " << norm(point3d));
 
@@ -157,9 +156,6 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
 
         // Multiply normalized point by the distance given in the depth image 
         // TODO Is there *seriously* no operator for PointXYZ * float?
-        // pclPoint.x = pclPoint.x * depth_value;
-        // pclPoint.y = pclPoint.y * depth_value;
-        // pclPoint.z = pclPoint.z * depth_value;
         pclPoint.getArray3fMap() = pclPoint.getArray3fMap() * depth_value;
         ROS_DEBUG_STREAM("Point in world: " << pclPoint);
         
@@ -174,7 +170,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
     }
   }
 
-  ROS_DEBUG_STREAM("Size of candidate: " << pixelCount << " pixels.");
+  ROS_INFO_STREAM("Size of candidate: " << pixelCount << " pixels.");
 }
 
 void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)

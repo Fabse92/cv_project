@@ -261,13 +261,23 @@ work original in ucs-ros-pkg.
   </link>
   
   <joint name="camera_optical_joint" type="fixed">
-    <axis xyz="0 0 0" />
-    <origin xyz="${camera_link} 0.0 0.0" rpy="-1.58 0 -1.58"/>
+    <!-- <axis xyz="0 0 0" /> -->
+    <origin rpy="-1.571 0 -1.571"/>
     <parent link="camera_link"/>
     <child link="camera_optical_frame"/>
   </joint>
   
   <link name="camera_optical_frame">
+  </link>
+
+  <joint name="camera_depth_joint" type="fixed">
+    <!-- <axis xyz="0 0 0" /> -->
+    <origin rpy="-1.571 -1.571 -1.571"/>
+    <parent link="camera_link"/>
+    <child link="camera_depth_frame"/>
+  </joint>
+  
+  <link name="camera_depth_frame">
   </link>
 	
 	<xacro:property name="camera_link" value="0.05" /> <!-- Size of square 'camera' box -->
