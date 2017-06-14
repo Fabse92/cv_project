@@ -3,6 +3,7 @@
 
   <include file="$(find p3dx_description)/launch/rviz.launch" />
   <include file="$(find p3dx_gazebo)/launch/gazebo.launch" />
+  <include file="$(find depthimage_to_laserscan)/launch/sample_node.launch" />
   <include file="$(find p3dx_navigation)/launch/move_base.launch" />
   <include file="$(find frontier_exploration)/launch/global_map.launch" />
   <include file="$(find object_candidates)/launch//servers.launch" />

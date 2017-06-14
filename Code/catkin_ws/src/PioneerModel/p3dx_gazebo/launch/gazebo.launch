@@ -13,7 +13,7 @@
 	<!-- We resume the logic in empty_world.launch, changing only the name of 
 		the world to be launched -->
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-		<arg name="world_name" value="$(find p3dx_gazebo)/worlds/4cubes.world" />
+		<arg name="world_name" value="$(find p3dx_gazebo)/worlds/playground.world" />
 		<arg name="debug" value="$(arg debug)" />
 		<arg name="gui" value="$(arg gui)" />
 		<arg name="paused" value="$(arg paused)" />
@@ -29,32 +29,6 @@
 		a URDF robot -->
 	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
 		respawn="false" output="screen" args="-urdf -model p3dx -param robot_description" />
-<!---->
-  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-        <remap from="cloud_in" to="$(arg camera)/depth/points"/>
-        <remap from="scan" to="$(arg camera)/scan"/>
-        <rosparam>
-            #target_frame: camera_link # Leave disabled to output scan in pointcloud frame
-            transform_tolerance: 0.01
-            min_height: 0.0
-            max_height: 1.0
-
-            angle_min: -1.5708 # -M_PI/2
-            angle_max: 1.5708 # M_PI/2
-            angle_increment: 0.0087 # M_PI/360.0
-            scan_time: 0.3333
-            range_min: 0.45
-            range_max: 4.0
-            use_inf: true
-
-            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-            # 0 : Detect number of cores
-            # 1 : Single threaded
-            # 2->inf : Parallelism level
-            concurrency_level: 1
-        </rosparam>
-  </node>
-
   <!---->
 
 	<!-- ros_control p3rd launch file -->
