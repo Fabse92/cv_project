@@ -1,0 +1,9 @@
+sudo apt-get install ros-indigo-joy ros-indigo-joystick-drivers ros-indigo-teleop-twist-joy
+
+sudo chmod a+rw /dev/input/js0
+
+rosparam set joy_node/dev "/dev/input/js0"
+
+rosrun joy joy_node
+
+rosrun teleop_ist_joy teleop_node /cmd_vel:=/RosAria/cmd_vel
