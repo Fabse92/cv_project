@@ -14,4 +14,4 @@ sudo chmod a+rw /dev/ttyUSB0
 
 rosrun rosaria RosAria /RosAria/cmd_vel:=/cmd_vel /RosAria/pose:=/odom
 
-rostopic pub -1 /RosAria/cmd_vel geometry_msgs/Twist '[0.1, 0.0, 0.0]' '[0.0, 0.0, 0.0]'
+rostopic pub -1 /cmd_vel geometry_msgs/Twist '[0.1, 0.0, 0.0]' '[0.0, 0.0, 0.0]'
