@@ -6,4 +6,12 @@ rosparam set joy_node/dev "/dev/input/js0"
 
 rosrun joy joy_node
 
-rosrun teleop_ist_joy teleop_node /cmd_vel:=/RosAria/cmd_vel
+rosrun teleop_twist_joy teleop_node cmd_vel:=/RosAria/cmd_vel
+
+----------------------------------
+
+sudo chmod a+rw /dev/ttyUSB0
+
+rosrun rosaria RosAria /RosAria/cmd_vel:=/cmd_vel /RosAria/pose:=/odom
+
+rostopic pub -1 /RosAria/cmd_vel geometry_msgs/Twist '[0.1, 0.0, 0.0]' '[0.0, 0.0, 0.0]'
