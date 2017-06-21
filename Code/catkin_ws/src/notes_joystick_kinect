@@ -1,0 +1,38 @@
+KINECT
+
+Install libfreenect2: https://github.com/OpenKinect/libfreenect2/blob/master/README.md#linux.
+ - When building, make sure to enable C++11 using cmake .. -DENABLE_CXX11=ON
+
+Test program:
+  ./ <libfreenect2folder>/build/bin/Protonect
+
+Build the iai_kinect2 package in Code/catkin_ws
+
+ROS node:
+  rosrun kinect2_bridge kinect2_bridge
+
+If you have permissions issues accessing the Kinect:
+  cp <libfreenect2folder>/platform/linux/udev/90-kinect2.rules /etc/udev/rules.d/
+  (I think this should happen automatically during the install but it didn't for me)
+
+----------------------------------
+
+JOYSTICK CONTROL
+
+sudo apt-get install ros-indigo-joy ros-indigo-joystick-drivers ros-indigo-teleop-twist-joy
+
+sudo chmod a+rw /dev/input/js0
+
+rosparam set joy_node/dev "/dev/input/js0"
+
+rosrun joy joy_node
+
+rosrun teleop_twist_joy teleop_node cmd_vel:=/RosAria/cmd_vel
+
+----------------------------------
+
+sudo chmod a+rw /dev/ttyUSB0
+
+rosrun rosaria RosAria /RosAria/cmd_vel:=/cmd_vel /RosAria/pose:=/odom
+
+rostopic pub -1 /cmd_vel geometry_msgs/Twist '[0.1, 0.0, 0.0]' '[0.0, 0.0, 0.0]'
