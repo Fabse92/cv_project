@@ -1,0 +1,3 @@
+<launch>
+  <node name="candidate_locator_server" type="candidate_locator_server" pkg="candidate_locator" output="screen" />
+</launch>

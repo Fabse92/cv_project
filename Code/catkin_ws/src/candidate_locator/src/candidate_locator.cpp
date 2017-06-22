@@ -63,7 +63,7 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
     //DEBUG
     switch(i)
     {
-      case 0: break;
+      case 0: r_ = 255; g_ = 0; b_ = 0; break;
       case 1: r_ = 0; g_ = 255; b_ = 0; break;
       case 2: r_ = 0; g_ = 0; b_ = 255; break;
       case 3: r_ = 255; g_ = 255; b_ = 0; break;

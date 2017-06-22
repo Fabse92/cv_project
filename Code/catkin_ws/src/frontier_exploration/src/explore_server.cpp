@@ -22,6 +22,9 @@
 #include <image_transport/image_transport.h>
 #include "object_candidates/ArrayImages.h"
 
+#include "candidate_locator/LocateCandidates.h"
+#include "candidate_locator/ArrayPointClouds.h"
+
 namespace frontier_exploration{
 
 /**
@@ -213,6 +216,7 @@ private:
             image_transport::ImageTransport it = image_transport::ImageTransport(nh_);
             image_transport::Publisher image_pub = it.advertise("/candidate",1000);
             
+            // Call service to get snapshot
             ros::ServiceClient snapshot_client = nh_.serviceClient<object_candidates::Snapshot>("get_snapshot");
             object_candidates::Snapshot snap_srv;
             
@@ -220,9 +224,27 @@ private:
             if (snapshot_client.call(snap_srv))
             {
               ROS_INFO("Received snapshot");
+              
+              // Publish first of the received candidates
               ros::WallDuration(0.1).sleep();
               image_pub.publish(snap_srv.response.candidates.data[0]);
               ros::WallDuration(0.1).sleep();
+
+              // Call service to perform 3D location on the candidates in the snapshot
+              ros::ServiceClient locator_client = nh_.serviceClient<candidate_locator::LocateCandidates>("locate_candidates");
+              candidate_locator::LocateCandidates locator_srv;
+
+              ROS_INFO("Locating candidates");
+              if (locator_client.call(locator_srv))
+              {
+                ROS_INFO("Located candidate point clouds received");
+
+                // TODO: Do stuff with candidates
+              }
+              else
+              {
+                ROS_ERROR("Failed to call candidate locator service");
+              }
             }
             else
             {

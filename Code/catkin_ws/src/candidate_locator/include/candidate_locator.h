@@ -31,7 +31,7 @@ private:
 	//DEBUG
 	ros::Publisher pub_debug_;
 	pcl::PointCloud<pcl::PointXYZRGB> pc_debug_;
-	uint r_ = 255;
+	uint r_ = 0;
 	uint g_ = 0;
 	uint b_ = 0;
 

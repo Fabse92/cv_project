@@ -60,12 +60,11 @@ add_message_files(
   ArrayPointClouds.msg
 )
 
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+# Generate services in the 'srv' folder
+add_service_files(
+  FILES
+  LocateCandidates.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -79,6 +78,7 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   sensor_msgs
+  object_candidates
 )
 
 ################################################
@@ -163,6 +163,12 @@ add_executable(${PROJECT_NAME}_client
 )
 add_dependencies(${PROJECT_NAME}_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(${PROJECT_NAME}_server 
+  src/${PROJECT_NAME}_server.cpp
+  src/${PROJECT_NAME}.cpp
+)
+add_dependencies(${PROJECT_NAME}_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -183,6 +189,13 @@ target_link_libraries(
 )
 target_link_libraries(
   ${PROJECT_NAME}_client
+  ${catkin_LIBRARIES}
+  # ${OpenCV_LIBRARIES}
+  # ${Boost_LIBRARIES}
+  # ${PCL_LIBRARIES}
+)
+target_link_libraries(
+  ${PROJECT_NAME}_server
   ${catkin_LIBRARIES}
   # ${OpenCV_LIBRARIES}
   # ${Boost_LIBRARIES}
