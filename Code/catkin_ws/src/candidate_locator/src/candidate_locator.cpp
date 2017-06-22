@@ -11,7 +11,7 @@ CandidateLocator::CandidateLocator() : it_(nh_)
   pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
 
   //DEBUG
-  pub_debug_ = nh_.advertise< pcl::PointCloud<pcl::PointXYZ> >("/candidate_pcs_debug", 1);
+  pub_debug_ = nh_.advertise< pcl::PointCloud<pcl::PointXYZRGB> >("/candidate_pcs_debug", 1);
 
   ROS_INFO("Constructed CandidateLocator.");
 }
@@ -60,6 +60,18 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
       ROS_ERROR("%s", e.what());
     }
 
+    //DEBUG
+    switch(i)
+    {
+      case 0: break;
+      case 1: r_ = 0; g_ = 255; b_ = 0; break;
+      case 2: r_ = 0; g_ = 0; b_ = 255; break;
+      case 3: r_ = 255; g_ = 255; b_ = 0; break;
+      case 4: r_ = 255; g_ = 0; b_ = 255; break;
+      case 5: r_ = 0; g_ = 255; b_ = 255; break;
+      default: r_ = 0; g_ = 0; b_ = 0; break;
+    }
+
     pcl::PointCloud<pcl::PointXYZ> point_cloud;
     sensor_msgs::PointCloud2 pc_msg;
 
@@ -98,13 +110,13 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
   try
   {
     tf_listener_.waitForTransform(
-      "/odom",
+      "/map",
       "/camera_depth_frame",
       stamp,
       ros::Duration(2.0));
 
     tf_listener_.lookupTransform(
-      "/odom",
+      "/map",
       "/camera_depth_frame",
       stamp,
       map_transform_);
@@ -165,7 +177,11 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         pixelCount++;
 
         //DEBUG
-        pc_debug_.push_back(pclPoint);
+        pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
+        pc_debug_point.x = pclPoint.x;
+        pc_debug_point.y = pclPoint.y;
+        pc_debug_point.z = pclPoint.z;
+        pc_debug_.push_back(pc_debug_point);
       }
     }
   }

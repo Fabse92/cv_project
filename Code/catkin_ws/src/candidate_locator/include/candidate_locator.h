@@ -30,7 +30,10 @@ private:
 
 	//DEBUG
 	ros::Publisher pub_debug_;
-	pcl::PointCloud<pcl::PointXYZ> pc_debug_;
+	pcl::PointCloud<pcl::PointXYZRGB> pc_debug_;
+	uint r_ = 255;
+	uint g_ = 0;
+	uint b_ = 0;
 
 	image_geometry::PinholeCameraModel cam_model_;
 	tf::TransformListener tf_listener_;
