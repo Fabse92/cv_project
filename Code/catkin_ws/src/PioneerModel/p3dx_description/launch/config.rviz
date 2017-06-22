@@ -211,7 +211,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Candidates PC
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
