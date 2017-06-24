@@ -271,8 +271,7 @@ work original in ucs-ros-pkg.
   </link>
 
   <joint name="camera_depth_joint" type="fixed">
-    <!-- <axis xyz="0 0 0" /> -->
-    <origin rpy="-1.571 -1.571 -1.571"/>
+    <origin rpy="-1.571 1.571 -1.571"/>
     <parent link="camera_link"/>
     <child link="camera_depth_frame"/>
   </joint>
