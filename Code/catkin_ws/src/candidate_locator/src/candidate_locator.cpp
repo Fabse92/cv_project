@@ -18,42 +18,56 @@ CandidateLocator::CandidateLocator() : it_(nh_)
 
 void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& msg)
 {
+  pub_point_clouds_.publish(locateCandidates(
+    msg.depth_image,
+    msg.rgb_image,
+    msg.rgb_info,
+    msg.candidates));
+}
+
+candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
+  const sensor_msgs::Image& depth_image,
+  const sensor_msgs::Image& rgb_image,
+  const sensor_msgs::CameraInfo& rgb_info,
+  const object_candidates::ArrayImages& candidates)
+{
   ROS_INFO_STREAM("");
   ROS_INFO_STREAM("----------");
 
   // If cam_model_ has not been assigned (i.e. the cameraInfoCallback method has not
   // run at least once) then the localisation won't work; hence, return straight away.
-  if (!cam_model_assigned) { return; }
+  // Commented out when method signature changed to have a return value
+  // if (!cam_model_assigned) { return; }
 
   candidate_locator::ArrayPointClouds array_pc_msg;
 
   // Assign depth image to member variable
   try
   {
-    depth_image_ = cv_bridge::toCvCopy(msg.depth_image, "32FC1")->image;
+    depth_image_ = cv_bridge::toCvCopy(depth_image, "32FC1")->image;
   }
   catch (cv_bridge::Exception& e)
   {
-    ROS_ERROR("%s. Encoding of image is %s", e.what(), msg.depth_image.encoding.c_str());
+    ROS_ERROR("%s. Encoding of image is %s", e.what(), depth_image.encoding.c_str());
   }
 
   // Get transforms
-  this->getTransforms(msg.depth_image.header.stamp);
+  this->getTransforms(depth_image.header.stamp);
 
   // Variables for candidate localisation
   cv::Mat candidate;
 
-  ROS_INFO_STREAM("Number of candidates: " << msg.candidates.data.size());
+  ROS_INFO_STREAM("Number of candidates: " << candidates.data.size());
 
   //DEBUG
   pc_debug_.clear();
 
   // Iterate through candidates and localise
-  for(uint i = 0; i < msg.candidates.data.size(); i++)
+  for(uint i = 0; i < candidates.data.size(); i++)
   {
     try
     {
-      candidate = cv_bridge::toCvCopy(msg.candidates.data[i], "mono8")->image;
+      candidate = cv_bridge::toCvCopy(candidates.data[i], "mono8")->image;
     }
     catch (cv_bridge::Exception& e)
     {
@@ -89,8 +103,6 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
     array_pc_msg.data.push_back(pc_msg);
   }
 
-  pub_point_clouds_.publish(array_pc_msg);
-
   //DEBUG
   sensor_msgs::PointCloud2 pc_debug_msg;
   pcl::toROSMsg(pc_debug_, pc_debug_msg);
@@ -100,6 +112,8 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
       pc_debug_msg,
       pc_debug_msg);
   pub_debug_.publish(pc_debug_msg);
+
+  return array_pc_msg;
 
 }
 

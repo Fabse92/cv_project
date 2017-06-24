@@ -223,7 +223,7 @@ private:
             ROS_INFO("Requesting snapshot");
             if (snapshot_client.call(snap_srv))
             {
-              ROS_INFO("Received snapshot");
+              ROS_INFO_STREAM("Received snapshot, " << snap_srv.response.candidates.data.size() << " candidates");
               
               // Publish first of the received candidates
               ros::WallDuration(0.1).sleep();
@@ -231,15 +231,20 @@ private:
               ros::WallDuration(0.1).sleep();
 
               // Call service to perform 3D location on the candidates in the snapshot
+              // TODO: Trim candidates so we don't get annoying "shadows"?
               ros::ServiceClient locator_client = nh_.serviceClient<candidate_locator::LocateCandidates>("locate_candidates");
               candidate_locator::LocateCandidates locator_srv;
+              locator_srv.request.depth_image = snap_srv.response.depth_image;
+              locator_srv.request.rgb_image = snap_srv.response.rgb_image;
+              locator_srv.request.rgb_info = snap_srv.response.rgb_info;
+              locator_srv.request.candidates = snap_srv.response.candidates;
 
               ROS_INFO("Locating candidates");
               if (locator_client.call(locator_srv))
               {
                 ROS_INFO("Located candidate point clouds received");
 
-                // TODO: Do stuff with candidates
+                // TODO: Merge candidates into single representation
               }
               else
               {

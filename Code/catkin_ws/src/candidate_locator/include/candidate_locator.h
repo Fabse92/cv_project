@@ -20,6 +20,11 @@ class CandidateLocator
 {
 public:
 	CandidateLocator();
+	candidate_locator::ArrayPointClouds locateCandidates(
+		const sensor_msgs::Image& depth_image,
+	  const sensor_msgs::Image& rgb_image,
+	  const sensor_msgs::CameraInfo& rgb_info,
+	  const object_candidates::ArrayImages& candidates);
 
 private:
 	ros::NodeHandle nh_;
