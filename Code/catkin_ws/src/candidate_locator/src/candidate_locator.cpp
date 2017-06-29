@@ -3,7 +3,7 @@
 
 #include "candidate_locator.h"
 
-CandidateLocator::CandidateLocator() : it_(nh_)
+CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(30))
 {
   sub_candidates_ = nh_.subscribe("/candidates_snapshot", 1000, &CandidateLocator::candidatesCallback, this);
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
@@ -104,13 +104,13 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
   }
 
   //DEBUG
+  pcl_ros::transformPointCloud(
+    pc_debug_,
+    pc_debug_,
+    map_transform_);
   sensor_msgs::PointCloud2 pc_debug_msg;
   pcl::toROSMsg(pc_debug_, pc_debug_msg);
-  pcl_ros::transformPointCloud(
-      "/map",
-      map_transform_,
-      pc_debug_msg,
-      pc_debug_msg);
+  pc_debug_msg.header.frame_id = "/map";
   pub_debug_.publish(pc_debug_msg);
 
   return array_pc_msg;
