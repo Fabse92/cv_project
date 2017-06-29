@@ -1,9 +1,12 @@
 <launch>
+  <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/> -->
   <arg name="use_sim_time" default="true" />
+  <arg name="output" default="log" />
 
   <include file="$(find p3dx_description)/launch/rviz.launch" />
   <include file="$(find p3dx_gazebo)/launch/gazebo.launch" >
   	<arg name="use_sim_time" value="$(arg use_sim_time)" />
+    <arg name="gui" value="false" />
   </include>
   <include file="$(find pointcloud_to_laserscan)/launch/sample_node.launch" />
   <include file="$(find p3dx_navigation)/launch/move_base.launch" >

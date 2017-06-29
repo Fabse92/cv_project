@@ -275,7 +275,7 @@ work original in ucs-ros-pkg.
     <parent link="camera_link"/>
     <child link="camera_depth_frame"/>
   </joint>
-  
+
   <link name="camera_depth_frame">
   </link>
 	

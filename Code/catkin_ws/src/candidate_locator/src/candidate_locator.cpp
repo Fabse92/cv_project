@@ -111,6 +111,7 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
   sensor_msgs::PointCloud2 pc_debug_msg;
   pcl::toROSMsg(pc_debug_, pc_debug_msg);
   pc_debug_msg.header.frame_id = "/map";
+  // pc_debug_msg.header.frame_id = "/camera_depth_frame";
   pub_debug_.publish(pc_debug_msg);
 
   return array_pc_msg;
@@ -193,7 +194,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         //DEBUG
         pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
         pc_debug_point.x = pclPoint.x;
-        pc_debug_point.y = pclPoint.y;
+        pc_debug_point.y = pclPoint.y * -1;
         pc_debug_point.z = pclPoint.z;
         pc_debug_.push_back(pc_debug_point);
       }
