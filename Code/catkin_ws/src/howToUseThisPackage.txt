@@ -1,0 +1,15 @@
+install:
+
+Ubuntu 14.04
+opencv 2.4.9
+pcl 1.7.2
+sudo apt-get install ros-indigo-ros-control ros-indigo-ros-controllers
+kinect driver (http://learn.turtlebot.com/2015/02/01/5/)
+rosaria
+
+? turtlebot package (http://wiki.ros.org/turtlebot/Tutorials/indigo/Turtlebot%20Installation)
+
+
+catkin_make
+source devel/setup.bash
+roslaunch p3dx_description/everything.launch
