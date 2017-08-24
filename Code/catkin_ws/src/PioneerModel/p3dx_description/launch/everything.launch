@@ -1,18 +1,32 @@
 <launch>
-  <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/> -->
+
+  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/>
   <arg name="use_sim_time" default="true" />
-  <arg name="output" default="log" />
+  <arg name="output" default="screen" />
 
   <include file="$(find p3dx_description)/launch/rviz.launch" />
+
   <include file="$(find p3dx_gazebo)/launch/gazebo.launch" >
   	<arg name="use_sim_time" value="$(arg use_sim_time)" />
     <arg name="gui" value="false" />
   </include>
+
   <include file="$(find pointcloud_to_laserscan)/launch/sample_node.launch" />
+
   <include file="$(find p3dx_navigation)/launch/move_base.launch" >
     <arg name="use_sim_time" value="$(arg use_sim_time)" />
   </include>
-  <include file="$(find frontier_exploration)/launch/global_map.launch" />
+
+  <include file="$(find frontier_exploration)/launch/global_map.launch" >
+    <arg name="output_client" value="screen" />
+    <arg name="output_server" value="$(arg output)" />
+    <arg name="delay_time" value="2.0" />
+  </include>
+
   <include file="$(find object_candidates)/launch/servers.launch" />
-  <include file="$(find candidate_locator)/launch/servers.launch" />
+
+  <include file="$(find candidate_locator)/launch/servers.launch" >
+    <arg name="output" value="$(arg output)" />
+  </include>
+
 </launch>

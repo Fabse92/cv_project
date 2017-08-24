@@ -25,6 +25,8 @@
 #include "candidate_locator/LocateCandidates.h"
 #include "candidate_locator/ArrayPointClouds.h"
 
+#include "octomap_ros/conversions.h"
+
 namespace frontier_exploration{
 
 /**
@@ -82,6 +84,10 @@ private:
     {
         success_ = false;
         moving_ = false;
+
+        double delay_time;
+        private_nh_.param<double>("exploration_delay_time", delay_time, 0.0);
+        ROS_INFO_STREAM(delay_time);
 
         explore_costmap_ros_->resetLayers();
 
@@ -212,6 +218,8 @@ private:
             while(ros::ok() && as_.isActive() && moving_){
                 ros::WallDuration(0.1).sleep();
             }
+
+            ros::Duration(delay_time).sleep();
             
             image_transport::ImageTransport it = image_transport::ImageTransport(nh_);
             image_transport::Publisher image_pub = it.advertise("/candidate",1000);
@@ -242,13 +250,24 @@ private:
               ROS_INFO("Locating candidates");
               if (locator_client.call(locator_srv))
               {
-                ROS_INFO("Located candidate point clouds received");
+                // ROS_INFO("Located candidate point clouds received");
 
-                // TODO: Merge candidates into single representation
+                // // TODO: Merge candidates into single representation
+
+                // for (int i = 0; i < locator_srv.response.candidates.data.size(); i++)
+                // {
+                //     octomap::Pointcloud octomapPC;
+
+                //     octomap::pointCloud2ToOctomap(locator_srv.response.candidates.data[i], octomapPC);
+
+                //     // TODO: Send point cloud to octomap.
+
+                // }
               }
               else
               {
                 ROS_ERROR("Failed to call candidate locator service");
+                ros::shutdown();
               }
             }
             else

@@ -45,6 +45,11 @@
   <build_depend>libpcl-all-dev</build_depend>
   <run_depend>libpcl-all</run_depend>
 
+  <build_depend>octomap</build_depend>
+  <run_depend>octomap</run_depend>
+  <build_depend>octomap_ros</build_depend>
+  <run_depend>octomap_ros</run_depend>
+
     <export>
       <costmap_2d plugin="${prefix}/costmap_plugins.xml"/>
     </export>

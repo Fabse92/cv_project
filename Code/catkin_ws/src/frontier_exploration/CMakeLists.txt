@@ -15,10 +15,16 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   visualization_msgs
   message_generation
+  octomap_ros
 )
 
 find_package(Boost REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
+find_package(octomap REQUIRED)
+# add_definitions(-DOCTOMAP_NODEBUGOUT)
+
+message(STATUS "OCTOMAP_INCLUDE_DIRS = ${OCTOMAP_INCLUDE_DIRS}")
+message(STATUS "OCTOMAP_LIBRARIES = ${OCTOMAP_LIBRARIES}")
 
 add_message_files(
   FILES
@@ -51,12 +57,14 @@ catkin_package(
     roscpp
     tf
     actionlib
+    octomap_ros
   DEPENDS
     PCL
     Boost
+    octomap
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS})
 
 add_library(explore_costmap plugins/bounded_explore_layer.cpp src/frontier_search.cpp)
 target_link_libraries(explore_costmap ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES})
@@ -66,7 +74,8 @@ add_executable(explore_server src/explore_server.cpp)
 target_link_libraries(explore_server
  ${OpenCV_LIBRARIES}
  ${Boost_LIBRARIES}
- ${catkin_LIBRARIES})
+ ${catkin_LIBRARIES}
+ ${OCTOMAP_LIBRARIES})
 add_dependencies(explore_server ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(explore_client src/explore_client.cpp)

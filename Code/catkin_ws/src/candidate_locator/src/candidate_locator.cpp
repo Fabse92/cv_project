@@ -3,7 +3,7 @@
 
 #include "candidate_locator.h"
 
-CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(30))
+CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
 {
   sub_candidates_ = nh_.subscribe("/candidates_snapshot", 1000, &CandidateLocator::candidatesCallback, this);
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
@@ -104,15 +104,17 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
   }
 
   //DEBUG
-  pcl_ros::transformPointCloud(
-    pc_debug_,
-    pc_debug_,
-    map_transform_);
   sensor_msgs::PointCloud2 pc_debug_msg;
   pcl::toROSMsg(pc_debug_, pc_debug_msg);
+  pcl_ros::transformPointCloud(
+    "/map",
+    map_transform_,
+    pc_debug_msg,
+    pc_debug_msg);
   pc_debug_msg.header.frame_id = "/map";
   // pc_debug_msg.header.frame_id = "/camera_depth_frame";
   pub_debug_.publish(pc_debug_msg);
+  ROS_DEBUG_STREAM("Debug point cloud size: " << pc_debug_.size());
 
   return array_pc_msg;
 
@@ -143,6 +145,7 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
     //   camera_transform_);
 
     ROS_INFO("Transforms received.");
+
   }
   catch (tf::TransformException &e)
   {
@@ -152,57 +155,128 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
 
 void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
 {
-  int channels = candidate.channels();
+  // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper in 
+  ROS_DEBUG_STREAM("Initialising calculateObjectPoints");
 
-  int nRows = candidate.rows;
-  int nCols = candidate.cols * channels;
+  uint candidate_size = 0;
+  uint channels = candidate.channels();
+  uint nRows = candidate.rows;
+  uint nCols = candidate.cols * channels;
 
-  int i,j;
-  uchar* p;
+  double point_cloud_cutoff = 0.4;
+  double point_cloud_cutoff_max = 5.0;
+
+  // double hfov = this->parentSensor->DepthCamera()->HFOV().Radian();
+  // TODO: set hfov dynamically from camera info (if possible)
+  double hfov = 1.021018; // 58.5 degrees
+  double fl = (double)nCols / (2.0 * tan(hfov/2.0));
   
-  int pixelCount = 0;
-
-  for (i = 0; i < nRows; ++i)
+  // convert depth to point cloud
+  for (uint32_t j=0; j<nCols; j++)
   {
-    p = candidate.ptr<uchar>(i);
-    for (j = 0; j < nCols; ++j)
+    double pAngle;
+    if (nCols>1) pAngle = atan2( (double)j - 0.5*(double)(nCols-1), fl);
+    else            pAngle = 0.0;
+
+    for (uint32_t i=0; i<nRows; i++)
     {
-      if (p[j] != 0)
+      if (candidate.ptr<uchar>(i)[nCols-1-j] != 0)
       {
-        cv::Point imagePoint = cv::Point(i,j);
-        float depth_value = depth_image_.at<float>(i, j);
-        ROS_DEBUG_STREAM("Image point: (" << i << "," << j << ")");
-        ROS_DEBUG_STREAM("Depth value: " << depth_value);
-        
-        cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
-        ROS_DEBUG_STREAM("3d point: " << point3d << " " << norm(point3d));
+        candidate_size++;
 
-        // Normalize point so it's now a unit vector defining the direction of the surface
-        pcl::PointXYZ pclPoint = pcl::PointXYZ(point3d.x/norm(point3d), point3d.y/norm(point3d), point3d.z/norm(point3d));
-        ROS_DEBUG_STREAM("3d point (normalized): " << pclPoint << " " << 1 / (pow(pclPoint.x,2) + pow(pclPoint.y,2) + pow(pclPoint.z,2)));
+        double yAngle;
+        if (nRows>1) yAngle = atan2( (double)i - 0.5*(double)(nRows-1), fl);
+        else            yAngle = 0.0;
 
-        // Multiply normalized point by the distance given in the depth image 
-        // TODO Is there *seriously* no operator for PointXYZ * float?
-        pclPoint.getArray3fMap() = pclPoint.getArray3fMap() * depth_value;
-        ROS_DEBUG_STREAM("Point in world: " << pclPoint);
-        
-        // Add the point to point cloud
-        point_cloud.push_back(pclPoint);
+        double depth = depth_image_.at<float>(i, nCols-j);
 
-        pixelCount++;
+        if(depth > point_cloud_cutoff &&
+           depth < point_cloud_cutoff_max)
+        {
+          pcl::PointXYZ pclPoint;
+          pclPoint.x = depth * tan(yAngle);
+          pclPoint.y = depth * tan(pAngle);
+          pclPoint.z = depth;
+          point_cloud.push_back(pclPoint);
 
-        //DEBUG
-        pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
-        pc_debug_point.x = pclPoint.x;
-        pc_debug_point.y = pclPoint.y * -1;
-        pc_debug_point.z = pclPoint.z;
-        pc_debug_.push_back(pc_debug_point);
+          //DEBUG
+          pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
+          pc_debug_point.x = pclPoint.x;
+          pc_debug_point.y = pclPoint.y;
+          pc_debug_point.z = pclPoint.z;
+          pc_debug_.push_back(pc_debug_point);
+
+        }
+        // else //point in the unseeable range
+        // {
+        //   *iter_x = *iter_y = *iter_z = std::numeric_limits<float>::quiet_NaN ();
+        //   point_cloud_msg.is_dense = false;
+        // }
       }
     }
   }
 
-  ROS_INFO_STREAM("Size of candidate: " << pixelCount << " pixels.");
+  ROS_INFO_STREAM("Point cloud created for candidate");
+  ROS_DEBUG_STREAM("Candidate size: " << candidate_size);
 }
+
+// void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
+// {
+//   int channels = candidate.channels();
+
+//   int nRows = candidate.rows;
+//   int nCols = candidate.cols * channels;
+
+//   int i,j;
+//   uchar* p;
+  
+//   int pixelCount = 0;
+
+//   for (i = 0; i < nRows; ++i)
+//   {
+//     p = candidate.ptr<uchar>(i);
+//     for (j = 0; j < nCols; ++j)
+//     {
+//       if (p[j] != 0)
+//       {
+//         // cv::Point imagePoint = cam_model_.rectifyPoint(cv::Point(i,j));
+//         cv::Point imagePoint = cv::Point(i,j);
+//         float depth_value = depth_image_.at<float>(imagePoint.x, imagePoint.y);
+//         ROS_DEBUG_STREAM("Image point: (" << i << "," << j << ")");
+//         // ROS_DEBUG_STREAM("Rectified image point: " << imagePoint.x << "," << imagePoint.y);
+//         ROS_DEBUG_STREAM("Depth value: " << depth_value);
+        
+//         // TODO Why is there a displacement here?
+//         // cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint - (cv::Point(-55,90)));
+//         cv::Point3d point3d = cam_model_.projectPixelTo3dRay(imagePoint);
+//         ROS_DEBUG_STREAM("3d point: " << point3d << " " << norm(point3d));
+
+//         // Normalize point so it's now a unit vector defining the direction of the surface
+//         pcl::PointXYZ pclPoint = pcl::PointXYZ(point3d.x/norm(point3d), point3d.y/norm(point3d), point3d.z/norm(point3d));
+//         ROS_DEBUG_STREAM("3d point (normalized): " << pclPoint << " " << 1 / (pow(pclPoint.x,2) + pow(pclPoint.y,2) + pow(pclPoint.z,2)));
+
+//         // Multiply normalized point by the distance given in the depth image 
+//         // TODO Is there *seriously* no operator for PointXYZ * float?
+//         pclPoint.getArray3fMap() = pclPoint.getArray3fMap() * depth_value;
+//         ROS_DEBUG_STREAM("Point in world: " << pclPoint);
+        
+//         // Add the point to point cloud
+//         point_cloud.push_back(pclPoint);
+
+//         pixelCount++;
+
+//         //DEBUG
+//         pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
+//         pc_debug_point.x = pclPoint.x;
+//         pc_debug_point.y = pclPoint.y; // * -1;
+//         pc_debug_point.z = pclPoint.z;
+//         pc_debug_.push_back(pc_debug_point);
+//       }
+//     }
+//   }
+
+//   ROS_INFO_STREAM("Size of candidate: " << pixelCount << " pixels.");
+// }
 
 void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)
 {
@@ -212,5 +286,8 @@ void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& dept
   {
     cam_model_assigned = true;
     ROS_INFO("Camera model assigned.");
+    ROS_INFO_STREAM("cx: " << cam_model_.cx() << " cy: " << cam_model_.cy());
+    ROS_INFO_STREAM("fx: " << cam_model_.fx() << " fy: " << cam_model_.fy());
+    ROS_INFO_STREAM("Tx: " << cam_model_.Tx() << " Ty: " << cam_model_.Ty());
   }
 }

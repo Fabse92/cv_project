@@ -1,3 +1,4 @@
 <launch>
-  <node name="candidate_locator_server" type="candidate_locator_server" pkg="candidate_locator" output="screen" />
+	<arg name="output" default="screen" />
+  <node name="candidate_locator_server" type="candidate_locator_server" pkg="candidate_locator" output="$(arg output)" />
 </launch>

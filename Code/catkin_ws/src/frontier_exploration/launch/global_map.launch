@@ -2,10 +2,15 @@
 
     <!-- Set to your sensor's range -->
     <arg name="sensor_range" default="1.0"/>
+    <arg name="output_client" default="screen" />
+    <arg name="output_server" default="screen" />
+    <arg name="delay_time" default="0.0" />
 
-    <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="screen"/>
+    <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="$(arg output_client)"/>
 
-    <node pkg="frontier_exploration" type="explore_server" name="explore_server" output="screen" >
+    <node pkg="frontier_exploration" type="explore_server" name="explore_server" output="$(arg output_server)" required="true">
+
+        <param name="exploration_delay_time" type="double" value="$(arg delay_time)" />
 
         <!--<remap from="move_base/goal" to="wobtata"/>-->
         <param name="frequency" type="double" value="2.0"/>
