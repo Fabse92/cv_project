@@ -64,6 +64,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         camera_link:
           Alpha: 1
           Show Axes: false
@@ -136,6 +140,8 @@ Visualization Manager:
         All Enabled: true
         base_link:
           Value: true
+        camera_depth_frame:
+          Value: true
         camera_link:
           Value: true
         camera_optical_frame:
@@ -175,6 +181,8 @@ Visualization Manager:
             base_link:
               front_sonar:
                 camera_link:
+                  camera_depth_frame:
+                    {}
                   camera_optical_frame:
                     {}
               lms100:
@@ -312,6 +320,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /occupied_cells_vis_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -371,5 +387,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1216
-  X: 55
+  X: 67
   Y: 14

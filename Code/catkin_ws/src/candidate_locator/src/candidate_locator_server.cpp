@@ -8,9 +8,17 @@ namespace candidate_locator
 	{
 		private:
 
-		CandidateLocator candidate_locator_;		
+		CandidateLocator candidate_locator_;
+		ros::Publisher pub_point_clouds_;
+		ros::NodeHandle nh_;
 
 		public:
+
+	  CandidateLocatorServer()
+	  {
+	  	ros::ServiceServer service = nh_.advertiseService("locate_candidates", &candidate_locator::CandidateLocatorServer::locateCandidates, this);
+	  	pub_point_clouds_ = nh_.advertise<sensor_msgs::PointCloud2>("/candidate_point_clouds", 1);
+	  }
 
 		bool locateCandidates(
 			candidate_locator::LocateCandidates::Request  &req,
@@ -22,6 +30,14 @@ namespace candidate_locator
 		  	req.rgb_info,
 		  	req.candidates);
 
+		  if (req.publish)
+		  {
+			  for (uint i = 0; i < res.candidates.data.size(); i++)
+			  {
+			  	pub_point_clouds_.publish(res.candidates.data[i]);
+			  }
+			}
+
 			return true;
 		}
 	};
@@ -31,11 +47,8 @@ namespace candidate_locator
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "candidate_locator_server");
-  ros::NodeHandle nh;
-
-  candidate_locator::CandidateLocatorServer server;
   
-  ros::ServiceServer service = nh.advertiseService("locate_candidates", &candidate_locator::CandidateLocatorServer::locateCandidates, &server);
+  candidate_locator::CandidateLocatorServer server;
   
   ROS_INFO("Ready to locate candidates");
   ros::spin();

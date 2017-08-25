@@ -87,7 +87,6 @@ private:
 
         double delay_time;
         private_nh_.param<double>("exploration_delay_time", delay_time, 0.0);
-        ROS_INFO_STREAM(delay_time);
 
         explore_costmap_ros_->resetLayers();
 
@@ -246,6 +245,7 @@ private:
               locator_srv.request.rgb_image = snap_srv.response.rgb_image;
               locator_srv.request.rgb_info = snap_srv.response.rgb_info;
               locator_srv.request.candidates = snap_srv.response.candidates;
+              locator_srv.request.publish = true;
 
               ROS_INFO("Locating candidates");
               if (locator_client.call(locator_srv))
