@@ -109,8 +109,14 @@ private:
     bool configured_, marked_;
 
     std::string frontier_travel_point_;
+    std::string method_;
+    double circle_radius_;
     bool resize_to_boundary_;
-
+    
+    costmap_2d::Costmap2D original_costmap_;
+    const geometry_msgs::Polygon polygon;
+    
+    double prev_x, prev_y;
 };
 
 }

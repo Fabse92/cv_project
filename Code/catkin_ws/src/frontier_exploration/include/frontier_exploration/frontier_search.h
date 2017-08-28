@@ -3,6 +3,7 @@
 
 #include <frontier_exploration/Frontier.h>
 #include <costmap_2d/costmap_2d.h>
+#include <geometry_msgs/Polygon.h>
 
 namespace frontier_exploration{
 
@@ -18,13 +19,15 @@ public:
      * @param costmap Reference to costmap data to search.
      */
     FrontierSearch(costmap_2d::Costmap2D& costmap);
+    
+    void setCostmap(costmap_2d::Costmap2D& costmap);
 
     /**
      * @brief Runs search implementation, outward from the start position
      * @param position Initial position to search from
      * @return List of frontiers, if any
      */
-    std::list<Frontier> searchFrom(geometry_msgs::Point position);
+    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, geometry_msgs::Polygon polygon);
 
 protected:
 
@@ -36,6 +39,10 @@ protected:
      * @return
      */
     Frontier buildNewFrontier(unsigned int initial_cell, unsigned int reference, std::vector<bool>& frontier_flag);
+    
+    Frontier buildSimpleFrontier(unsigned int cell, double dist);
+    
+    Frontier buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag);
 
     /**
      * @brief isNewFrontierCell Evaluate if candidate cell is a valid candidate for a new frontier.

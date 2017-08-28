@@ -53,6 +53,8 @@ namespace frontier_exploration
 
         nh_.param<bool>("resize_to_boundary", resize_to_boundary_, true);
         nh_.param<std::string>("frontier_travel_point", frontier_travel_point_, "closest");
+        nh_.param<std::string>("method", method_, "frontier");
+        nh_.param<double>("circle_radius", circle_radius_, 3.0);
 
         polygonService_ = nh_.advertiseService("update_boundary_polygon", &BoundedExploreLayer::updateBoundaryPolygonService, this);
         frontierService_ = nh_.advertiseService("get_next_frontier", &BoundedExploreLayer::getNextFrontierService, this);
@@ -61,6 +63,9 @@ namespace frontier_exploration
         dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig>::CallbackType cb = boost::bind(
                     &BoundedExploreLayer::reconfigureCB, this, _1, _2);
         dsrv_->setCallback(cb);
+
+        prev_x = -1.0;
+        prev_y = -1.0;
 
     }
 
@@ -88,7 +93,7 @@ namespace frontier_exploration
             ros::spinOnce();
             r.sleep();
         }
-
+        
         if(start_pose.header.frame_id != layered_costmap_->getGlobalFrameID()){
             //error out if no transform available
             if(!tf_listener_.waitForTransform(layered_costmap_->getGlobalFrameID(), start_pose.header.frame_id,ros::Time::now(),ros::Duration(10))) {
@@ -101,8 +106,12 @@ namespace frontier_exploration
 
         //initialize frontier search implementation
         FrontierSearch frontierSearch(*(layered_costmap_->getCostmap()));
+        if (method_ != "frontier"){
+          frontierSearch.setCostmap(original_costmap_);        
+        }
+        
         //get list of frontiers from search implementation
-        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position);
+        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, polygon_);
 
         if(frontier_list.size() == 0){
             ROS_DEBUG("No frontiers found, exploration complete");
@@ -126,10 +135,18 @@ namespace frontier_exploration
 
             //check if this frontier is the nearest to robot
             if (frontier.min_distance < selected.min_distance){
-                selected = frontier;
-                max = frontier_cloud_viz.size()-1;
+                std::cout << "x: " << prev_x << " and " << frontier.initial.x << ", y: " << prev_y << " and " << frontier.initial.y << std::endl;
+                // check that this is not the same frontier as the previous one
+                if (prev_x != frontier.initial.x && prev_y != frontier.initial.y){
+                    std::cout << "ok" << std::endl;
+                    selected = frontier;
+                    max = frontier_cloud_viz.size()-1;
+                }
             }
         }
+        
+        prev_x = selected.initial.x;
+        prev_y = selected.initial.y;
 
         //color selected frontier
         frontier_cloud_viz[max].intensity = 100;
@@ -255,6 +272,7 @@ namespace frontier_exploration
     }
 
     void BoundedExploreLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j){
+        original_costmap_ = Costmap2D(master_grid);
         //check if layer is enabled and configured with a boundary
         if (!enabled_ || !configured_){ return; }
 

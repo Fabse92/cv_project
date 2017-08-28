@@ -52,6 +52,8 @@
                 frontier_travel_point: middle
                 #set to false for gmapping, true if re-exploring a known area
                 explore_clear_space: false
+                method: frontier # information_gain
+                circle_radius: 3.0
 
             sensor:
                 observation_sources: laser
@@ -59,6 +61,7 @@
 
             inflation:
                 inflation_radius: 0.2
+                
       </rosparam>
     </node>
 
