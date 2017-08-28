@@ -123,8 +123,7 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
 
 void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
 {
-  // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper in 
-  ROS_DEBUG_STREAM("Initialising calculateObjectPoints");
+  // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper
 
   uint candidate_size = 0;
   uint channels = candidate.channels();
@@ -176,8 +175,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
     }
   }
 
-  ROS_INFO_STREAM("Point cloud created for candidate");
-  ROS_DEBUG_STREAM("Candidate size: " << candidate_size);
+  ROS_INFO_STREAM("Point cloud created for candidate. Candidate size: " << candidate_size);
 }
 
 void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)
