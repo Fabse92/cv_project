@@ -246,6 +246,7 @@ private:
               locator_srv.request.rgb_image = snap_srv.response.rgb_image;
               locator_srv.request.rgb_info = snap_srv.response.rgb_info;
               locator_srv.request.candidates = snap_srv.response.candidates;
+              locator_srv.request.publish = true;
 
               ROS_INFO("Locating candidates");
               if (locator_client.call(locator_srv))
