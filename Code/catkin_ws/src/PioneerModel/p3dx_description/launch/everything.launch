@@ -29,4 +29,6 @@
     <arg name="output" value="$(arg output)" />
   </include>
 
+  <include file="$(find octomap_server)/launch/octomap_mapping.launch" />
+
 </launch>
