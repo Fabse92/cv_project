@@ -10,6 +10,9 @@ CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
 
   pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
 
+  //DEBUG
+  pub_debug_ = nh_.advertise< pcl::PointCloud<pcl::PointXYZRGB> >("/candidate_pcs_debug", 1);
+
   ROS_INFO("Constructed CandidateLocator.");
 }
 
@@ -56,6 +59,9 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
 
   ROS_INFO_STREAM("Number of candidates: " << candidates.data.size());
 
+  //DEBUG
+  pc_debug_.clear();
+
   // Iterate through candidates and localise
   for(uint i = 0; i < candidates.data.size(); i++)
   {
@@ -68,16 +74,17 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
       ROS_ERROR("%s", e.what());
     }
 
-    // switch(i)
-    // {
-    //   case 0: r_ = 255; g_ = 0; b_ = 0; break;
-    //   case 1: r_ = 0; g_ = 255; b_ = 0; break;
-    //   case 2: r_ = 0; g_ = 0; b_ = 255; break;
-    //   case 3: r_ = 255; g_ = 255; b_ = 0; break;
-    //   case 4: r_ = 255; g_ = 0; b_ = 255; break;
-    //   case 5: r_ = 0; g_ = 255; b_ = 255; break;
-    //   default: r_ = 0; g_ = 0; b_ = 0; break;
-    // }
+    //DEBUG
+    switch(i)
+    {
+      case 0: r_ = 255; g_ = 0; b_ = 0; break;
+      case 1: r_ = 0; g_ = 255; b_ = 0; break;
+      case 2: r_ = 0; g_ = 0; b_ = 255; break;
+      case 3: r_ = 255; g_ = 255; b_ = 0; break;
+      case 4: r_ = 255; g_ = 0; b_ = 255; break;
+      case 5: r_ = 0; g_ = 255; b_ = 255; break;
+      default: r_ = 0; g_ = 0; b_ = 0; break;
+    }
 
     pcl::PointCloud<pcl::PointXYZ> point_cloud;
     sensor_msgs::PointCloud2 pc_msg;
@@ -95,6 +102,19 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
 
     array_pc_msg.data.push_back(pc_msg);
   }
+
+  //DEBUG
+  sensor_msgs::PointCloud2 pc_debug_msg;
+  pcl::toROSMsg(pc_debug_, pc_debug_msg);
+  pcl_ros::transformPointCloud(
+    "/map",
+    map_transform_,
+    pc_debug_msg,
+    pc_debug_msg);
+  pc_debug_msg.header.frame_id = "/map";
+  // pc_debug_msg.header.frame_id = "/camera_depth_frame";
+  pub_debug_.publish(pc_debug_msg);
+  ROS_DEBUG_STREAM("Debug point cloud size: " << pc_debug_.size());
 
   return array_pc_msg;
 
@@ -178,6 +198,14 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
           pclPoint.y = depth * tan(pAngle);
           pclPoint.z = depth;
           point_cloud.push_back(pclPoint);
+
+          //DEBUG
+          pcl::PointXYZRGB pc_debug_point = pcl::PointXYZRGB(r_, b_, g_);
+          pc_debug_point.x = pclPoint.x;
+          pc_debug_point.y = pclPoint.y;
+          pc_debug_point.z = pclPoint.z;
+          pc_debug_.push_back(pc_debug_point);
+
         }
         // else //point in the unseeable range
         // {
