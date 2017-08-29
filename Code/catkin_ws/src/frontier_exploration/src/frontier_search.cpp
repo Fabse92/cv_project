@@ -56,8 +56,9 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         ROS_WARN("Could not find nearby clear cell to start search");
     }
     visited_flag[bfs.front()] = true;
+    std::vector<bool> processed_flag(size_x_ * size_y_, false);
 
-    int counter = 0;
+    int counter = 0, counter2 = 0;
     
     while(!bfs.empty()){
         unsigned int idx = bfs.front();
@@ -95,13 +96,13 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               if (!visited_flag[nbr]) {
                 visited_flag[nbr] = true;
                 if(map_[nbr] == FREE_SPACE && pointInPolygon(x,y,polygon)){ 
-                  //++counter;                                        
-                  //unsigned int x0, y0, x1, y1;
-                  //costmap_.indexToCells(idx,x0,y0);
-                  //std::cout << counter << std::endl;
-                  //BOOST_FOREACH(unsigned point, circleCells(nbr, circle_radius, costmap_)){ 
-                    /*bfs.push(nbr); 
-                      if (counter == 300){                      
+                  ++counter;                                        
+                  unsigned int x0, y0, x1, y1;
+                  costmap_.indexToCells(idx,x0,y0);
+                  std::cout << counter << std::endl;
+                  BOOST_FOREACH(unsigned point, circleCells(nbr, circle_radius, costmap_)){ 
+                    bfs.push(nbr); 
+                    if (counter == 10){                      
                       //counter = 0;
                       costmap_.indexToCells(nbr,x0,y0); 
                       costmap_.indexToCells(point,x1,y1);                 
@@ -109,20 +110,26 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                       //  if(map_[point2] == LETHAL_OBSTACLE){   
                       //    break;
                       //  }
-                        Frontier new_frontier = buildSimpleFrontier(point, 1.0);
-                        frontier_list.push_back(new_frontier);         
-                     // }             
+                        if (!processed_flag[point]){
+                          processed_flag[point] = true;
+                          ++counter2;
+                          if (counter2 < 70 && counter2 > 10){                           
+                            Frontier new_frontier = buildSimpleFrontier(point, 1.0);
+                            frontier_list.push_back(new_frontier);         
+                          }
+                        }  
+                      //}         
                     }
                   }
-                }*/
-                  
+                }
+                  /*
                   circle = circleCells(nbr, circle_radius, costmap_);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
                   Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle, processed_flag);
                   frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
                   std::cout << "one frontier computed" << std::endl;                  
-                }
+                }*/
               }
            } 
         }
