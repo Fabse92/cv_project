@@ -54,7 +54,7 @@ protected:
 
 private:
 
-    costmap_2d::Costmap2D& costmap_;
+    costmap_2d::Costmap2D& costmap_, real_costmap_;
     unsigned char* map_;
     unsigned int size_x_ , size_y_;
 

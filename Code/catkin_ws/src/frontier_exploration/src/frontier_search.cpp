@@ -19,6 +19,7 @@ using costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D &costmap) : costmap_(costmap) { }
 
 void FrontierSearch::setCostmap(costmap_2d::Costmap2D& costmap){
+  real_costmap_ = costmap_;
   costmap_ = costmap_2d::Costmap2D(costmap);
 }
 
@@ -49,12 +50,24 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
     //find closest clear cell to start search
     unsigned int clear, pos = costmap_.getIndex(mx,my);
+    
+    unsigned int ix, iy;
+   
+    if(method == "information_gain"){
+      BOOST_FOREACH(unsigned int point, initialFreeSpace(pos, 3, costmap_)){ 
+        //bfs.push(point);
+        costmap_.indexToCells(point,ix,iy);
+        costmap_.setCost(ix,iy,FREE_SPACE);
+      }
+    }
+    
     if(nearestCell(clear, pos, FREE_SPACE, costmap_)){
         bfs.push(clear);
     }else{
         bfs.push(pos);
         ROS_WARN("Could not find nearby clear cell to start search");
     }
+    
     visited_flag[bfs.front()] = true;
     std::vector<bool> processed_flag(size_x_ * size_y_, false);
 
@@ -90,13 +103,17 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               // frontiers might be randomly sampled from all possible reachable free cells
             }else if (method == "information_gain"){
               std::vector<unsigned int> circle_part;
-              unsigned int ix, iy;
-              double x, y;
-              costmap_.indexToCells(nbr,ix,iy);
-              costmap_.mapToWorld(ix,iy,x,y);
               if (!visited_flag[nbr]) {
-                visited_flag[nbr] = true;
+                visited_flag[nbr] = true;    
+                double x, y;            
+                costmap_.indexToCells(nbr,ix,iy);
+                costmap_.mapToWorld(ix,iy,x,y);
                 if(map_[nbr] == FREE_SPACE && pointInPolygon(x,y,polygon)){ 
+                    /*//bfs.push(nbr);
+                    BOOST_FOREACH(unsigned point, initialFreeSpace(pos, 4, costmap_)){                    
+                      Frontier new_frontier = buildSimpleFrontier(point, 1.0);
+                      frontier_list.push_back(new_frontier);
+                    }
                     /*++counter;
                     unsigned int x0, y0, x1, y1;
                     costmap_.indexToCells(idx,x0,y0);
@@ -132,8 +149,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                   Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag);
                   frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
-                  //std::cout << "one frontier computed" << std::endl;
-
+                  //std::cout << "one frontier computed" << std::endl;                
                 }
               }
            } 

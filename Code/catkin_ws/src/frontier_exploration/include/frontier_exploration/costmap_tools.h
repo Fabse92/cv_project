@@ -14,6 +14,11 @@
 
 namespace frontier_exploration{
 
+using costmap_2d::LETHAL_OBSTACLE;
+using costmap_2d::NO_INFORMATION;
+using costmap_2d::FREE_SPACE;
+using costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+
 /**
  * @brief Determine 4-connected neighbourhood of an input cell, checking for map edges
  * @param idx input cell index
@@ -127,6 +132,45 @@ bool nearestCell(unsigned int &result, unsigned int start, unsigned char val, co
 
     return false;
 }
+
+
+/**
+ * @brief  Looks at cells around 'robot' and outputs the found free space cells
+ * @param  robot current index of robot position
+ * @param  size_of_field how many cells in all directions are considered
+ * @param  costmap current costmap
+ * @return list of free space cells
+ */
+std::vector<unsigned int> initialFreeSpace(unsigned int robot, int size_of_field, const costmap_2d::Costmap2D& costmap){
+  std::vector<unsigned int> out;
+  
+  unsigned int size_x_ = costmap.getSizeInCellsX(), size_y_ = costmap.getSizeInCellsY();  
+  unsigned char* map = costmap.getCharMap();  
+  
+  out.push_back(robot);
+ 
+  for (int i = 1; i < size_of_field + 1; ++i){
+    //if (map[robot - i - i * size_x_] == FREE_SPACE)
+      out.push_back(robot - i - i * size_x_);
+    //if (map[robot + i + i * size_x_] == FREE_SPACE)
+      out.push_back(robot + i + i * size_x_);  
+    for (int x = 1; x < 2*i+1; x++){
+      //if (map[robot - i + x - i * size_x_] == FREE_SPACE)
+        out.push_back(robot - i + x - i * size_x_);
+      //if (map[robot - i - (i - x) * size_x_] == FREE_SPACE)
+        out.push_back(robot - i - (i - x) * size_x_);
+      if (x != 2*i) {
+        //if (map[robot + i - x + i * size_x_] == FREE_SPACE)
+          out.push_back(robot + i - x + i * size_x_); 
+        //if (map[robot + i + (i - x) * size_x_] == FREE_SPACE)
+          out.push_back(robot + i + (i - x) * size_x_); 
+      }
+    }    
+  }    
+
+  return out;
+}
+
 
 /**
  * @brief Determine cells on the edge of a circle around cell using midpoint circle algorithm
@@ -301,6 +345,7 @@ inline int sign(int x)
   return x > 0 ? 1.0 : -1.0;
 }
 
+
 /**
  * @brief  Raytrace a line and apply some action at each step
  * @param  at The action to take... a functor
@@ -342,7 +387,7 @@ std::vector<unsigned int> raytraceLine(unsigned int x0, unsigned int y0, unsigne
   return(bresenham2D(abs_dy, abs_dx, error_x, offset_dy, offset_dx, offset, (unsigned int)(scale * abs_dy)));
 }
 
-bool pointInPolygon(unsigned int x, unsigned int y, const geometry_msgs::Polygon &polygon){
+bool pointInPolygon(double x, double y, const geometry_msgs::Polygon &polygon){
     int cross = 0;
     for (int i = 0, j = polygon.points.size()-1; i < polygon.points.size(); j = i++) {
         if ( ((polygon.points[i].y > y) != (polygon.points[j].y>y)) &&
