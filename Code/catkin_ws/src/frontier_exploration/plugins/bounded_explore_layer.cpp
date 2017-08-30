@@ -18,6 +18,21 @@
 
 PLUGINLIB_EXPORT_CLASS(frontier_exploration::BoundedExploreLayer, costmap_2d::Layer)
 
+double yaw(double x1, double y1, double x2, double y2) {
+
+    double delta_x, delta_y;
+    delta_x = x2 - x1;
+    delta_y = y2 - y1;
+
+    double yaw = atan(delta_y / delta_x);
+
+    if (delta_x < 0) {
+        yaw = M_PI - yaw;
+    }
+
+    return yaw;
+}
+
 namespace frontier_exploration
 {
 
@@ -55,6 +70,7 @@ namespace frontier_exploration
         nh_.param<std::string>("frontier_travel_point", frontier_travel_point_, "closest");
         nh_.param<std::string>("method", method_, "frontier");
         nh_.param<double>("circle_radius", circle_radius_, 3.0);
+        nh_.param<double>("horizontal_fov", horizontal_fov_, 60.0);
 
         polygonService_ = nh_.advertiseService("update_boundary_polygon", &BoundedExploreLayer::updateBoundaryPolygonService, this);
         frontierService_ = nh_.advertiseService("get_next_frontier", &BoundedExploreLayer::getNextFrontierService, this);
@@ -111,7 +127,7 @@ namespace frontier_exploration
         }
         
         //get list of frontiers from search implementation
-        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, polygon_);
+        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_);
 
         if(frontier_list.size() == 0){
             ROS_DEBUG("No frontiers found, exploration complete");
@@ -128,35 +144,39 @@ namespace frontier_exploration
         int max;
         int counter = 0;
         int red = 0;
+        //double x, y;
         BOOST_FOREACH(Frontier frontier, frontier_list){
             ++counter;
             //load frontier into visualization poitncloud
             frontier_point_viz.x = frontier.initial.x;
             frontier_point_viz.y = frontier.initial.y;
-            if (counter == 1){
-              counter = 0;
-              red += 4;
+            //x += frontier.initial.x;
+            //y += frontier.initial.y;
+            if (counter % 3 == 0){
+              red += 2;
             }
             frontier_point_viz.r = red;
             frontier_cloud_viz.push_back(frontier_point_viz);
 
             //check if this frontier is the nearest to robot
             if (frontier.min_distance < selected.min_distance){
-                std::cout << "x: " << prev_x << " and " << frontier.initial.x << ", y: " << prev_y << " and " << frontier.initial.y << std::endl;
                 // check that this is not the same frontier as the previous one
                 if (prev_x != frontier.initial.x && prev_y != frontier.initial.y){
-                    std::cout << "ok" << std::endl;
                     selected = frontier;
                     max = frontier_cloud_viz.size()-1;
                 }
             }
         }
+
+        //x /= counter;
+        //y /= counter;
         
         prev_x = selected.initial.x;
         prev_y = selected.initial.y;
 
         //color selected frontier
-        //frontier_cloud_viz[max].intensity = 100;
+        frontier_cloud_viz[max].r = 0;
+        frontier_cloud_viz[max].b = 255;
 
         //publish visualization point cloud
         sensor_msgs::PointCloud2 frontier_viz_output;
@@ -170,18 +190,32 @@ namespace frontier_exploration
         next_frontier.header.stamp = ros::Time::now();
 
         //
-        if(frontier_travel_point_ == "closest"){
-            next_frontier.pose.position = selected.initial;
-        }else if(frontier_travel_point_ == "middle"){
-            next_frontier.pose.position = selected.middle;
-        }else if(frontier_travel_point_ == "centroid"){
-            next_frontier.pose.position = selected.centroid;
-        }else{
-            ROS_ERROR("Invalid 'frontier_travel_point' parameter, falling back to 'closest'");
+        if (method_ == "frontier") {
+            if (frontier_travel_point_ == "closest") {
+                next_frontier.pose.position = selected.initial;
+            } else if (frontier_travel_point_ == "middle") {
+                next_frontier.pose.position = selected.middle;
+            } else if (frontier_travel_point_ == "centroid") {
+                next_frontier.pose.position = selected.centroid;
+            } else {
+                ROS_ERROR("Invalid 'frontier_travel_point' parameter, falling back to 'closest'");
+                next_frontier.pose.position = selected.initial;
+            }
+        } else {
             next_frontier.pose.position = selected.initial;
         }
 
-        next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(start_pose.pose.position, next_frontier.pose.position) );
+        //next_frontier.pose.position = start_pose.pose.position;
+        //next_frontier.pose.position.x = x;
+        //next_frontier.pose.position.y = y;
+
+        if (method_ == "frontier") {
+            next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(start_pose.pose.position, next_frontier.pose.position) );
+        } else {
+            next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yaw(selected.initial.x, selected.initial.y, selected.middle.x, selected.middle.y) );
+            std::cout << "Orientation: " << next_frontier.pose.orientation << std::endl;
+        }
+
         return true;
 
     }

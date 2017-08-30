@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(frontier_exploration)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport

@@ -27,7 +27,7 @@ public:
      * @param position Initial position to search from
      * @return List of frontiers, if any
      */
-    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, geometry_msgs::Polygon polygon);
+    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon);
 
 protected:
 
