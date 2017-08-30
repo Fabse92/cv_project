@@ -67,10 +67,10 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
       ROS_ERROR("%s", e.what());
     }
 
-    pcl::PointCloud<pcl::PointXYZ> point_cloud;
+    pcl::PointCloud<pcl::PointXYZRGB> point_cloud;
     sensor_msgs::PointCloud2 pc_msg;
 
-    ROS_INFO_STREAM("Candidate " << i << ": ");
+    ROS_INFO_STREAM("Candidate " << candidate_id_ << ": ");
     this->calculateObjectPoints(candidate, point_cloud);
 
     pcl::toROSMsg(point_cloud, pc_msg);
@@ -121,10 +121,18 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
   }
 }
 
-void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& point_cloud)
+void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZRGB>& point_cloud)
 {
-  // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper in 
-  ROS_DEBUG_STREAM("Initialising calculateObjectPoints");
+  // Calculate desired "colour" from candidate_id_
+  uint red, green, blue = 0;
+  if (candidate_id_ >= 255)
+  {
+    red = 255;
+    green = candidate_id_ - 255;
+  }
+  else red = candidate_id_;
+
+  // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper
 
   uint candidate_size = 0;
   uint channels = candidate.channels();
@@ -161,10 +169,13 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
         if(depth > point_cloud_cutoff &&
            depth < point_cloud_cutoff_max)
         {
-          pcl::PointXYZ pclPoint;
+          pcl::PointXYZRGB pclPoint;
           pclPoint.x = depth * tan(yAngle);
           pclPoint.y = depth * tan(pAngle);
           pclPoint.z = depth;
+          pclPoint.r = red;
+          pclPoint.g = green;
+          pclPoint.b = blue;
           point_cloud.push_back(pclPoint);
         }
         // else //point in the unseeable range
@@ -176,8 +187,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
     }
   }
 
-  ROS_INFO_STREAM("Point cloud created for candidate");
-  ROS_DEBUG_STREAM("Candidate size: " << candidate_size);
+  ROS_INFO_STREAM("Point cloud created for candidate. Candidate size: " << candidate_size);
 }
 
 void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)

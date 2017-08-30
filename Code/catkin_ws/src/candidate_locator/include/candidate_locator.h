@@ -37,10 +37,11 @@ private:
 	tf::StampedTransform camera_transform_;
 	cv::Mat depth_image_;
 	bool cam_model_assigned = false;
+	uint candidate_id_ = 0;
 
 	void candidatesCallback(const object_candidates::SnapshotMsg& msg);
 	void getTransforms(const ros::Time& stamp);
-	void calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZ>& msg);
+	void calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZRGB>& msg);
 	void cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
 };
 
