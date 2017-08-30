@@ -51,11 +51,11 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     //find closest clear cell to start search
     unsigned int clear, pos = costmap_.getIndex(mx,my);
     
-    unsigned int ix, iy;
+    unsigned int ix, iy, ix0, iy0;
    
-    if(method == "information_gain"){
-      BOOST_FOREACH(unsigned int point, initialFreeSpace(pos, 3, costmap_)){ 
-        //bfs.push(point);
+    if(method == "information_gain"){   
+      costmap_.worldToMap(0.0, 0.0, ix0, iy0);
+      BOOST_FOREACH(unsigned int point, initialFreeSpace(costmap_.getIndex(ix0,iy0), 3, costmap_)){ 
         costmap_.indexToCells(point,ix,iy);
         costmap_.setCost(ix,iy,FREE_SPACE);
       }
