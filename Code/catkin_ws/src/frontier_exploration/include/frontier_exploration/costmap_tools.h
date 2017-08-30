@@ -8,6 +8,8 @@
 #include <costmap_2d/costmap_2d.h>
 #include <boost/foreach.hpp>
 #include <ros/ros.h>
+#include <math.h>
+#include <random>
 
 
 namespace frontier_exploration{
@@ -146,63 +148,132 @@ std::vector<unsigned int> circleCells(unsigned int idx, double radius, const cos
   
   int x = cellRadius, y = 0,  dy = 1, dx = 1;
   int err = dx - (cellRadius << 1);
-  
-  // TODO do not add same point multiple times    
+
+  if(idx >= x * size_x_ + x && idx + x * size_x_ + x < size_x_*(size_y_-1)) {
+      while (x >= y) {
+          // avoid adding the same point multiple times
+          if (x == y || y == 0) {
+              ees.push_back(idx + x + y * size_x_);           // EastEastSouth
+              wwn.push_back(idx - x - y * size_x_);           // WestWestNorth
+              ssw.push_back(idx - y + x * size_x_);           // SouthSouthWest
+              nne.push_back(idx + y - x * size_x_);           // NorthNorthEast
+
+          } else {
+              een.insert(een.begin(), idx + x - y * size_x_); // EastEastNorth
+              ees.push_back(idx + x + y * size_x_);           // EastEastSouth
+              wwn.push_back(idx - x - y * size_x_);           // WestWestNorth
+              wws.insert(wws.begin(), idx - x + y * size_x_); // WestWestSouth
+              ssw.push_back(idx - y + x * size_x_);           // SouthSouthWest
+              sse.insert(sse.begin(), idx + y + x * size_x_); // SouthSouthEast
+              nnw.insert(nnw.begin(), idx - y - x * size_x_); // NorthNorthWest
+              nne.push_back(idx + y - x * size_x_);           // NorthNorthEast
+          }
+
+          if (err <= 0){
+              y += 1;
+              err += dy;
+              dy += 2;
+          }
+
+          if (err > 0 ){
+              x -= 1;
+              dx += 2;
+              err += (-cellRadius << 1) + dx;
+          }
+      }
+  } else {
+      ROS_ERROR("At least one point of circle outside of map! Undefined behavior!");
+  }
     
-  while (x >= y)
-    {
-      if(idx >= x * size_x_ + x && idx + x * size_x_ + x < size_x_*(size_y_-1)){
-      
-        //een.emplace_back(idx + x - y * size_x_); // EastEastNorth right above
-        een.insert(een.begin(), idx + y - x * size_x_); 
-        ees.push_back(idx + x + y * size_x_); // EastEastSouth right below
-        
-        
-        wwn.push_back(idx - x - y * size_x_); // WestWestNorth left above
-        //wws.emplace_back(idx - x + y * size_x_); // WestWestSouth left below
-        wws.insert(wws.begin(), idx + y - x * size_x_); 
-        
-        ssw.push_back(idx - y + x * size_x_); // SouthSouthWest below left
-        //sse.emplace_back(idx + y + x * size_x_); // SouthSouthEast below right
-        sse.insert(sse.begin(), idx + y - x * size_x_);  
-        
-        nnw.push_back(idx - y - x * size_x_); // NorthNorthWest above left ees
-        //nne.emplace_back(idx + y - x * size_x_); // NorthNorthEast above right   een
-        nne.insert(nne.begin(), idx + y - x * size_x_);      
-      
-      } else{
-        ROS_ERROR("At least one point of circle outside of map! Undefined behavior!");
-      }
-      
-      if (err <= 0){
-        y += 1;
-        err += dy;
-        dy += 2;
-      }
-      
-      if (err > 0 ){
-        x -= 1;
-        dx += 2;
-        err += (-cellRadius << 1) + dx;
-      }
-    }
-    
-  // concatenate points clock wise
-  std::vector<unsigned int> out(een);
-  out.insert( out.end(), ees.begin(), ees.end() );
-  /*
-  out.insert( out.end(), wwn.begin(), wwn.end() );
-  out.insert( out.end(), wws.begin(), wws.end() );
-  out.insert( out.end(), ssw.begin(), ssw.end() );
+  // concatenate points counter clock wise
+  std::vector<unsigned int> out(ees);
   out.insert( out.end(), sse.begin(), sse.end() );
-  
-  out.insert( out.end(), ees.begin(), ees.end() );
-  out.insert( out.end(), een.begin(), een.end() );
-  
+  out.insert( out.end(), ssw.begin(), ssw.end() );
+  out.insert( out.end(), wws.begin(), wws.end() );
+  out.insert( out.end(), wwn.begin(), wwn.end() );
+  out.insert( out.end(), nnw.begin(), nnw.end() );
   out.insert( out.end(), nne.begin(), nne.end() );
-  //out.insert( out.end(), nnw.begin(), nnw.end() );*/
+  out.insert( out.end(), een.begin(), een.end() );
 
   return out;
+}
+
+/**
+ * @brief A certain number of consectutive points of a circle are selected with random starting point
+ * @param circle list of points that form a circle
+ * @param nofPoints number of point to select (at least 1)
+ * @return list of points
+ */
+std::vector<unsigned int> selectConsecutivePointsOfCircleRandomly(std::vector<unsigned int> circle, int nofPoints){
+
+        std::vector<unsigned int> out;
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        unsigned int sizeOfCircle = circle.size();
+
+        std::uniform_int_distribution<unsigned int> uni(0, sizeOfCircle-1);
+
+        unsigned int rand = uni(rng);
+
+        out.push_back(circle[rand]);
+        for (int i = 1; i < nofPoints; ++i){
+            if (rand + i == sizeOfCircle) {
+                rand = -i;
+            }
+            out.push_back(circle[rand + i]);
+        }
+
+        return out;
+}
+
+/**
+ * @brief Determine how many consecutive pixels of a circle are needed to reach a certain angle
+ * @param angle desired angle in degree
+ * @param idx input cell index
+ * @param radius defines size of circle in meters
+ * @param costmap Reference to map data
+ * @return number of pixels
+ */
+int angleToNumberOfPixels(double desired_angle, unsigned int idx, double radius, const costmap_2d::Costmap2D& costmap){
+
+    std::vector<unsigned int> circle = circleCells(idx, radius,  costmap);
+
+    unsigned int ix0, ix1, iy0, iy1, ix2, iy2;
+    double x0, x1, y0, y1, x2, y2;
+    double current_angle = 0.0;
+
+    int number_of_pixels = 0;
+
+    costmap.indexToCells(idx,ix2,iy2);
+    costmap.mapToWorld(ix2,iy2,x2,y2);
+
+    costmap.indexToCells(circle[0],ix0,iy0);
+    costmap.mapToWorld(ix0,iy0,x0,y0);
+
+    // compute vector between circle midpoint and first point of ring
+    x0 = x0 - x2;
+    y0 = y0 - y2;
+
+    BOOST_FOREACH(unsigned point, circle) {
+        costmap.indexToCells(point,ix1,iy1);
+        costmap.mapToWorld(ix1,iy1,x1,y1);
+        x1 = x1 - x2;
+        y1 = y1 - y2;
+
+        current_angle = acos((x0 * x1 + y0 * y1)/(sqrt(x0 * x0 + y0 * y0) * sqrt(x1 * x1 + y1 * y1))) * (180.0/3.14);
+
+        //std::cout << "current_angle: " << current_angle << std::endl;
+
+        if (current_angle > desired_angle) {
+            break;
+        }
+
+        //std::cout << "Nof: " << number_of_pixels << std::endl;
+
+        ++number_of_pixels;
+    }
+
+    return number_of_pixels;
 }
 
 std::vector<unsigned int> bresenham2D(unsigned int abs_da, unsigned int abs_db, int error_b, int offset_a,
@@ -281,6 +352,28 @@ bool pointInPolygon(unsigned int x, unsigned int y, const geometry_msgs::Polygon
     }
     return bool(cross % 2);
 }
+
+/**
+* @brief Calculate the yaw of vector defined by origin and end points
+* @param origin Origin point
+* @param end End point
+* @return Yaw angle of vector
+*/
+    double yawOfVector(double x1, double y1, double x2, double y2) {
+
+        double delta_x, delta_y;
+        delta_x = x2 - x1;
+        delta_y = y2 - y1;
+
+        double yaw = atan(delta_y / delta_x);
+
+        if (delta_x < 0) {
+            yaw = M_PI - yaw;
+        }
+
+        return yaw;
+    }
+
 
 }
 #endif

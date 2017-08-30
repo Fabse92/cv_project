@@ -111,6 +111,7 @@ private:
     std::string frontier_travel_point_;
     std::string method_;
     double circle_radius_;
+    double horizontal_fov_;
     bool resize_to_boundary_;
     
     costmap_2d::Costmap2D original_costmap_;

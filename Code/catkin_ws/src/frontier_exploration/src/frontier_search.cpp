@@ -22,7 +22,7 @@ void FrontierSearch::setCostmap(costmap_2d::Costmap2D& costmap){
   costmap_ = costmap_2d::Costmap2D(costmap);
 }
 
-std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, geometry_msgs::Polygon polygon){
+std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon){
 
     std::list<Frontier> frontier_list;
 
@@ -59,7 +59,8 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     std::vector<bool> processed_flag(size_x_ * size_y_, false);
 
     int counter = 0, counter2 = 0;
-    
+    int pixelsOfAngle = angleToNumberOfPixels(horizontal_fov,pos,circle_radius,costmap_);
+
     while(!bfs.empty()){
         unsigned int idx = bfs.front();
         bfs.pop();
@@ -88,7 +89,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               // it defines 'frontiers' as possible next poses on a free cell
               // frontiers might be randomly sampled from all possible reachable free cells
             }else if (method == "information_gain"){
-              std::vector<unsigned int> circle;
+              std::vector<unsigned int> circle_part;
               unsigned int ix, iy;
               double x, y;
               costmap_.indexToCells(nbr,ix,iy);
@@ -96,57 +97,61 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               if (!visited_flag[nbr]) {
                 visited_flag[nbr] = true;
                 if(map_[nbr] == FREE_SPACE && pointInPolygon(x,y,polygon)){ 
-                  ++counter;                                        
-                  unsigned int x0, y0, x1, y1;
-                  costmap_.indexToCells(idx,x0,y0);
-                  std::cout << counter << std::endl;
-                  BOOST_FOREACH(unsigned point, circleCells(nbr, circle_radius, costmap_)){ 
-                    bfs.push(nbr); 
-                    if (counter == 10){                      
-                      //counter = 0;
-                      costmap_.indexToCells(nbr,x0,y0); 
-                      costmap_.indexToCells(point,x1,y1);                 
-                      //BOOST_FOREACH(unsigned point2, raytraceLine(x0,y0,x1,y1,costmap_)){
-                      //  if(map_[point2] == LETHAL_OBSTACLE){   
-                      //    break;
-                      //  }
-                        if (!processed_flag[point]){
-                          processed_flag[point] = true;
-                          ++counter2;
-                          if (counter2 < 70 && counter2 > 10){                           
-                            Frontier new_frontier = buildSimpleFrontier(point, 1.0);
-                            frontier_list.push_back(new_frontier);         
-                          }
-                        }  
+                    /*++counter;
+                    unsigned int x0, y0, x1, y1;
+                    costmap_.indexToCells(idx,x0,y0);
+                    //std::cout << counter << std::endl;
+                    bfs.push(nbr);
+                    BOOST_FOREACH(unsigned point, selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle)){
+                    //BOOST_FOREACH(unsigned point, circleCells(nbr, circle_radius, costmap_)){
+
+                        if (counter == 1){
+                          //counter = 0;
+                          costmap_.indexToCells(nbr,x0,y0);
+                          costmap_.indexToCells(point,x1,y1);
+                          //BOOST_FOREACH(unsigned point2, raytraceLine(x0,y0,x1,y1,costmap_)){
+                          //  if(map_[point2] == LETHAL_OBSTACLE){
+                          //    break;
+                          //  }
+                            if (!processed_flag[point]){
+                              processed_flag[point] = true;
+                              ++counter2;
+                              if (counter2 < 350 && counter2 > 0){
+                                Frontier new_frontier = buildSimpleFrontier(point, 1.0);
+                                frontier_list.push_back(new_frontier);
+                              }
+                            } else {
+                                std::cout << "NANU NANU" << std::endl;
+                            }
                       //}         
+                        }
                     }
-                  }
-                }
-                  /*
-                  circle = circleCells(nbr, circle_radius, costmap_);
+                }*/
+                  circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
-                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle, processed_flag);
+                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag);
                   frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
-                  std::cout << "one frontier computed" << std::endl;                  
-                }*/
+                  //std::cout << "one frontier computed" << std::endl;
+
+                }
               }
            } 
         }
-    }  
+    }
     std::cout << "ALL FRONTIERS COMPUTED" << std::endl;
     return frontier_list;
 
 }
 
-Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag){
+Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag){
   
   Frontier output;      
   output.size = 1;
   
   unsigned char previous_point = map_[cell];
   unsigned int x0, y0, x1, y1, ix, iy;
-  double robot_x, robot_y, cell_x, cell_y;
+  double robot_x, robot_y, cell_x, cell_y, wx, wy;
   
   costmap_.indexToCells(cell,x0,y0); 
   costmap_.mapToWorld(x0,y0,cell_x,cell_y);
@@ -163,13 +168,16 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   output.initial.y = cell_y;
   output.centroid.x = cell_x;
   output.centroid.y = cell_y;
-  output.middle.x = cell_x;
-  output.middle.y = cell_y;
+  output.middle.x = 0;
+  output.middle.y = 0;
   
-  BOOST_FOREACH(unsigned circle_point, circle){
-    costmap_.indexToCells(circle_point,x1,y1);
+  BOOST_FOREACH(unsigned point, points){
+    costmap_.indexToCells(point,x1,y1);
+    costmap_.mapToWorld(x1,y1,wx,wy);
+    output.middle.x += wx;
+    output.middle.y += wy;
     BOOST_FOREACH(unsigned line_point, raytraceLine(x0,y0,x1,y1,costmap_)){
-      if(map_[line_point] == LETHAL_OBSTACLE){ 
+      if(map_[line_point] == LETHAL_OBSTACLE){
         if(processed_flag[line_point] == false){
           if(previous_point == NO_INFORMATION){
             inf_gain += 10; // bonus value for unknown pixels infront of obstacle
@@ -177,20 +185,28 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
             inf_gain += 2;  // obstacle bonus
           }
           processed_flag[line_point] = true;
-        }        
+        }
         break;
       } else if(processed_flag[line_point] == false){
         if(map_[line_point] == NO_INFORMATION){
           inf_gain += 1;    // value of a pixel with unknown value
         }
       }
-      previous_point = map_[line_point];   
+      previous_point = map_[line_point];
     }
   }
-  
-  // TODO use orientation difference 
+
+  // compute the average position of all considered points
+  output.middle.x /= points.size();
+  output.middle.y /= points.size();
+
+  // TODO use orientation difference !?
+  //double orientation_distance = yawOfVector(robot_x, robot_y, output.middle.x, output.middle.y);
+
+
   // the frontier with smalles min_distance will be selected as next frontier,
   // therefore negated information gain is weighted with the distance from robot to the pose
+
   output.min_distance = -inf_gain * exp(-c1 * distance);
   
   std::cout << "Information gain: " << inf_gain << ", Distance: " << distance << ", Value: " << output.min_distance << std::endl; 

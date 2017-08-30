@@ -160,7 +160,6 @@ private:
                 goal_pose.pose.position = goal->explore_center.point;
                 goal_pose.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(eval_point.point, goal->explore_center.point) );
 
-            // change this service call for surmann approach
             }else if(getNextFrontier.call(srv)){ //if in boundary, try to find next frontier to search
 
                 ROS_INFO("Found frontier to explore");
@@ -203,10 +202,13 @@ private:
                     moving_ = true;
                 }
                 lock.unlock();
+            } else {
+                ROS_INFO("New goal to close to previous goal");
             }
 
             //check if continuous goal updating is enabled
             if(frequency_ > 0){
+                ROS_INFO("Continuous goal updating is enabled");
                 //sleep for specified frequency and then continue searching
                 rate.sleep();
             }else{
