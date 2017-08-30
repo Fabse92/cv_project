@@ -123,14 +123,21 @@ namespace frontier_exploration
         selected.min_distance = std::numeric_limits<double>::infinity();
 
         //pointcloud for visualization purposes
-        pcl::PointCloud<pcl::PointXYZI> frontier_cloud_viz;
-        pcl::PointXYZI frontier_point_viz(50);
+        pcl::PointCloud<pcl::PointXYZRGB> frontier_cloud_viz;
+        pcl::PointXYZRGB frontier_point_viz(0,0,0);
         int max;
-
+        int counter = 0;
+        int red = 0;
         BOOST_FOREACH(Frontier frontier, frontier_list){
+            ++counter;
             //load frontier into visualization poitncloud
             frontier_point_viz.x = frontier.initial.x;
             frontier_point_viz.y = frontier.initial.y;
+            if (counter == 1){
+              counter = 0;
+              red += 4;
+            }
+            frontier_point_viz.r = red;
             frontier_cloud_viz.push_back(frontier_point_viz);
 
             //check if this frontier is the nearest to robot
@@ -149,7 +156,7 @@ namespace frontier_exploration
         prev_y = selected.initial.y;
 
         //color selected frontier
-        frontier_cloud_viz[max].intensity = 100;
+        //frontier_cloud_viz[max].intensity = 100;
 
         //publish visualization point cloud
         sensor_msgs::PointCloud2 frontier_viz_output;

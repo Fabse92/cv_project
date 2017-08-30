@@ -135,7 +135,7 @@ bool nearestCell(unsigned int &result, unsigned int start, unsigned char val, co
  */
 std::vector<unsigned int> circleCells(unsigned int idx, double radius, const costmap_2d::Costmap2D& costmap){
 
-  std::vector<unsigned int> out;
+  std::vector<unsigned int> nnw, nne, een, ees, ssw, sse, wwn, wws;
   unsigned int size_x_ = costmap.getSizeInCellsX(), size_y_ = costmap.getSizeInCellsY();
   
   int cellRadius = radius / costmap.getResolution();
@@ -147,36 +147,28 @@ std::vector<unsigned int> circleCells(unsigned int idx, double radius, const cos
   int x = cellRadius, y = 0,  dy = 1, dx = 1;
   int err = dx - (cellRadius << 1);
   
-  // TODO do not add same point multiple times 
-  
-  if(idx % size_x_ > 0 && idx >= size_x_){
-        out.push_back(idx - 1 - size_x_);
-    }
-    if(idx % size_x_ > 0 && idx < size_x_*(size_y_-1)){
-        out.push_back(idx - 1 + size_x_);
-    }
-    if(idx % size_x_ < size_x_ - 1 && idx >= size_x_){
-        out.push_back(idx + 1 - size_x_);
-    }
-    if(idx % size_x_ < size_x_ - 1 && idx < size_x_*(size_y_-1)){
-        out.push_back(idx + 1 + size_x_);
-    }    
+  // TODO do not add same point multiple times    
     
   while (x >= y)
     {
       if(idx >= x * size_x_ + x && idx + x * size_x_ + x < size_x_*(size_y_-1)){
       
-        out.push_back(idx + x - y * size_x_); // right above
-        out.push_back(idx + x + y * size_x_); // right below
+        //een.emplace_back(idx + x - y * size_x_); // EastEastNorth right above
+        een.insert(een.begin(), idx + y - x * size_x_); 
+        ees.push_back(idx + x + y * size_x_); // EastEastSouth right below
         
-        out.push_back(idx - x - y * size_x_); // left above
-        out.push_back(idx - x + y * size_x_); // left below
         
-        out.push_back(idx - y + x * size_x_); // below left
-        out.push_back(idx + y + x * size_x_); // below right
+        wwn.push_back(idx - x - y * size_x_); // WestWestNorth left above
+        //wws.emplace_back(idx - x + y * size_x_); // WestWestSouth left below
+        wws.insert(wws.begin(), idx + y - x * size_x_); 
         
-        out.push_back(idx - y - x * size_x_); // above left
-        out.push_back(idx + y - x * size_x_); // above right
+        ssw.push_back(idx - y + x * size_x_); // SouthSouthWest below left
+        //sse.emplace_back(idx + y + x * size_x_); // SouthSouthEast below right
+        sse.insert(sse.begin(), idx + y - x * size_x_);  
+        
+        nnw.push_back(idx - y - x * size_x_); // NorthNorthWest above left ees
+        //nne.emplace_back(idx + y - x * size_x_); // NorthNorthEast above right   een
+        nne.insert(nne.begin(), idx + y - x * size_x_);      
       
       } else{
         ROS_ERROR("At least one point of circle outside of map! Undefined behavior!");
@@ -194,6 +186,21 @@ std::vector<unsigned int> circleCells(unsigned int idx, double radius, const cos
         err += (-cellRadius << 1) + dx;
       }
     }
+    
+  // concatenate points clock wise
+  std::vector<unsigned int> out(een);
+  out.insert( out.end(), ees.begin(), ees.end() );
+  /*
+  out.insert( out.end(), wwn.begin(), wwn.end() );
+  out.insert( out.end(), wws.begin(), wws.end() );
+  out.insert( out.end(), ssw.begin(), ssw.end() );
+  out.insert( out.end(), sse.begin(), sse.end() );
+  
+  out.insert( out.end(), ees.begin(), ees.end() );
+  out.insert( out.end(), een.begin(), een.end() );
+  
+  out.insert( out.end(), nne.begin(), nne.end() );
+  //out.insert( out.end(), nnw.begin(), nnw.end() );*/
 
   return out;
 }
