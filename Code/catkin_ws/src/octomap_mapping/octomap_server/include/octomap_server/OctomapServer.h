@@ -66,6 +66,8 @@
 #include <octomap/octomap.h>
 #include <octomap/OcTreeKey.h>
 
+#include <boost/tuple/tuple.hpp>
+
 #define COLOR_OCTOMAP_SERVER // turned off here, turned on identical ColorOctomapServer.h - easier maintenance, only maintain OctomapServer and then copy and paste to ColorOctomapServer and change define. There are prettier ways to do this, but this works for now
 
 #ifdef COLOR_OCTOMAP_SERVER
@@ -134,6 +136,10 @@ protected:
   * @param nonground all other endpoints (clear up to occupied endpoint)
   */
   virtual void insertScan(const tf::Point& sensorOrigin, const PCLPointCloud& ground, const PCLPointCloud& nonground);
+
+  void computeLabel(uint candidate_label, octomap::KeySet occupied_cells);
+
+  double getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey);
 
   /// label the input cloud "pc" into ground and nonground. Should be in the robot's fixed frame (not world!)
   void filterGroundPlane(const PCLPointCloud& pc, PCLPointCloud& ground, PCLPointCloud& nonground) const;
@@ -247,6 +253,8 @@ protected:
   bool m_compressMap;
 
   bool m_initConfig;
+
+  bool m_candidateIntegration;
 
   // downprojected 2D map:
   bool m_incrementalUpdate;

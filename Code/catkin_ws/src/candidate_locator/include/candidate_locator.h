@@ -37,7 +37,7 @@ private:
 	tf::StampedTransform camera_transform_;
 	cv::Mat depth_image_;
 	bool cam_model_assigned = false;
-	uint candidate_id_ = 0;
+	uint candidate_id_ = 1;
 
 	void candidatesCallback(const object_candidates::SnapshotMsg& msg);
 	void getTransforms(const ros::Time& stamp);

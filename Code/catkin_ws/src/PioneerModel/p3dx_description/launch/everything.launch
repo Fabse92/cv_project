@@ -1,6 +1,7 @@
 <launch>
 
-  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/>
+  <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/> -->
+  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find octomap_server)/debug_config.conf"/>
   <arg name="use_sim_time" default="true" />
   <arg name="output" default="screen" />
 
@@ -26,9 +27,12 @@
   <include file="$(find object_candidates)/launch/servers.launch" />
 
   <include file="$(find candidate_locator)/launch/servers.launch" >
-    <arg name="output" value="$(arg output)" />
+    <!-- <arg name="output" value="$(arg output)" /> -->
+    <arg name="output" value="log" />
   </include>
 
-  <include file="$(find octomap_server)/launch/octomap_mapping.launch" />
+  <include file="$(find octomap_server)/launch/octomap_mapping.launch" >
+    <arg name="output" value="log" />
+  </include>
 
 </launch>

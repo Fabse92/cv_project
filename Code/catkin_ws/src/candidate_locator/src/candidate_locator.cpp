@@ -125,12 +125,10 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
 {
   // Calculate desired "colour" from candidate_id_
   uint red, green, blue = 0;
-  if (candidate_id_ >= 255)
-  {
-    red = 255;
-    green = candidate_id_ - 255;
-  }
-  else red = candidate_id_;
+  red = candidate_id_ / 256;
+  green = candidate_id_ % 256;
+  ROS_DEBUG_STREAM("Candidate " << candidate_id_ << ": red = " << red << " green = " << green);
+  candidate_id_++;
 
   // Code adapted from function GazeboRosOpenniKinect::FillPointCloudHelper
 

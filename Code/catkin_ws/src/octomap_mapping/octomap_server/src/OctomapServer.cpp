@@ -68,7 +68,8 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_groundFilterDistance(0.04), m_groundFilterAngle(0.15), m_groundFilterPlaneDistance(0.07),
   m_compressMap(true),
   m_incrementalUpdate(false),
-  m_initConfig(true)
+  m_initConfig(true),
+  m_candidateIntegration(false)
 {
   double probHit, probMiss, thresMin, thresMax;
 
@@ -108,6 +109,8 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   private_nh.param("sensor_model/max", thresMax, 0.97);
   private_nh.param("compress_map", m_compressMap, m_compressMap);
   private_nh.param("incremental_2D_projection", m_incrementalUpdate, m_incrementalUpdate);
+
+  private_nh.param("candidate_integration", m_candidateIntegration, m_candidateIntegration);
 
   if (m_filterGroundPlane && (m_pointcloudMinZ > 0.0 || m_pointcloudMaxZ < 0.0)){
     ROS_WARN_STREAM("You enabled ground filtering but incoming pointclouds will be pre-filtered in ["
@@ -344,7 +347,6 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
     pc_nonground.header = pc.header;
   }
 
-
   insertScan(sensorToWorldTf.getOrigin(), pc_ground, pc_nonground);
 
   double total_elapsed = (ros::WallTime::now() - startTime).toSec();
@@ -362,9 +364,9 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
     ROS_ERROR_STREAM("Could not generate Key for origin "<<sensorOrigin);
   }
 
-#ifdef COLOR_OCTOMAP_SERVER
-  unsigned char* colors = new unsigned char[3];
-#endif
+  #ifdef COLOR_OCTOMAP_SERVER
+    unsigned char* colors = new unsigned char[3];
+  #endif
 
   // instead of direct scan insertion, compute update to filter ground:
   KeySet free_cells, occupied_cells;
@@ -408,13 +410,13 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
         updateMinKey(key, m_updateBBXMin);
         updateMaxKey(key, m_updateBBXMax);
 
-#ifdef COLOR_OCTOMAP_SERVER // NB: Only read and interpret color if it's an occupied node
-        const int rgb = *reinterpret_cast<const int*>(&(it->rgb)); // TODO: there are other ways to encode color than this one
-        colors[0] = ((rgb >> 16) & 0xff);
-        colors[1] = ((rgb >> 8) & 0xff);
-        colors[2] = (rgb & 0xff);
-        m_octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
-#endif
+        #ifdef COLOR_OCTOMAP_SERVER // NB: Only read and interpret color if it's an occupied node
+          const int rgb = *reinterpret_cast<const int*>(&(it->rgb)); // TODO: there are other ways to encode color than this one
+          colors[0] = ((rgb >> 16) & 0xff);
+          colors[1] = ((rgb >> 8) & 0xff);
+          colors[2] = (rgb & 0xff);
+          m_octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
+        #endif
       }
     } else {// ray longer than maxrange:;
       point3d new_end = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
@@ -433,6 +435,11 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
 
       }
     }
+  }
+
+  if (m_candidateIntegration)
+  {
+    computeLabel(nonground.points[0].r + nonground.points[0].g, occupied_cells);
   }
 
   // mark free cells only if not seen occupied in this cloud
@@ -481,6 +488,73 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
     colors = NULL;
   }
 #endif
+}
+
+void OctomapServer::computeLabel(uint candidate_label, KeySet occupied_cells)
+{
+  // it.first = label, it.second.get<0> = count of cells, it.second.get<1> = accumulated size of counted cells
+  std::map<uint, boost::tuple<uint, double> > labels;
+
+  for (KeySet::iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
+  {
+    // Find what's at that cell already
+    ColorOcTreeNode* node = m_octree->search(*it, 0);
+
+    if (node != NULL)
+    {
+      // Check the label and increment appropriate counter
+      uint existing_label = (node->getColor().r * 256) + node->getColor().g;
+      
+      // if (labels.count(existing_label) == 1)
+      // {
+      //   labels[existing_label]++;
+      // }
+      // else
+      // {
+      //   labels[existing_label] = 1;
+      // }
+      labels[existing_label] = boost::make_tuple(
+        (uint)boost::get<0>(labels[existing_label]) + 1,
+        (double)boost::get<1>(labels[existing_label]) + m_octree->getNodeSize(getNodeDepth((octomap::OcTree*)m_octree, *it)));
+    }
+    else labels[0] = boost::make_tuple((uint)boost::get<0>(labels[0]) + 1, 0);
+  }
+
+  ROS_INFO_STREAM("Candidate " << candidate_label);
+  ROS_INFO_STREAM("Labels found: ");
+  for (std::map<uint, boost::tuple<uint, double> >::iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
+  {
+    ROS_INFO_STREAM("Label: " << map_it->first << "; count: " << (uint)boost::get<0>(map_it->second) << "; size: " << (double)boost::get<1>(map_it->second));
+  }
+}
+
+/**
+  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
+*/
+double OctomapServer::getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey){
+  octomap::OcTreeNode* lOriginNode = inOcTree->search(inKey);
+  unsigned int lCount = 0;
+  int i = 1;
+
+  octomap::OcTreeKey lNextKey(inKey);
+  lNextKey[0] = inKey[0] + i;
+
+  // Count the number of time we fall on the same node in the positive x direction
+  while(inOcTree->search(lNextKey) == lOriginNode){
+      ++lCount;
+      lNextKey[0] = inKey[0] + ++i;
+  }
+
+  i = 1;
+  lNextKey[0] = inKey[0] - i;
+
+  // Count the number of time we fall on the same node in the negative x direction
+  while(inOcTree->search(lNextKey) == lOriginNode){
+      ++lCount;
+      lNextKey[0] = inKey[0] - ++i;
+  }
+
+  return inOcTree->getTreeDepth() - log2(lCount + 1);
 }
 
 
