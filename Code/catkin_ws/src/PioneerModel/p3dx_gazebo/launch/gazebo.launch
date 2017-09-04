@@ -25,7 +25,16 @@
 		a URDF robot -->
 	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
 		respawn="false" output="screen" args="-urdf -model p3dx -param robot_description" />
-  <!---->
+ <!--
+  <param name="banana_description" command="cat $(find objects)/data/banana.urdf" />
+  <node name="banana_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+    <remap from="robot_description" to="banana_description" />
+  </node>  
+  --> 
+   
+  <param name="banana_description" textfile="$(find objects)/data/banana.urdf"/> 
+  <node name="spawn_banana" pkg="gazebo_ros" type="spawn_model" args="-urdf -param banana_description -z 1.1 -model banana" respawn="false" output="screen" />
+
 
 	<!-- ros_control p3rd launch file -->
 	<!--<include file="$(find p3dx_control)/launch/control.launch" /> -->
