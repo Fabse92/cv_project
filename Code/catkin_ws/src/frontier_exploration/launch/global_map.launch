@@ -5,6 +5,7 @@
     <arg name="output_client" default="screen" />
     <arg name="output_server" default="screen" />
     <arg name="delay_time" default="0.0" />
+    <arg name="method" default="information_gain" />
 
     <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="$(arg output_client)"/>
 
@@ -15,6 +16,8 @@
         <!--<remap from="move_base/goal" to="wobtata"/>-->
         <param name="frequency" type="double" value="2.0"/>
         <param name="goal_aliasing" type="double" value="$(arg sensor_range)"/>
+        <param name="available_time" type="double" value="120.0"/>
+        <param name="method" type="str" value="$(arg method)"/>
 
         #All standard costmap_2d parameters as in move_base, other than BoundedExploreLayer
         <rosparam ns="explore_costmap" subst_value="true">
@@ -52,7 +55,7 @@
                 frontier_travel_point: middle
                 #set to false for gmapping, true if re-exploring a known area
                 explore_clear_space: false
-                method: frontier # information_gain
+                method: $(arg method)
                 circle_radius: 3.0
                 horizontal_fov: 60.0
 

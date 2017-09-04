@@ -38,6 +38,8 @@ class FrontierExplorationServer
 
 public:
 
+    double starting_time, available_time;
+    std::string method;
     /**
      * @brief Constructor for the server, sets up this node's ActionServer for exploration and ActionClient to move_base for robot movement.
      * @param name Name for SimpleActionServer
@@ -50,16 +52,20 @@ public:
         retry_(5)
     {
         private_nh_.param<double>("frequency", frequency_, 0.0);
+        private_nh_.param<double>("available_time", available_time, 60.0);
+        ROS_INFO_STREAM("Remaining time " << available_time);
         private_nh_.param<double>("goal_aliasing", goal_aliasing_, 0.1);
+        private_nh_.param<std::string>("method", method, "frontier");
 
         explore_costmap_ros_ = boost::shared_ptr<costmap_2d::Costmap2DROS>(new costmap_2d::Costmap2DROS("explore_costmap", tf_listener_));
 
         as_.registerPreemptCallback(boost::bind(&FrontierExplorationServer::preemptCb, this));
-        as_.start();
+        starting_time = ros::Time::now().toSec();
+        as_.start();        
     }
 
 private:
-
+    
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     tf::TransformListener tf_listener_;
@@ -74,6 +80,12 @@ private:
     frontier_exploration::ExploreTaskFeedback feedback_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_client_;
     move_base_msgs::MoveBaseGoal move_client_goal_;
+
+    void finishedTask(){     
+      as_.setSucceeded();
+      boost::unique_lock<boost::mutex> lock(move_client_lock_);
+      move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+    }
 
     /**
      * @brief Execute callback for actionserver, run after accepting a new goal
@@ -172,11 +184,11 @@ private:
 
                 //search is succesful
                 if(retry_ == 0 && success_){
+                  if (method == "frontier") {
                     ROS_WARN("Finished exploring room");
-                    as_.setSucceeded();
-                    boost::unique_lock<boost::mutex> lock(move_client_lock_);
-                    move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+                    finishedTask();
                     return;
+                  }                    
 
                 }else if(retry_ == 0 || !ros::ok()){ //search is not successful
 
@@ -203,7 +215,7 @@ private:
                 }
                 lock.unlock();
             } else {
-                ROS_INFO("New goal to close to previous goal");
+                ROS_WARN("New goal too close to previous goal");
             }
 
             //check if continuous goal updating is enabled
@@ -225,6 +237,17 @@ private:
             
             image_transport::ImageTransport it = image_transport::ImageTransport(nh_);
             image_transport::Publisher image_pub = it.advertise("/candidate",1000);
+            
+            // check if time is up before we do any further processing
+            double current_time = ros::Time::now().toSec();
+            double used_time = current_time - starting_time;
+            if (used_time > available_time) {
+              ROS_WARN("Time is up!");
+              finishedTask();
+              return;
+            } else {
+              ROS_INFO_STREAM("Remaining time " << available_time - used_time);
+            }
             
             // Call service to get snapshot
             ros::ServiceClient snapshot_client = nh_.serviceClient<object_candidates::Snapshot>("get_snapshot");
