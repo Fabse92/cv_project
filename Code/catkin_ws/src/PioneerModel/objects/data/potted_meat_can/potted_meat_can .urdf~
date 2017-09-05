@@ -1,0 +1,22 @@
+
+<robot name="tomato_can">
+  <link name="tomato_can_link">
+    <inertial>
+      <origin xyz="0 -2 0" />
+      <mass value="0.066" />
+      <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="1.0"  iyz="0.0"  izz="1.0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 -2 0"/>
+      <geometry>
+        <mesh filename="package://objects/data/tomato_can/tomato_can.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 -2 0"/>
+      <geometry>
+        <mesh filename="package://objects/data/tomato_can/tomato_can.dae" />
+      </geometry>
+    </collision>
+  </link>
+</robot>
