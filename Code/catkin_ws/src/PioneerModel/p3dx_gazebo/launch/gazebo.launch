@@ -1,3 +1,4 @@
+
 <launch>
 
 	<!-- these are the arguments you can pass this launch file, for example 
@@ -13,7 +14,7 @@
 	<!-- We resume the logic in empty_world.launch, changing only the name of 
 		the world to be launched -->
 	<include file="$(find gazebo_ros)/launch/empty_world.launch">
-		<arg name="world_name" value="$(find p3dx_gazebo)/worlds/testing_room_with_objects.world" />
+		<arg name="world_name" value="$(find p3dx_gazebo)/worlds/testing_room_with_few_objects.world" />
 		<arg name="debug" value="$(arg debug)" />
 		<arg name="gui" value="$(arg gui)" />
 		<arg name="paused" value="$(arg paused)" />
@@ -35,40 +36,39 @@ respawn="false" output="screen" args="-urdf -model p3dx -param robot_description
   --> 
    <!--
   <param name="banana_description" textfile="$(find objects)/data/banana/banana.urdf"/> 
-  <node name="spawn_banana" pkg="gazebo_ros" type="spawn_model" args="-urdf -param banana_description -z 0.1 -model banana" respawn="false" output="screen" />
-
+  <node name="spawn_banana" pkg="gazebo_ros" type="spawn_model" args="-urdf -param banana_description -z 0.0 -model banana" respawn="false" output="screen" />
   <param name="cracker_box_description" textfile="$(find objects)/data/cracker_box/cracker_box.urdf"/> 
-  <node name="spawn_cracker_box" pkg="gazebo_ros" type="spawn_model" args="-urdf -param cracker_box_description -z 0.1 -model cracker_box" respawn="false" output="screen" />
+  <node name="spawn_cracker_box" pkg="gazebo_ros" type="spawn_model" args="-urdf -param cracker_box_description -z 0.0 -model cracker_box" respawn="false" output="screen" />
   
   <param name="wood_block_description" textfile="$(find objects)/data/wood_block/wood_block.urdf"/> 
-  <node name="spawn_wood_block" pkg="gazebo_ros" type="spawn_model" args="-urdf -param wood_block_description -z 0.1 -model wood_block" respawn="false" output="screen" />
+  <node name="spawn_wood_block" pkg="gazebo_ros" type="spawn_model" args="-urdf -param wood_block_description -z 0.0 -model wood_block" respawn="false" output="screen" />
   
   <param name="power_drill_description" textfile="$(find objects)/data/power_drill/power_drill.urdf"/> 
-  <node name="spawn_power_drill" pkg="gazebo_ros" type="spawn_model" args="-urdf -param power_drill_description -z 0.1 -model power_drill" respawn="false" output="screen" />
+  <node name="spawn_power_drill" pkg="gazebo_ros" type="spawn_model" args="-urdf -param power_drill_description -z 0.0 -model power_drill" respawn="false" output="screen" />
   
   <param name="bowl_description" textfile="$(find objects)/data/bowl/bowl.urdf"/> 
-  <node name="spawn_bowl" pkg="gazebo_ros" type="spawn_model" args="-urdf -param bowl_description -z 0.1 -model bowl" respawn="false" output="screen" />
+  <node name="spawn_bowl" pkg="gazebo_ros" type="spawn_model" args="-urdf -param bowl_description -z 0.0 -model bowl" respawn="false" output="screen" />
   
   <param name="mug_description" textfile="$(find objects)/data/mug/mug.urdf"/> 
-  <node name="spawn_mug" pkg="gazebo_ros" type="spawn_model" args="-urdf -param mug_description -z 0.1 -model mug" respawn="false" output="screen" />
+  <node name="spawn_mug" pkg="gazebo_ros" type="spawn_model" args="-urdf -param mug_description -z 0.0 -model mug" respawn="false" output="screen" />
   
   <param name="hammer_description" textfile="$(find objects)/data/hammer/hammer.urdf"/> 
-  <node name="spawn_hammer" pkg="gazebo_ros" type="spawn_model" args="-urdf -param hammer_description -z 0.1 -model hammer" respawn="false" output="screen" />
+  <node name="spawn_hammer" pkg="gazebo_ros" type="spawn_model" args="-urdf -param hammer_description -z 0.0 -model hammer" respawn="false" output="screen" />
   
   <param name="pitcher_base_description" textfile="$(find objects)/data/pitcher_base/pitcher_base.urdf"/> 
-  <node name="spawn_pitcher_base" pkg="gazebo_ros" type="spawn_model" args="-urdf -param pitcher_base_description -z 0.1 -model pitcher_base" respawn="false" output="screen" />
+  <node name="spawn_pitcher_base" pkg="gazebo_ros" type="spawn_model" args="-urdf -param pitcher_base_description -z 0.0 -model pitcher_base" respawn="false" output="screen" />
   
   <param name="bleach_cleanser_description" textfile="$(find objects)/data/bleach_cleanser/bleach_cleanser.urdf"/> 
-  <node name="spawn_bleach_cleanser" pkg="gazebo_ros" type="spawn_model" args="-urdf -param bleach_cleanser_description -z 0.1 -model bleach_cleanser" respawn="false" output="screen" />
+  <node name="spawn_bleach_cleanser" pkg="gazebo_ros" type="spawn_model" args="-urdf -param bleach_cleanser_description -z 0.0 -model bleach_cleanser" respawn="false" output="screen" />
   
   <param name="ball_description" textfile="$(find objects)/data/ball/ball.urdf"/> 
-  <node name="spawn_ball" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -z 0.1 -model ball" respawn="false" output="screen" />
+  <node name="spawn_ball" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -z 0.0 -model ball" respawn="false" output="screen" />
   
   <param name="sugar_box_description" textfile="$(find objects)/data/sugar_box/sugar_box.urdf"/> 
-  <node name="spawn_sugar_box" pkg="gazebo_ros" type="spawn_model" args="-urdf -param sugar_box_description -z 0.1 -model sugar_box" respawn="false" output="screen" />
+  <node name="spawn_sugar_box" pkg="gazebo_ros" type="spawn_model" args="-urdf -param sugar_box_description -z 0.0 -model sugar_box" respawn="false" output="screen" />
   
   <param name="potted_meat_can_description" textfile="$(find objects)/data/potted_meat_can/potted_meat_can.urdf"/> 
-  <node name="spawn_potted_meat_can" pkg="gazebo_ros" type="spawn_model" args="-urdf -param potted_meat_can_description -z 0.1 -model potted_meat_can" respawn="false" output="screen" />
+  <node name="spawn_potted_meat_can" pkg="gazebo_ros" type="spawn_model" args="-urdf -param potted_meat_can_description -z 0.0 -model potted_meat_can" respawn="false" output="screen" />
   --> 
   
 	<!-- ros_control p3rd launch file -->
