@@ -1,0 +1,3 @@
+<launch>
+  <node name="evaluation_server" type="evaluation_server" pkg="evaluation" output="screen" />
+</launch>

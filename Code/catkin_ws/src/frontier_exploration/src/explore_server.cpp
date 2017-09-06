@@ -18,6 +18,8 @@
 
 
 #include "object_candidates/Snapshot.h"
+#include "evaluation/Evaluate.h"
+
 #include <sensor_msgs/image_encodings.h>
 #include <image_transport/image_transport.h>
 #include "object_candidates/ArrayImages.h"
@@ -82,8 +84,17 @@ private:
     frontier_exploration::ExploreTaskFeedback feedback_;
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_client_;
     move_base_msgs::MoveBaseGoal move_client_goal_;
+    
+    ros::ServiceClient evaluation_client = nh_.serviceClient<evaluation::Evaluate>("evaluate");
+    evaluation::Evaluate eval_srv;
 
-    void finishedTask(){     
+    void finishedTask(){
+      ROS_INFO("Requesting evaluation");
+      if (evaluation_client.call(eval_srv))
+      {
+        ROS_INFO_STREAM("Evaluation performed!");
+      }
+    
       as_.setSucceeded();
       boost::unique_lock<boost::mutex> lock(move_client_lock_);
       move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
