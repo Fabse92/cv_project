@@ -137,7 +137,7 @@ protected:
   */
   virtual void insertScan(const tf::Point& sensorOrigin, const PCLPointCloud& ground, const PCLPointCloud& nonground);
 
-  void computeLabel(uint candidate_label, octomap::KeySet occupied_cells);
+  octomap::ColorOcTreeNode::Color computeLabel(const uint candidate_label, octomap::KeySet occupied_cells, PCLPointCloud::Ptr);
 
   double getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey);
 
