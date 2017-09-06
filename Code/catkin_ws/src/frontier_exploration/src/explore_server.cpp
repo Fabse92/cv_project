@@ -26,6 +26,8 @@
 #include "candidate_locator/ArrayPointClouds.h"
 
 #include "octomap_ros/conversions.h"
+#include "octomap_msgs/MergeCandidates.h"
+#include "octomap_msgs/GetOctomap.h"
 
 namespace frontier_exploration{
 
@@ -276,19 +278,19 @@ private:
               ROS_INFO("Locating candidates");
               if (locator_client.call(locator_srv))
               {
-                // ROS_INFO("Located candidate point clouds received");
+                ros::ServiceClient octomap_merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates");
+                octomap_msgs::MergeCandidates octomap_merge_srv;
+                // octomap_merge_srv.request.candidates = locator_srv.response.candidates;
 
-                // // TODO: Merge candidates into single representation
-
-                // for (int i = 0; i < locator_srv.response.candidates.data.size(); i++)
-                // {
-                //     octomap::Pointcloud octomapPC;
-
-                //     octomap::pointCloud2ToOctomap(locator_srv.response.candidates.data[i], octomapPC);
-
-                //     // TODO: Send point cloud to octomap.
-
-                // }
+                ROS_INFO("Merging candidates");
+                if (octomap_merge_client.call(octomap_merge_srv))
+                {
+                  ROS_INFO("merge_candidates service called successfully");
+                }
+                else
+                {
+                  ROS_ERROR("Failed to call octomap candidate merging service");     
+                }
               }
               else
               {

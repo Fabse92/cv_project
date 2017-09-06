@@ -229,7 +229,7 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
 
   output.min_distance = -inf_gain * exp(-c1 * distance);
   
-  std::cout << "Information gain: " << inf_gain << ", Distance: " << distance << ", Value: " << output.min_distance << std::endl; 
+  ROS_DEBUG_STREAM("Information gain: " << inf_gain << ", Distance: " << distance << ", Value: " << output.min_distance); 
   
   return output;
 }

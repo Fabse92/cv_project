@@ -184,6 +184,7 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_octomapFullService = m_nh.advertiseService("octomap_full", &OctomapServer::octomapFullSrv, this);
   m_clearBBXService = private_nh.advertiseService("clear_bbx", &OctomapServer::clearBBXSrv, this);
   m_resetService = private_nh.advertiseService("reset", &OctomapServer::resetSrv, this);
+  m_mergeCandidateService = private_nh.advertiseService("merge_candidates", &OctomapServer::mergeCandidateSrv, this);
 
   dynamic_reconfigure::Server<OctomapServerConfig>::CallbackType f;
   f = boost::bind(&OctomapServer::reconfigureCallback, this, _1, _2);
@@ -263,18 +264,20 @@ bool OctomapServer::openFile(const std::string& filename){
 }
 
 void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud){
-  ros::WallTime startTime = ros::WallTime::now();
 
-
-  //
-  // ground filtering in base frame
-  //
   PCLPointCloud pc; // input cloud for filtering and ground-detection
   pcl::fromROSMsg(*cloud, pc);
 
+  insertCloud(pc, cloud->header.frame_id, cloud->header.stamp);
+}
+
+void OctomapServer::insertCloud(PCLPointCloud pc, const std::string& frame_id, const ros::Time& stamp)
+{
+  ros::WallTime startTime = ros::WallTime::now();
+
   tf::StampedTransform sensorToWorldTf;
   try {
-    m_tfListener.lookupTransform(m_worldFrameId, cloud->header.frame_id, cloud->header.stamp, sensorToWorldTf);
+    m_tfListener.lookupTransform(m_worldFrameId, frame_id, stamp, sensorToWorldTf);
   } catch(tf::TransformException& ex){
     ROS_ERROR_STREAM( "Transform error of sensor data: " << ex.what() << ", quitting callback");
     return;
@@ -301,9 +304,9 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
   if (m_filterGroundPlane){
     tf::StampedTransform sensorToBaseTf, baseToWorldTf;
     try{
-      m_tfListener.waitForTransform(m_baseFrameId, cloud->header.frame_id, cloud->header.stamp, ros::Duration(0.2));
-      m_tfListener.lookupTransform(m_baseFrameId, cloud->header.frame_id, cloud->header.stamp, sensorToBaseTf);
-      m_tfListener.lookupTransform(m_worldFrameId, m_baseFrameId, cloud->header.stamp, baseToWorldTf);
+      m_tfListener.waitForTransform(m_baseFrameId, frame_id, stamp, ros::Duration(0.2));
+      m_tfListener.lookupTransform(m_baseFrameId, frame_id, stamp, sensorToBaseTf);
+      m_tfListener.lookupTransform(m_worldFrameId, m_baseFrameId, stamp, baseToWorldTf);
 
 
     }catch(tf::TransformException& ex){
@@ -352,7 +355,7 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
   double total_elapsed = (ros::WallTime::now() - startTime).toSec();
   ROS_DEBUG("Pointcloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(), pc_nonground.size(), total_elapsed);
 
-  publishAll(cloud->header.stamp);
+  publishAll(stamp);
 }
 
 void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCloud& ground, const PCLPointCloud& nonground){
@@ -940,6 +943,21 @@ bool OctomapServer::resetSrv(std_srvs::Empty::Request& req, std_srvs::Empty::Res
     freeNodesVis.markers[i].action = visualization_msgs::Marker::DELETE;
   }
   m_fmarkerPub.publish(freeNodesVis);
+
+  return true;
+}
+
+bool OctomapServer::mergeCandidateSrv(MergeSrv::Request& req, MergeSrv::Response& res)
+{
+  ROS_INFO("In MergeCandidate service");
+  std::cout << "In MergeCandidate service" << std::endl;
+  for (int i = 0; i < req.candidates.data.size(); i++)
+  {
+    PCLPointCloud pcl_pc;
+    fromROSMsg(req.candidates.data[i], pcl_pc);
+
+    insertCloud(pcl_pc, req.candidates.data[i].header.frame_id, req.candidates.data[i].header.stamp);
+  }
 
   return true;
 }

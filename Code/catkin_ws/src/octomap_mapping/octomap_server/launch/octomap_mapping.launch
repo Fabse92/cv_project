@@ -23,7 +23,7 @@
 		<param name="candidate_integration" value="true" />
 		
 		<!-- data source to integrate (PointCloud2) -->
-		<remap from="cloud_in" to="/candidate_point_clouds" />
+		<!-- <remap from="cloud_in" to="/candidate_point_clouds" /> -->
 	
 	</node>
 </launch>
