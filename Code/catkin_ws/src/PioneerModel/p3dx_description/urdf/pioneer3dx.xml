@@ -56,45 +56,6 @@ work original in ucs-ros-pkg.
     <kp>1000000.0</kp>
     <kd>1.0</kd>
   </gazebo>
-  <!-- front_sonar -->
-  <gazebo reference="front_sonar">
-    <material value="Gazebo/Yellow"/>
-  </gazebo>
-  <!-- lms100 -->
-  <gazebo reference="lms100">
-    <sensor name="head_hokuyo_sensor" type="ray">
-      <pose>0 0 0 0 0 0</pose>
-      <visualize>false</visualize>
-      <update_rate>50</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>360</samples>
-            <resolution>1</resolution>
-            <min_angle>-1.570796</min_angle>
-            <max_angle>1.570796</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.1</min>
-          <max>30.0</max>
-          <resolution>0.01</resolution>
-        </range>
-        <noise>
-          <type>gaussian</type>
-          <!-- Noise parameters based on published spec for Hokuyo laser achieving 
-						"+-30mm" accuracy at range < 10m. A mean of 0.0m and stddev of 0.01m will 
-						put 99.7% of samples within 0.03m of the true reading. -->
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise>
-      </ray>
-      <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller">
-        <topicName>scan</topicName>
-        <frameName>lms100</frameName>
-      </plugin>
-    </sensor>
-  </gazebo>
   <!-- camera -->
   <gazebo reference="camera_link">
     <sensor name="camera" type="depth">
@@ -500,7 +461,7 @@ work original in ucs-ros-pkg.
   <!-- Camera 3.141592654 1.57079632679 -->
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 0 0"/>
-    <origin rpy="0 0 0" xyz="0.05 0.0 0.0"/>
+    <origin rpy="0 0 0" xyz="0.05 0.0 -0.135"/>
     <parent link="front_sonar"/>
     <child link="camera_link"/>
   </joint>
@@ -525,39 +486,20 @@ work original in ucs-ros-pkg.
     </inertial>
   </link>
   <joint name="camera_optical_joint" type="fixed">
-    <axis xyz="0 0 0"/>
-    <origin rpy="-1.58 0 -1.58" xyz="0.05 0.0 0.0"/>
+    <!-- <axis xyz="0 0 0" /> -->
+    <origin rpy="-1.571 0 -1.571"/>
     <parent link="camera_link"/>
     <child link="camera_optical_frame"/>
   </joint>
   <link name="camera_optical_frame">
   </link>
-  <!-- Size of square 'camera' box -->
-  <!-- lms100 laser -->
-  <link name="lms100">
-    <inertial>
-      <mass value="1e-5"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <mesh filename="package://p3dx_description/meshes/lms100.dae"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <box size="0.1 0.1 0.1"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="lms100_joint" type="fixed">
-    <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.16 0 0.05"/>
-    <parent link="base_link"/>
-    <child link="lms100"/>
+  <joint name="camera_depth_joint" type="fixed">
+    <origin rpy="-1.571 1.571 -1.571"/>
+    <parent link="camera_link"/>
+    <child link="camera_depth_frame"/>
   </joint>
+  <link name="camera_depth_frame">
+  </link>
+  <!-- Size of square 'camera' box -->
 </robot>
 
