@@ -146,7 +146,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                 }*/
                   circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
-                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag);
+                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon);
                   frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
                   //std::cout << "one frontier computed" << std::endl;                
@@ -160,14 +160,14 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
 }
 
-Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag){
+Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon){
   
   Frontier output;      
   output.size = 1;
   
   unsigned char previous_point = map_[cell];
   unsigned int x0, y0, x1, y1, ix, iy;
-  double robot_x, robot_y, cell_x, cell_y, wx, wy;
+  double robot_x, robot_y, cell_x, cell_y, wx, wy, x, y;
   
   costmap_.indexToCells(cell,x0,y0); 
   costmap_.mapToWorld(x0,y0,cell_x,cell_y);
@@ -192,23 +192,27 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
     costmap_.mapToWorld(x1,y1,wx,wy);
     output.middle.x += wx;
     output.middle.y += wy;
-    BOOST_FOREACH(unsigned line_point, raytraceLine(x0,y0,x1,y1,costmap_)){
-      if(map_[line_point] == LETHAL_OBSTACLE){
-        if(processed_flag[line_point] == false){
-          if(previous_point == NO_INFORMATION){
-            inf_gain += 10; // bonus value for unknown pixels infront of obstacle
-          } else {
-            inf_gain += 2;  // obstacle bonus
+    BOOST_FOREACH(unsigned line_point, raytraceLine(x0,y0,x1,y1,costmap_)){           
+      costmap_.indexToCells(line_point,ix,iy);
+      costmap_.mapToWorld(ix,iy,x,y);
+      if(pointInPolygon(x,y,polygon)){
+        if(map_[line_point] == LETHAL_OBSTACLE){
+          if(processed_flag[line_point] == false){
+            if(previous_point == NO_INFORMATION){
+              inf_gain += 10; // bonus value for unknown pixels infront of obstacle
+            } else {
+              inf_gain += 2;  // obstacle bonus
+            }
+            processed_flag[line_point] = true;
           }
-          processed_flag[line_point] = true;
+          break;
+        } else if(processed_flag[line_point] == false){
+          if(map_[line_point] == NO_INFORMATION){
+            inf_gain += 1;    // value of a pixel with unknown value
+          }
         }
-        break;
-      } else if(processed_flag[line_point] == false){
-        if(map_[line_point] == NO_INFORMATION){
-          inf_gain += 1;    // value of a pixel with unknown value
-        }
+        previous_point = map_[line_point];
       }
-      previous_point = map_[line_point];
     }
   }
 

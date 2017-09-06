@@ -1,0 +1,22 @@
+
+<robot name="sugar_box">
+  <link name="sugar_box_link">
+    <inertial>
+      <origin xyz="0 2 0" />
+      <mass value="0.066" />
+      <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="1.0"  iyz="0.0"  izz="1.0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 2 0"/>
+      <geometry>
+        <mesh filename="package://objects/data/sugar_box/sugar_box.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 2 0"/>
+      <geometry>
+        <mesh filename="package://objects/data/sugar_box/sugar_box.dae" />
+      </geometry>
+    </collision>
+  </link>
+</robot>
