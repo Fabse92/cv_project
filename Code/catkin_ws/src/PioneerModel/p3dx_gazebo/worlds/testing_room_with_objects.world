@@ -461,7 +461,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/power_drill/power_drill.dae</uri>
+              <uri>model://data/power_drill/power_drill.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -480,7 +480,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/power_drill/power_drill.dae</uri>
+              <uri>model://data/power_drill/power_drill.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -515,7 +515,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/cracker_box/cracker_box.dae</uri>
+              <uri>model://data/cracker_box/cracker_box.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -534,7 +534,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/cracker_box/cracker_box.dae</uri>
+              <uri>model://data/cracker_box/cracker_box.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -569,7 +569,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/banana/banana.dae</uri>
+              <uri>model://data/banana/banana.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -588,7 +588,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/banana/banana.dae</uri>
+              <uri>model://data/banana/banana.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -623,7 +623,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/bowl/bowl.dae</uri>
+              <uri>model://data/bowl/bowl.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -642,7 +642,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/bowl/bowl.dae</uri>
+              <uri>model://data/bowl/bowl.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -677,7 +677,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/wood_block/wood_block.dae</uri>
+              <uri>model://data/wood_block/wood_block.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -696,7 +696,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/wood_block/wood_block.dae</uri>
+              <uri>model://data/wood_block/wood_block.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -731,7 +731,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/bleach_cleanser/bleach_cleanser.dae</uri>
+              <uri>model://data/bleach_cleanser/bleach_cleanser.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -750,7 +750,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/bleach_cleanser/bleach_cleanser.dae</uri>
+              <uri>model://data/bleach_cleanser/bleach_cleanser.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -785,7 +785,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/hammer/hammer.dae</uri>
+              <uri>model://data/hammer/hammer.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -804,7 +804,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/hammer/hammer.dae</uri>
+              <uri>model://data/hammer/hammer.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -839,7 +839,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/mug/mug.dae</uri>
+              <uri>model://data/mug/mug.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -858,7 +858,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/mug/mug.dae</uri>
+              <uri>model://data/mug/mug.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -893,7 +893,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/sugar_box/sugar_box.dae</uri>
+              <uri>model://data/sugar_box/sugar_box.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -912,7 +912,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/sugar_box/sugar_box.dae</uri>
+              <uri>model://data/sugar_box/sugar_box.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -947,7 +947,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/ball/ball.dae</uri>
+              <uri>model://data/ball/ball.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -966,7 +966,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/ball/ball.dae</uri>
+              <uri>model://data/ball/ball.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1001,7 +1001,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/pitcher_base/pitcher_base.dae</uri>
+              <uri>model://data/pitcher_base/pitcher_base.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1020,7 +1020,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/pitcher_base/pitcher_base.dae</uri>
+              <uri>model://data/pitcher_base/pitcher_base.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1055,7 +1055,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/potted_meat_can/potted_meat_can.dae</uri>
+              <uri>model://data/potted_meat_can/potted_meat_can.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1074,7 +1074,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/potted_meat_can/potted_meat_can.dae</uri>
+              <uri>model://data/potted_meat_can/potted_meat_can.dae</uri>
             </mesh>
           </geometry>
         </visual>

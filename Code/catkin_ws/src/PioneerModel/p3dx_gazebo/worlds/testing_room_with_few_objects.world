@@ -389,7 +389,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/cracker_box/cracker_box.dae</uri>
+              <uri>model://data/cracker_box/cracker_box.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -408,7 +408,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/cracker_box/cracker_box.dae</uri>
+              <uri>model://data/cracker_box/cracker_box.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -443,7 +443,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/wood_block/wood_block.dae</uri>
+              <uri>model://data/wood_block/wood_block.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -462,7 +462,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/wood_block/wood_block.dae</uri>
+              <uri>model://data/wood_block/wood_block.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -497,7 +497,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/hammer/hammer.dae</uri>
+              <uri>model://data/hammer/hammer.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -516,7 +516,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/hammer/hammer.dae</uri>
+              <uri>model://data/hammer/hammer.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -551,7 +551,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/pitcher_base/pitcher_base.dae</uri>
+              <uri>model://data/pitcher_base/pitcher_base.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -570,7 +570,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>/home/fabsen/cv_project/Code/catkin_ws/src/PioneerModel/objects/data/pitcher_base/pitcher_base.dae</uri>
+              <uri>model://data/pitcher_base/pitcher_base.dae</uri>
             </mesh>
           </geometry>
         </visual>
