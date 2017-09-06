@@ -1,7 +1,7 @@
 
 <launch>
 
-  <env name="GAZEBO_MODEL_PATH" value="/home/phil/cv_project/Code/catkin_ws/src/PioneerModel/objects" />
+  <env name="GAZEBO_MODEL_PATH" value="$(find objects)" />
 
 	<!-- these are the arguments you can pass this launch file, for example 
 		paused:=true -->
