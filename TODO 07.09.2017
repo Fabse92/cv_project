@@ -49,4 +49,6 @@ Prevent the "trails" around the objects
 
 Fix the error in the explore server which makes the robot stop moving for no apparent reason
 
+Increase the resolution of the octomap and cost map
+
 Save and load octomap
