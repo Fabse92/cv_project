@@ -92,6 +92,61 @@ public:
   typedef octomap_msgs::BoundingBoxQuery BBXSrv;
   typedef octomap_msgs::MergeCandidates MergeSrv;
 
+  class CandidateList
+  {
+  private:
+    std::vector<uint> labels;
+    std::vector<octomap::ColorOcTreeNode::Color> colors;
+
+  public:
+    CandidateList() {};
+
+    std::vector<uint> getAllLabels() { return labels; }
+    std::vector<octomap::ColorOcTreeNode::Color> getAllColors() { return colors; }
+
+    void addCandidate(uint newLabel)
+    {
+      octomap::ColorOcTreeNode::Color newColor(0, 0, 1);
+      bool newColorUnique = false;
+      while (!newColorUnique)
+      {
+        newColorUnique = true;
+        newColor.r = rand() % 255;
+        newColor.g = rand() % 255;
+
+        for (std::vector<octomap::ColorOcTreeNode::Color>::iterator colors_it = colors.begin(), colors_end = colors.end(); colors_it != colors_end; colors_it++)
+        {
+          octomap::ColorOcTreeNode::Color thisColor = *colors_it;
+          if ((uint)thisColor.r == newColor.r && (uint)thisColor.g == newColor.g) newColorUnique = false;
+        }
+      }
+
+      labels.push_back(newLabel);
+      colors.push_back(newColor);
+    }
+    
+    uint getLabel(octomap::ColorOcTreeNode::Color color)
+    {
+      for (int i = 0; i < colors.size(); i++)
+      {
+        if (colors[i].r == color.r && colors[i].g == color.g) return labels[i];
+      }
+
+      ROS_INFO_STREAM("Label not found for color " << (uint)color.r << ", " << (uint)color.g);
+      return 0;
+    }
+
+    octomap::ColorOcTreeNode::Color getColor(uint label)
+    {
+      for (int i = 0; i < labels.size(); i++)
+      {
+        if (labels[i] == label) return colors[i];
+      }
+
+      ROS_INFO_STREAM("Color not found for label " << label);
+    }
+  };
+
   OctomapServer(ros::NodeHandle private_nh_ = ros::NodeHandle("~"));
   virtual ~OctomapServer();
   virtual bool octomapBinarySrv(OctomapSrv::Request  &req, OctomapSrv::GetOctomap::Response &res);
@@ -142,7 +197,7 @@ protected:
 
   void insertCloud(PCLPointCloud pc, const std::string& frame_id, const ros::Time& stamp);
 
-  octomap::ColorOcTreeNode::Color computeLabel(const uint candidate_label, octomap::KeySet occupied_cells, PCLPointCloud::Ptr);
+  uint computeLabel(const uint candidate_label, octomap::KeySet occupied_cells, PCLPointCloud::Ptr);
 
   double getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey);
 
@@ -270,6 +325,9 @@ protected:
   unsigned m_multires2DScale;
   bool m_projectCompleteMap;
   bool m_useColoredMap;
+
+  CandidateList m_candidateList;
+  // std::vector<std::pair<uint, octomap::ColorOcTreeNode::Color>> candidate_list;
 };
 }
 

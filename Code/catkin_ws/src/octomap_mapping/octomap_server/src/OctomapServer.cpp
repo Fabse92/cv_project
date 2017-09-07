@@ -361,6 +361,7 @@ void OctomapServer::insertCloud(PCLPointCloud pc, const std::string& frame_id, c
 void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCloud& ground, const PCLPointCloud& nonground){
 
   setvbuf(stdout, NULL, _IOLBF, 4096); 
+  ROS_INFO("Inserting scan");
 
   point3d sensorOrigin = pointTfToOctomap(sensorOriginTf);
 
@@ -451,7 +452,7 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
   if (m_candidateIntegration)
   {
     ROS_INFO_STREAM("----------");
-    octomap::ColorOcTreeNode::Color color = computeLabel(nonground.points[0].r + nonground.points[0].g, occupied_cells, nonground.makeShared());
+    octomap::ColorOcTreeNode::Color color = m_candidateList.getColor(computeLabel(nonground.points[0].r + nonground.points[0].g, occupied_cells, nonground.makeShared()));
 
     uint null_nodes = 0, non_null_nodes = 0;
 
@@ -460,16 +461,33 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
     {
       ColorOcTreeNode* node = m_octree->search(*it, 0);
 
-      // ROS_INFO_STREAM("Key: " << *it << "; is leaf: " << );
+      m_octree->updateNode(*it, true);
 
       if (node != NULL)
       {
-        node->setColor(color);
+        octomap::ColorOcTreeNode::Color currentColor = node->getColor();
+
+        if (color.r == currentColor.r && color.g == currentColor.g)
+        {
+          node->setColor(currentColor.r, currentColor.g, (uint)currentColor.b + 1);
+        }
+        else
+        {
+          // TODO: Do we like this logic?
+          if (currentColor.b > 0)
+          {
+            node->setColor(currentColor.r, currentColor.g, (uint)currentColor.b - 1);
+          }
+          else
+          {
+            node->setColor(color);
+          }
+        }
+
         non_null_nodes++;
       }
       else
       {
-        m_octree->updateNode(*it, true);
         ColorOcTreeNode* node = m_octree->search(*it, 0);
         node->setColor(color);
         null_nodes++;
@@ -528,23 +546,38 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
   }
 #endif
 
-  // DEBUG
-  ROS_INFO_STREAM("Current candidates:");
-  ROS_INFO_STREAM("===");
-  std::map<uint, uint> labels_counter;
-  for (OcTreeT::tree_iterator tree_it = m_octree->begin_tree(), tree_end = m_octree->end_tree(); tree_it != tree_end; tree_it++)
-  {
-    ColorOcTreeNode* debug_node = m_octree->search(tree_it.getKey(), 0);
-    if (debug_node != NULL) labels_counter[debug_node->getColor().r * 256 + debug_node->getColor().g]++;
-  }
-  for (std::map<uint, uint>::iterator map_it = labels_counter.begin(), map_end = labels_counter.end(); map_it != map_end; map_it++)
-  {
-    ROS_INFO_STREAM("Label: " << map_it->first << "; total nodes: " << map_it->second);
-  }
-  ROS_INFO_STREAM("===");
+  // // DEBUG
+  // ROS_INFO_STREAM("===");
+  // ROS_INFO_STREAM("Current candidate list:");
+  // std::vector<uint> cands = m_candidateList.getAllLabels();
+  // for (int i = 0; i < cands.size(); i++)
+  // {
+  //   ROS_INFO_STREAM(
+  //     "Label: " << cands[i] <<
+  //     "; color: " << (uint)m_candidateList.getColor(cands[i]).r << ", " << (uint)m_candidateList.getColor(cands[i]).g);
+  // }
+  
+  // ROS_INFO_STREAM("===");
+  // ROS_INFO_STREAM("Current candidates:");
+  // std::map<uint, uint> labels_counter;
+
+  // for (OcTreeT::tree_iterator tree_it = m_octree->begin_tree(), tree_end = m_octree->end_tree(); tree_it != tree_end; tree_it++)
+  // {
+  //   ColorOcTreeNode* debug_node = m_octree->search(tree_it.getKey(), 0);
+  //   if (debug_node != NULL) labels_counter[m_candidateList.getLabel(debug_node->getColor())]++;
+  // }
+
+  // for (std::map<uint, uint>::iterator map_it = labels_counter.begin(), map_end = labels_counter.end(); map_it != map_end; map_it++)
+  // {
+  //   ROS_INFO_STREAM(
+  //     "Label: " << map_it->first <<
+  //     "; total nodes: " << map_it->second <<
+  //     "; color: " << (uint)m_candidateList.getColor(map_it->first).r << ", " << (uint)m_candidateList.getColor(map_it->first).g);
+  // }
+  // ROS_INFO_STREAM("===");
 }
 
-octomap::ColorOcTreeNode::Color OctomapServer::computeLabel(const uint candidate_label, KeySet occupied_cells, PCLPointCloud::Ptr candidate)
+uint OctomapServer::computeLabel(const uint candidate_label, KeySet occupied_cells, PCLPointCloud::Ptr candidate)
 {
   ROS_INFO_STREAM("Candidate " << candidate_label);
   ROS_INFO_STREAM("Size: " << occupied_cells.size());
@@ -566,7 +599,7 @@ octomap::ColorOcTreeNode::Color OctomapServer::computeLabel(const uint candidate
     if (node != NULL)
     {
       // Check the label and increment appropriate counter
-      uint existing_label = (node->getColor().r * 256) + node->getColor().g;
+      uint existing_label = m_candidateList.getLabel(node->getColor());
 
       labels[existing_label]++;
       
@@ -580,27 +613,40 @@ octomap::ColorOcTreeNode::Color OctomapServer::computeLabel(const uint candidate
 
   if ((double)labelled_nodes / occupied_cells.size() < 0.05)
   {
-    ROS_INFO_STREAM("New label " << greatest_overlap_label << " (" << greatest_overlap_label / 256 << ", " << greatest_overlap_label % 256 << ")" << " will be created.");
-    return octomap::ColorOcTreeNode::Color(greatest_overlap_label / 256, greatest_overlap_label % 256, 0);
-  }
+    ROS_INFO_STREAM("New label " << greatest_overlap_label << " will be created.");
+    m_candidateList.addCandidate(greatest_overlap_label);
 
-  ROS_INFO_STREAM("Labels found: ");
-  for (std::map<uint, uint>::iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
+    // candidate_list[greatest_overlap_label] = ColorOcTreeNode::Color(rand() % 255, rand() % 255, 0);
+    // return candidate_list[greatest_overlap_label];
+  }
+  else
   {
-    ROS_INFO_STREAM("Label: " << map_it->first << "; count: " << map_it->second);
-    if (map_it->first != unlabelled && map_it->second > greatest_overlap)
+    ROS_INFO_STREAM("Labels found: ");
+    for (std::map<uint, uint>::iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
     {
-      greatest_overlap = map_it->second;
-      greatest_overlap_label = map_it->first;
-    }
-  }
+      ROS_INFO_STREAM(
+        "Label: " << map_it->first <<
+        " (" << (uint)m_candidateList.getColor(map_it->first).r << "," << (uint)m_candidateList.getColor(map_it->first).g << ")" <<
+        "; count: " << map_it->second);
 
-  ROS_INFO_STREAM("Candidate " << candidate_label << " will be merged into candidate " << greatest_overlap_label << "(" << greatest_overlap_label / 256 << ", " << greatest_overlap_label % 256 << ")");
+      if (map_it->first != unlabelled && map_it->second > greatest_overlap)
+      {
+        greatest_overlap = map_it->second;
+        greatest_overlap_label = map_it->first;
+      }
+    }
+
+    ROS_INFO_STREAM(
+      "Candidate " << candidate_label << " will be merged into candidate " << greatest_overlap_label <<
+      " (" << (uint)m_candidateList.getColor(greatest_overlap_label).r << "," << (uint)m_candidateList.getColor(greatest_overlap_label).g << ")");
+  }
 
   // DEBUG
   // return octomap::ColorOcTreeNode::Color(rand() % 255, rand() % 255, rand() % 255);
 
-  return octomap::ColorOcTreeNode::Color(greatest_overlap_label / 256, greatest_overlap_label % 256, 0);
+  // return candidate_list[greatest_overlap_label];
+
+  return greatest_overlap_label;
 }
 
 /**
@@ -949,8 +995,7 @@ bool OctomapServer::resetSrv(std_srvs::Empty::Request& req, std_srvs::Empty::Res
 
 bool OctomapServer::mergeCandidateSrv(MergeSrv::Request& req, MergeSrv::Response& res)
 {
-  ROS_INFO("In MergeCandidate service");
-  std::cout << "In MergeCandidate service" << std::endl;
+  ROS_INFO_STREAM("In MergeCandidate service, number of candidates " << req.candidates.data.size());
   for (int i = 0; i < req.candidates.data.size(); i++)
   {
     PCLPointCloud pcl_pc;

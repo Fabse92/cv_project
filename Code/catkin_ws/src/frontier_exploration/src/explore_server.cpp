@@ -291,7 +291,7 @@ private:
               {
                 ros::ServiceClient octomap_merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates");
                 octomap_msgs::MergeCandidates octomap_merge_srv;
-                // octomap_merge_srv.request.candidates = locator_srv.response.candidates;
+                octomap_merge_srv.request.candidates = locator_srv.response.candidates;
 
                 ROS_INFO("Merging candidates");
                 if (octomap_merge_client.call(octomap_merge_srv))
