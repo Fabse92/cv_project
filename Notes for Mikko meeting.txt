@@ -1,0 +1,7 @@
+- Update on what's changed since our email
+- Demo system
+- Go through todo list
+- Implementation questions:
+  - Best way to compare two volumes?
+  - 
+- Final report template
