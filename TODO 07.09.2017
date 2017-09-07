@@ -1,0 +1,52 @@
+TODO 07.09.2017
+
+Needed for first tests:
+
+PHIL:
+Compare ground truth to proposals service
+  - Create point cloud from specific octomap candidate
+  - Create meshes from candidate PC and ground truth PC
+  - Possible to do direct comparison at this point? Check pcl_surface
+  - Otherwise... something
+
+
+FABIAN:
+Testing script
+
+Fix transforms for ground truth point clouds
+
+
+
+
+
+
+Needed for subsequent tests:
+
+Horizontal occupancy grid from octomap
+Extra information gain method(s)
+  - Currently: scored based on known vs. unknown space with bonus for unknown space near objects
+  - Possible: additionally take into account label certainty
+    - New octomap_server service: takes current gMapping occupancy grid (cost map), for each pixel of cost map get (x,y) co-ord, get this (x,y,z) co-ord from octomap, and if there is an object use setCost in the costmap to set the cost to the weight and return the updated map (costmap_2d package)
+    - Extension: iterate up the z axis and do some kind of average or something
+
+
+
+
+
+
+
+
+
+General improvements:
+
+Depth saliency - investigate
+Saliency threshold - allow possibility that no object detected
+
+Prevent the "trails" around the objects
+  - Remove outer ring of pixels from 2d candidate
+  - Check depth when projecting - how to set threshold?
+  - Probably weight of these will only be 1... will this be low enough that we can throw it away?
+
+Fix the error in the explore server which makes the robot stop moving for no apparent reason
+
+Save and load octomap
