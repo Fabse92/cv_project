@@ -36,12 +36,14 @@ link_directories(
 add_service_files(
   FILES
   Evaluate.srv
+  CompareGroundTruthsToProposals.srv
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
   sensor_msgs
+  candidate_locator
 )
 
 catkin_package(
@@ -55,5 +57,8 @@ add_executable(evaluation_server src/evaluation_server.cpp)
 target_link_libraries(evaluation_server ${catkin_LIBRARIES})
 add_dependencies(evaluation_server ${evaluation_EXPORTED_TARGETS})
 
+add_executable(evaluation_client src/evaluation_client.cpp)
+target_link_libraries(evaluation_client ${catkin_LIBRARIES})
+add_dependencies(evaluation_client ${evaluation_EXPORTED_TARGETS})
 
 
