@@ -4,10 +4,18 @@ Needed for first tests:
 
 PHIL:
 Compare ground truth to proposals service
+First thoughts:
   - Create point cloud from specific octomap candidate
   - Create meshes from candidate PC and ground truth PC
   - Possible to do direct comparison at this point? Check pcl_surface
   - Otherwise... something
+Further thoughts:
+  - Create point cloud from specific octomap candidate
+  - Create pcl::ConcaveHull objects from ground truth and candidate to get volumes
+  - Apply a pcl::ConcaveHull::CropHull filter to the candidate PC, using the ground truth hull as the filter
+  - Create a concave (convex?) hull from the filtered point cloud to get the intersection volume
+
+Alternative: compare surface distances rather than volume overlap?
 
 
 FABIAN:

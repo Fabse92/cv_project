@@ -3,5 +3,5 @@
 - Go through todo list
 - Implementation questions:
   - Best way to compare two volumes?
-  - 
+  - Or better to use surface distances?
 - Final report template
