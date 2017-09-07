@@ -6,6 +6,7 @@
 
 #include <evaluation/Evaluate.h>
 #include <evaluation/CompareGroundTruthsToProposals.h>
+#include <octomap_msgs/MergeCandidates.h>
 #include <candidate_locator/ArrayPointClouds.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -56,7 +57,8 @@ bool evaluate(evaluation::Evaluate::Request  &req,
   gms_client.waitForExistence();  
   
   geometry_msgs::TransformStamped transform;
-  //transform.header.frame_id = 
+  transform.header.frame_id = "/map";
+  transform.child_frame_id = "/map";
   
   BOOST_FOREACH(std::string object, objects){  
     fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
@@ -83,11 +85,13 @@ bool evaluate(evaluation::Evaluate::Request  &req,
     array_pc_msg.data.push_back(pc_msg);
   }
   
-  ros::ServiceClient comparison_client = nh.serviceClient<evaluation::CompareGroundTruthsToProposals>("compare_ground_truths_to_propsoals"); 
+  // ros::ServiceClient comparison_client = nh.serviceClient<evaluation::CompareGroundTruthsToProposals>("compare_ground_truths_to_proposals"); 
+  ros::ServiceClient comparison_client = nh.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
   comparison_client.waitForExistence();
   
-  evaluation::CompareGroundTruthsToProposals comparison_srv;
-  comparison_srv.request.ground_truths = array_pc_msg;
+  // evaluation::CompareGroundTruthsToProposals comparison_srv;
+  octomap_msgs::MergeCandidates comparison_srv;
+  comparison_srv.request.candidates = array_pc_msg;
   
   ROS_INFO("Requesting to compare ground truths to proposals");
   if (comparison_client.call(comparison_srv))
