@@ -14,7 +14,6 @@ Further thoughts:
   - Create pcl::ConcaveHull objects from ground truth and candidate to get volumes
   - Apply a pcl::ConcaveHull::CropHull filter to the candidate PC, using the ground truth hull as the filter
   - Create a concave (convex?) hull from the filtered point cloud to get the intersection volume
-
 Alternative: compare surface distances rather than volume overlap?
 
 
@@ -22,7 +21,7 @@ FABIAN:
 Testing script
 
 Fix transforms for ground truth point clouds
-
+  - Add frames to tf
 
 
 
@@ -47,15 +46,24 @@ Extra information gain method(s)
 
 General improvements:
 
+Frames: see if we can't get the octomap in the odom frame so that it updates when the map updates
+
 Depth saliency - investigate
+  - Result from meeting: low priority
+
 Saliency threshold - allow possibility that no object detected
 
 Prevent the "trails" around the objects
   - Remove outer ring of pixels from 2d candidate
   - Check depth when projecting - how to set threshold?
   - Probably weight of these will only be 1... will this be low enough that we can throw it away?
+  - Result from meeting: erode the 2d candidate. Alternative would be to segment the point cloud using point cloud/voxel connectivity to filter out unconnected
 
 Fix the error in the explore server which makes the robot stop moving for no apparent reason
+  - Result from meeting: Increase footprint of the robot as defined in move_base
+
+Improve the accuracy of the robot stopping at the desired view pose (i.e. that it stops at exactly the right place and orientation)
+  - Result from meeting: check the parameters in move_base for the error tolerance
 
 Increase the resolution of the octomap and cost map
 
