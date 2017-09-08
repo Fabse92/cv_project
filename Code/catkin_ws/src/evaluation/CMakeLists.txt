@@ -61,4 +61,8 @@ add_executable(evaluation_client src/evaluation_client.cpp)
 target_link_libraries(evaluation_client ${catkin_LIBRARIES})
 add_dependencies(evaluation_client ${evaluation_EXPORTED_TARGETS})
 
+add_executable(transform_publisher src/transform_publisher.cpp)
+target_link_libraries(transform_publisher ${catkin_LIBRARIES})
+add_dependencies(transform_publisher ${evaluation_EXPORTED_TARGETS})
+
 

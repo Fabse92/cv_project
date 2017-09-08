@@ -1,3 +1,4 @@
 <launch>
   <node name="evaluation_server" type="evaluation_server" pkg="evaluation" output="screen" />
+  <node name="transform_publisher" type="transform_publisher" pkg="evaluation" output="screen" />
 </launch>
