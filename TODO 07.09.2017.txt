@@ -46,7 +46,11 @@ Extra information gain method(s)
 
 General improvements:
 
+Lighting in Gazebo
+  - Reflectance doesn't seem to working - objects are correctly coloured on top but very darkly shaded or black on the sides
+
 Frames: see if we can't get the octomap in the odom frame so that it updates when the map updates
+  - BUT: odom is a non-fixed frame, while the octomap is fixed.
 
 Depth saliency - investigate
   - Result from meeting: low priority
