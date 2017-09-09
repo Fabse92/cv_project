@@ -35,8 +35,13 @@ int main(int argc, char** argv){
   
   BOOST_FOREACH(std::string object, objects){  
     getmodelstate.request.model_name = object;
+    
     gms_client.call(getmodelstate);
     tf::Transform transform;
+    //transform.setOrigin( tf::Vector3(1.5, 0, 0));
+    //tf::Quaternion rotation;
+    //rotation.setRPY(1.5708, -0,0);
+    //transform.setRotation(rotation);
     transform.setOrigin( tf::Vector3(getmodelstate.response.pose.position.x, getmodelstate.response.pose.position.y, getmodelstate.response.pose.position.z) );
     transform.setRotation( tf::Quaternion(getmodelstate.response.pose.orientation.x, getmodelstate.response.pose.orientation.y, getmodelstate.response.pose.orientation.z, getmodelstate.response.pose.orientation.w) );
     transforms.push_back(transform);

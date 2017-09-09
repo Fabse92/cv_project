@@ -15,6 +15,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/TransformStamped.h>
 
+#include <pcl_ros/transforms.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -77,7 +78,7 @@ namespace evaluation
         tf::StampedTransform tf_transform;
         
         geometry_msgs::TransformStamped transform;
-        transform.header.frame_id = "/map";  
+        //transform.header.frame_id = //"/map";  
         
         BOOST_FOREACH(std::string object, objects){  
           fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
@@ -87,7 +88,7 @@ namespace evaluation
           pcl::toROSMsg<pcl::PointXYZ>(*cloud,pc_msg); 
           std::string frame = "/" + object;
           try{
-            listener_.lookupTransform(frame, "/map",  
+            listener_.lookupTransform("/map", frame,  
                                      ros::Time(0), tf_transform);
           }
           catch (tf::TransformException ex){
@@ -95,19 +96,25 @@ namespace evaluation
             ros::Duration(1.0).sleep();
           }
           
-          std::cout << tf_transform.getOrigin() << std::endl;
-         
+          /*
           transform.child_frame_id = frame;
+          transform.header.frame_id = "/map"; 
           transform.transform.translation.x = tf_transform.getOrigin().getX();
           transform.transform.translation.y = tf_transform.getOrigin().getY();
           transform.transform.translation.z = tf_transform.getOrigin().getZ();
           transform.transform.rotation.x = tf_transform.getRotation().getAxis().getX();
           transform.transform.rotation.y = tf_transform.getRotation().getAxis().getY();
           transform.transform.rotation.z = tf_transform.getRotation().getAxis().getZ();
-          transform.transform.rotation.w = tf_transform.getRotation().getW();
+          transform.transform.rotation.w = tf_transform.getRotation().getW();*/
          
           //tf2::doTransform (cloud_in, cloud_out, transform);
-          tf2::doTransform(pc_msg, pc_msg, transform);
+          //tf2::doTransform(pc_msg, pc_msg, transform);
+          
+          pcl_ros::transformPointCloud(
+          "/map",
+          tf_transform,
+          pc_msg,
+          pc_msg);
           
           array_pc_msg.data.push_back(pc_msg);
         }
