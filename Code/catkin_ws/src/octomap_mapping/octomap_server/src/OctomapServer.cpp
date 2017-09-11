@@ -185,6 +185,7 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_clearBBXService = private_nh.advertiseService("clear_bbx", &OctomapServer::clearBBXSrv, this);
   m_resetService = private_nh.advertiseService("reset", &OctomapServer::resetSrv, this);
   m_mergeCandidateService = private_nh.advertiseService("merge_candidates", &OctomapServer::mergeCandidateSrv, this);
+  m_compareGroundTruthToCandidatesService = private_nh.advertiseService("compare_ground_truths_to_proposals", &OctomapServer::compareGroundTruthToCandidatesSrv, this);
 
   dynamic_reconfigure::Server<OctomapServerConfig>::CallbackType f;
   f = boost::bind(&OctomapServer::reconfigureCallback, this, _1, _2);
@@ -371,132 +372,21 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
     ROS_ERROR_STREAM("Could not generate Key for origin "<<sensorOrigin);
   }
 
-  #ifdef COLOR_OCTOMAP_SERVER
-    unsigned char* colors = new unsigned char[3];
-  #endif
+  // #ifdef COLOR_OCTOMAP_SERVER
+  unsigned char* colors = new unsigned char[3];
+  // #endif
 
   // instead of direct scan insertion, compute update to filter ground:
   KeySet free_cells, occupied_cells;
-  // insert ground points only as free:
-  for (PCLPointCloud::const_iterator it = ground.begin(); it != ground.end(); ++it){
-    point3d point(it->x, it->y, it->z);
-    // maxrange check
-    if ((m_maxRange > 0.0) && ((point - sensorOrigin).norm() > m_maxRange) ) {
-      point = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
-    }
 
-    // only clear space (ground points)
-    if (m_octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
-      free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-    }
+  setGroundCellsAsFree(ground, sensorOrigin, true, free_cells);
 
-    octomap::OcTreeKey endKey;
-    if (m_octree->coordToKeyChecked(point, endKey)){
-      updateMinKey(endKey, m_updateBBXMin);
-      updateMaxKey(endKey, m_updateBBXMax);
-    } else{
-      ROS_ERROR_STREAM("Could not generate Key for endpoint "<<point);
-    }
-  }
-
-  // all other points: free on ray, occupied on endpoint:
-  for (PCLPointCloud::const_iterator it = nonground.begin(); it != nonground.end(); ++it){
-    point3d point(it->x, it->y, it->z);
-    // maxrange check
-    if ((m_maxRange < 0.0) || ((point - sensorOrigin).norm() <= m_maxRange) ) {
-
-      // free cells
-      if (m_octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
-        free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-      }
-      // occupied endpoint
-      OcTreeKey key;
-      if (m_octree->coordToKeyChecked(point, key)){
-        occupied_cells.insert(key);
-
-        updateMinKey(key, m_updateBBXMin);
-        updateMaxKey(key, m_updateBBXMax);
-
-        #ifdef COLOR_OCTOMAP_SERVER // NB: Only read and interpret color if it's an occupied node
-        if (!m_candidateIntegration)
-        {
-          const int rgb = *reinterpret_cast<const int*>(&(it->rgb)); // TODO: there are other ways to encode color than this one
-          colors[0] = ((rgb >> 16) & 0xff);
-          colors[1] = ((rgb >> 8) & 0xff);
-          colors[2] = (rgb & 0xff);
-
-          m_octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
-        }
-        #endif
-      }
-    } else {// ray longer than maxrange:;
-      point3d new_end = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
-      if (m_octree->computeRayKeys(sensorOrigin, new_end, m_keyRay)){
-        free_cells.insert(m_keyRay.begin(), m_keyRay.end());
-
-        octomap::OcTreeKey endKey;
-        if (m_octree->coordToKeyChecked(new_end, endKey)){
-          free_cells.insert(endKey);
-          updateMinKey(endKey, m_updateBBXMin);
-          updateMaxKey(endKey, m_updateBBXMax);
-        } else{
-          ROS_ERROR_STREAM("Could not generate Key for endpoint "<<new_end);
-        }
-
-
-      }
-    }
-  }
+  calculateFreeAndOccupiedCellsFromNonGround(nonground, sensorOrigin, colors, true, free_cells, occupied_cells);
 
   #ifdef COLOR_OCTOMAP_SERVER
   if (m_candidateIntegration)
   {
-    ROS_INFO_STREAM("----------");
-    octomap::ColorOcTreeNode::Color color = m_candidateList.getColor(computeLabel(nonground.points[0].r + nonground.points[0].g, occupied_cells, nonground.makeShared()));
-
-    uint null_nodes = 0, non_null_nodes = 0;
-
-    // Apply label
-    for (KeySet::iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
-    {
-      ColorOcTreeNode* node = m_octree->search(*it, 0);
-
-      m_octree->updateNode(*it, true);
-
-      if (node != NULL)
-      {
-        octomap::ColorOcTreeNode::Color currentColor = node->getColor();
-
-        if (color.r == currentColor.r && color.g == currentColor.g)
-        {
-          node->setColor(currentColor.r, currentColor.g, (uint)currentColor.b + 1);
-        }
-        else
-        {
-          // TODO: Do we like this logic?
-          if (currentColor.b > 0)
-          {
-            node->setColor(currentColor.r, currentColor.g, (uint)currentColor.b - 1);
-          }
-          else
-          {
-            node->setColor(color);
-          }
-        }
-
-        non_null_nodes++;
-      }
-      else
-      {
-        ColorOcTreeNode* node = m_octree->search(*it, 0);
-        node->setColor(color);
-        null_nodes++;
-      }
-    }
-
-    ROS_INFO_STREAM("Null nodes: " << null_nodes << "; non-null nodes: " << non_null_nodes);
-
-    fflush(stdout);
+    processNewCandidate(occupied_cells, nonground);
   }
   #else
   // mark free cells only if not seen occupied in this cloud
@@ -577,108 +467,91 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
   // ROS_INFO_STREAM("===");
 }
 
-uint OctomapServer::computeLabel(const uint candidate_label, KeySet occupied_cells, PCLPointCloud::Ptr candidate)
+void OctomapServer::setGroundCellsAsFree(
+  const PCLPointCloud& ground, const octomap::point3d& sensorOrigin, bool update_tree, KeySet& free_cells)
 {
-  ROS_INFO_STREAM("Candidate " << candidate_label);
-  ROS_INFO_STREAM("Size: " << occupied_cells.size());
-
-  const uint unlabelled = 65535;
-
-  // first = label, second = count
-  std::map<uint, uint> labels;
-  labels[unlabelled] = 0;
-  
-  uint greatest_overlap_label = candidate_label;
-  uint greatest_overlap = 0, labelled_nodes = 0;
-  
-  for (KeySet::iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
-  {
-    // Find what's at that cell already
-    ColorOcTreeNode* node = m_octree->search(*it, 0);
-
-    if (node != NULL)
-    {
-      // Check the label and increment appropriate counter
-      uint existing_label = m_candidateList.getLabel(node->getColor());
-
-      labels[existing_label]++;
-      
-      if (existing_label != unlabelled) labelled_nodes++;
-      else labels[unlabelled]++;
+  // insert ground points only as free:
+  for (PCLPointCloud::const_iterator it = ground.begin(); it != ground.end(); ++it){
+    point3d point(it->x, it->y, it->z);
+    // maxrange check
+    if ((m_maxRange > 0.0) && ((point - sensorOrigin).norm() > m_maxRange) ) {
+      point = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
     }
-    else labels[unlabelled]++;
-  }
 
-  ROS_INFO_STREAM("Total overlap with existing candidates is " << (double)labelled_nodes / occupied_cells.size() * 100 << " percent.");
+    // only clear space (ground points)
+    if (m_octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
+      free_cells.insert(m_keyRay.begin(), m_keyRay.end());
+    }
 
-  if ((double)labelled_nodes / occupied_cells.size() < 0.05)
-  {
-    ROS_INFO_STREAM("New label " << greatest_overlap_label << " will be created.");
-    m_candidateList.addCandidate(greatest_overlap_label);
-
-    // candidate_list[greatest_overlap_label] = ColorOcTreeNode::Color(rand() % 255, rand() % 255, 0);
-    // return candidate_list[greatest_overlap_label];
-  }
-  else
-  {
-    ROS_INFO_STREAM("Labels found: ");
-    for (std::map<uint, uint>::iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
-    {
-      ROS_INFO_STREAM(
-        "Label: " << map_it->first <<
-        " (" << (uint)m_candidateList.getColor(map_it->first).r << "," << (uint)m_candidateList.getColor(map_it->first).g << ")" <<
-        "; count: " << map_it->second);
-
-      if (map_it->first != unlabelled && map_it->second > greatest_overlap)
+    octomap::OcTreeKey endKey;
+    if (m_octree->coordToKeyChecked(point, endKey)){
+      if (update_tree)
       {
-        greatest_overlap = map_it->second;
-        greatest_overlap_label = map_it->first;
+        updateMinKey(endKey, m_updateBBXMin);
+        updateMaxKey(endKey, m_updateBBXMax);
+      }
+    } else{
+      ROS_ERROR_STREAM("Could not generate Key for endpoint "<<point);
+    }
+  }
+}
+
+void OctomapServer::calculateFreeAndOccupiedCellsFromNonGround(
+  const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, unsigned char* colors, bool update_tree, KeySet& free_cells, KeySet& occupied_cells)
+{
+  // all other points: free on ray, occupied on endpoint:
+  for (PCLPointCloud::const_iterator it = nonground.begin(); it != nonground.end(); ++it){
+    point3d point(it->x, it->y, it->z);
+    // maxrange check
+    if ((m_maxRange < 0.0) || ((point - sensorOrigin).norm() <= m_maxRange) ) {
+
+      // free cells
+      if (m_octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
+        free_cells.insert(m_keyRay.begin(), m_keyRay.end());
+      }
+      // occupied endpoint
+      OcTreeKey key;
+      if (m_octree->coordToKeyChecked(point, key)){
+        occupied_cells.insert(key);
+
+        if (update_tree)
+        {
+          updateMinKey(key, m_updateBBXMin);
+          updateMaxKey(key, m_updateBBXMax);
+        }
+
+        #ifdef COLOR_OCTOMAP_SERVER // NB: Only read and interpret color if it's an occupied node
+        if (!m_candidateIntegration)
+        {
+          const int rgb = *reinterpret_cast<const int*>(&(it->rgb)); // TODO: there are other ways to encode color than this one
+          colors[0] = ((rgb >> 16) & 0xff);
+          colors[1] = ((rgb >> 8) & 0xff);
+          colors[2] = (rgb & 0xff);
+
+          if (update_tree) m_octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
+        }
+        #endif
+      }
+    } else {// ray longer than maxrange:;
+      point3d new_end = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
+      if (m_octree->computeRayKeys(sensorOrigin, new_end, m_keyRay)){
+        free_cells.insert(m_keyRay.begin(), m_keyRay.end());
+
+        octomap::OcTreeKey endKey;
+        if (m_octree->coordToKeyChecked(new_end, endKey)){
+          free_cells.insert(endKey);
+          if (update_tree)
+          {
+            updateMinKey(endKey, m_updateBBXMin);
+            updateMaxKey(endKey, m_updateBBXMax);
+          }
+        } else{
+          ROS_ERROR_STREAM("Could not generate Key for endpoint "<<new_end);
+        }
       }
     }
-
-    ROS_INFO_STREAM(
-      "Candidate " << candidate_label << " will be merged into candidate " << greatest_overlap_label <<
-      " (" << (uint)m_candidateList.getColor(greatest_overlap_label).r << "," << (uint)m_candidateList.getColor(greatest_overlap_label).g << ")");
   }
-
-  // DEBUG
-  // return octomap::ColorOcTreeNode::Color(rand() % 255, rand() % 255, rand() % 255);
-
-  // return candidate_list[greatest_overlap_label];
-
-  return greatest_overlap_label;
 }
-
-/**
-  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
-*/
-double OctomapServer::getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey){
-  octomap::OcTreeNode* lOriginNode = inOcTree->search(inKey);
-  unsigned int lCount = 0;
-  int i = 1;
-
-  octomap::OcTreeKey lNextKey(inKey);
-  lNextKey[0] = inKey[0] + i;
-
-  // Count the number of time we fall on the same node in the positive x direction
-  while(inOcTree->search(lNextKey) == lOriginNode){
-      ++lCount;
-      lNextKey[0] = inKey[0] + ++i;
-  }
-
-  i = 1;
-  lNextKey[0] = inKey[0] - i;
-
-  // Count the number of time we fall on the same node in the negative x direction
-  while(inOcTree->search(lNextKey) == lOriginNode){
-      ++lCount;
-      lNextKey[0] = inKey[0] - ++i;
-  }
-
-  return inOcTree->getTreeDepth() - log2(lCount + 1);
-}
-
-
 
 void OctomapServer::publishAll(const ros::Time& rostime){
   ros::WallTime startTime = ros::WallTime::now();

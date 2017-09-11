@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(octomap_server)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 set(PACKAGE_DEPENDENCIES
   roscpp
   visualization_msgs
@@ -47,7 +49,7 @@ set(LINK_LIBS
   ${PCL_LIBRARIES}
 )
 
-add_library(${PROJECT_NAME} src/OctomapServer.cpp src/OctomapServerMultilayer.cpp src/TrackingOctomapServer.cpp)
+add_library(${PROJECT_NAME} src/OctomapServer.cpp src/OctomapServerMultilayer.cpp src/TrackingOctomapServer.cpp src/CandidatesOctomapServer.cpp)
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBS})
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
 

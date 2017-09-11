@@ -74,12 +74,12 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
     this->calculateObjectPoints(candidate, point_cloud);
 
     pcl::toROSMsg(point_cloud, pc_msg);
-    // pc_msg.height = pc_msg.width = 1;
-    pcl_ros::transformPointCloud(
-      "/map",
-      map_transform_,
-      pc_msg,
-      pc_msg);
+    pc_msg.header.frame_id = "/camera_depth_frame";
+    // pcl_ros::transformPointCloud(
+    //   "/map",
+    //   map_transform_,
+    //   pc_msg,
+    //   pc_msg);
 
     array_pc_msg.data.push_back(pc_msg);
   }

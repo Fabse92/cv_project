@@ -124,14 +124,11 @@ namespace evaluation
           //frontier_cloud_pub.publish(pc_msg);
         }
         
-        // ros::ServiceClient comparison_client = nh.serviceClient<evaluation::CompareGroundTruthsToProposals>("compare_ground_truths_to_proposals"); 
-        ros::ServiceClient comparison_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
+        ros::ServiceClient comparison_client = nh_.serviceClient<evaluation::CompareGroundTruthsToProposals>("octomap_server/compare_ground_truths_to_proposals"); 
         comparison_client.waitForExistence();
         
-        // evaluation::CompareGroundTruthsToProposals comparison_srv;
-        octomap_msgs::MergeCandidates comparison_srv;
-        comparison_srv.request.candidates = array_pc_msg;    
-
+        evaluation::CompareGroundTruthsToProposals comparison_srv;
+        comparison_srv.request.ground_truths = array_pc_msg;
         
         ROS_INFO("Requesting to compare ground truths to proposals");
         if (comparison_client.call(comparison_srv))
@@ -142,6 +139,12 @@ namespace evaluation
         {
           ROS_ERROR("Failed to compare ground truths to proposals");
         }
+
+        //DEBUG
+        ros::ServiceClient merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
+        octomap_msgs::MergeCandidates merge_srv;
+        merge_srv.request.candidates = array_pc_msg;
+        merge_client.call(merge_srv);
         
         return true;
       }

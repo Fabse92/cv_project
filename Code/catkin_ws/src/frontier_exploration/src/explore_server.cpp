@@ -296,7 +296,7 @@ private:
                 ROS_INFO("Merging candidates");
                 if (octomap_merge_client.call(octomap_merge_srv))
                 {
-                  ROS_INFO("merge_candidates service called successfully");
+                  ROS_INFO("Candidates merged");
                 }
                 else
                 {
