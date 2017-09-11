@@ -25,8 +25,8 @@
 	</include>
 
 	<!-- Run a python script to the send a service call to gazebo_ros to spawn 
-		a URDF robot -->
-
+		a URDF robot -->		
+		
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
 respawn="false" output="screen" args="-urdf -model p3dx -param robot_description" />
 
@@ -39,6 +39,7 @@ respawn="false" output="screen" args="-urdf -model p3dx -param robot_description
    <!--
   <param name="banana_description" textfile="$(find objects)/data/banana/banana.urdf"/> 
   <node name="spawn_banana" pkg="gazebo_ros" type="spawn_model" args="-urdf -param banana_description -x -1.5 -y 0.0 -z 0.0 -model banana" respawn="false" output="screen" />
+  
   <param name="cracker_box_description" textfile="$(find objects)/data/cracker_box/cracker_box.urdf"/> 
   <node name="spawn_cracker_box" pkg="gazebo_ros" type="spawn_model" args="-urdf -param cracker_box_description -x -1.5 -y 1.5 -z 0.0 -model cracker_box" respawn="false" output="screen" />
   
@@ -46,7 +47,7 @@ respawn="false" output="screen" args="-urdf -model p3dx -param robot_description
   <node name="spawn_wood_block" pkg="gazebo_ros" type="spawn_model" args="-urdf -param wood_block_description -x 1.5 -y 1.5 -z 0.0 -model wood_block" respawn="false" output="screen" />
   
   <param name="power_drill_description" textfile="$(find objects)/data/power_drill/power_drill.urdf"/> 
-  <node name="spawn_power_drill" pkg="gazebo_ros" type="spawn_model" args="-urdf -param power_drill_description -x 1.5 -y 0.0 -z 0.0 -R 1.57079635 -P 0 -Y 0 -model power_drill" respawn="false" output="screen" />
+  <node name="spawn_power_drill" pkg="gazebo_ros" type="spawn_model" args="-urdf -param power_drill_description -x 1.5 -y 0.0 -z 0 -R 0 -P 0 -Y -0.6 -model power_drill" respawn="false" output="screen" />
   
   <param name="bowl_description" textfile="$(find objects)/data/bowl/bowl.urdf"/> 
   <node name="spawn_bowl" pkg="gazebo_ros" type="spawn_model" args="-urdf -param bowl_description -x 0 -y 1.5 -z 0.0 -model bowl" respawn="false" output="screen" />

@@ -44,6 +44,17 @@ int main(int argc, char** argv){
     //transform.setRotation(rotation);
     transform.setOrigin( tf::Vector3(getmodelstate.response.pose.position.x, getmodelstate.response.pose.position.y, getmodelstate.response.pose.position.z) );
     transform.setRotation( tf::Quaternion(getmodelstate.response.pose.orientation.x, getmodelstate.response.pose.orientation.y, getmodelstate.response.pose.orientation.z, getmodelstate.response.pose.orientation.w) );
+    
+    if (object == "power_drill")
+      transform.getOrigin().setZ(transform.getOrigin().getZ() - 0.08); 
+    if (object == "cracker_box")
+      transform.getOrigin().setZ(transform.getOrigin().getZ() - 0.025);  
+    if (object == "hammer"){
+      transform.getOrigin().setZ(transform.getOrigin().getZ() + 0.062); 
+      transform.getOrigin().setX(transform.getOrigin().getX() - 0.048);
+      transform.getOrigin().setY(transform.getOrigin().getY() + 0.025);
+    }
+    
     transforms.push_back(transform);
     ++idx;
   }

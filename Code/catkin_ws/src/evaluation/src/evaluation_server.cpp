@@ -20,6 +20,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -35,6 +36,7 @@ namespace evaluation
 
 		  ros::NodeHandle nh_;
 		  tf::TransformListener listener_;
+		  //ros::Publisher frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("ground_truths",5);
 
 		  public:
 
@@ -54,7 +56,6 @@ namespace evaluation
         objects.push_back("power_drill");
         objects.push_back("sugar_box");
         objects.push_back("wood_block");
-
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PCDReader reader;
         
@@ -78,11 +79,14 @@ namespace evaluation
         tf::StampedTransform tf_transform;
         
         geometry_msgs::TransformStamped transform;
-        //transform.header.frame_id = //"/map";  
+        //transform.header.frame_id = //"/map";        
+        
         
         BOOST_FOREACH(std::string object, objects){  
           fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
           reader.read (fileName, *cloud);  
+          //fileName = objects_package_path + "/data/"+object+"/"+object+".ply";  
+          //pcl::io::loadPLYFile(fileName, *cloud);
           
           sensor_msgs::PointCloud2 pc_msg;    
           pcl::toROSMsg<pcl::PointXYZ>(*cloud,pc_msg); 
@@ -94,7 +98,7 @@ namespace evaluation
           catch (tf::TransformException ex){
             ROS_ERROR("%s",ex.what());
             ros::Duration(1.0).sleep();
-          }
+          }         
           
           /*
           transform.child_frame_id = frame;
@@ -117,6 +121,7 @@ namespace evaluation
           pc_msg);
           
           array_pc_msg.data.push_back(pc_msg);
+          //frontier_cloud_pub.publish(pc_msg);
         }
         
         // ros::ServiceClient comparison_client = nh.serviceClient<evaluation::CompareGroundTruthsToProposals>("compare_ground_truths_to_proposals"); 
@@ -125,7 +130,8 @@ namespace evaluation
         
         // evaluation::CompareGroundTruthsToProposals comparison_srv;
         octomap_msgs::MergeCandidates comparison_srv;
-        comparison_srv.request.candidates = array_pc_msg;
+        comparison_srv.request.candidates = array_pc_msg;    
+
         
         ROS_INFO("Requesting to compare ground truths to proposals");
         if (comparison_client.call(comparison_srv))
