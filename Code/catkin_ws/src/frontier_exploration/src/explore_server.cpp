@@ -306,7 +306,6 @@ private:
               else
               {
                 ROS_ERROR("Failed to call candidate locator service");
-                ros::shutdown();
               }
             }
             else

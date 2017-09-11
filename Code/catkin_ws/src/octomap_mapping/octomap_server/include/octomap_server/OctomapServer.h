@@ -77,6 +77,9 @@
 #endif
 
 namespace octomap_server {
+
+static const uint UNLABELLED = 0;
+
 class OctomapServer {
 
 public:
@@ -139,6 +142,8 @@ public:
 
     octomap::ColorOcTreeNode::Color getColor(uint label)
     {
+      if (label == octomap_server::UNLABELLED) return octomap::ColorOcTreeNode::Color(0, 0, 0);
+      
       for (int i = 0; i < labels.size(); i++)
       {
         if (labels[i] == label) return colors[i];
@@ -205,7 +210,7 @@ protected:
 
   void processNewCandidate(const octomap::KeySet& occupied_cells, const PCLPointCloud& new_candidate);
 
-  uint computeLabel(const uint candidate_label, const octomap::KeySet& occupied_cells, PCLPointCloud::Ptr candidate);
+  uint computeLabel(const std::map<uint, uint>& labels);
 
   void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, uint>& labels, uint& labelled_nodes);
 
@@ -277,10 +282,8 @@ protected:
 
   static std_msgs::ColorRGBA heightMapColor(double h);
 
-  const uint m_unlabelled = 65535;
-
   ros::NodeHandle m_nh;
-  ros::Publisher  m_markerPub, m_binaryMapPub, m_fullMapPub, m_pointCloudPub, m_collisionObjectPub, m_mapPub, m_cmapPub, m_fmapPub, m_fmarkerPub;
+  ros::Publisher  m_markerPub, m_binaryMapPub, m_fullMapPub, m_pointCloudPub, m_collisionObjectPub, m_mapPub, m_cmapPub, m_fmapPub, m_fmarkerPub, m_visualisation_pub;
   message_filters::Subscriber<sensor_msgs::PointCloud2>* m_pointCloudSub;
   tf::MessageFilter<sensor_msgs::PointCloud2>* m_tfPointCloudSub;
   ros::ServiceServer m_octomapBinaryService, m_octomapFullService, m_clearBBXService, m_resetService, m_mergeCandidateService, m_compareGroundTruthToCandidatesService;

@@ -9,25 +9,41 @@ namespace octomap_server
 	void OctomapServer::processNewCandidate(const KeySet& occupied_cells, const PCLPointCloud& new_candidate)
 	{
 		uint new_candidate_label = new_candidate.points[0].r + new_candidate.points[0].g;
-		std::map<uint, uint> labels;
+		std::map<uint, uint> label_overlaps;
     uint labelled_nodes = 0;
 
     ROS_INFO_STREAM("----------");
     ROS_INFO_STREAM("Candidate " << new_candidate_label);
+    ROS_INFO_STREAM("Size: " << occupied_cells.size());
 
-    computeOverlaps(occupied_cells, labels, labelled_nodes);
+    computeOverlaps(occupied_cells, label_overlaps, labelled_nodes);
 
-    uint computed_label = computeLabel(new_candidate_label, occupied_cells, new_candidate.makeShared());
+    ROS_INFO_STREAM("Total overlap with existing candidates is " << (double)labelled_nodes / occupied_cells.size() * 100 << " percent.");
 
-    if (computed_label == 0)
+    if ((double)labelled_nodes / occupied_cells.size() < 0.05)
     {
-    	ROS_INFO_STREAM("New label " << new_candidate_label << " will be created.");
     	m_candidateList.addCandidate(new_candidate_label);
+    	ROS_INFO_STREAM("New label " << new_candidate_label <<
+    		" (" << (uint)m_candidateList.getColor(new_candidate_label).r << "," << (uint)m_candidateList.getColor(new_candidate_label).g << ")" << " created.");
     }
     else
     {
-    	new_candidate_label = computed_label;
+    	uint computed_candidate_label = computeLabel(label_overlaps);
+    	ROS_INFO_STREAM(
+	      "Candidate " << new_candidate_label << " will be merged into candidate " << computed_candidate_label <<
+	      " (" << (uint)m_candidateList.getColor(computed_candidate_label).r << "," << (uint)m_candidateList.getColor(computed_candidate_label).g << ")");
+    	new_candidate_label = computed_candidate_label;
     }
+    
+    // if (computed_label == 0)
+    // {
+    // 	ROS_INFO_STREAM("New label " << new_candidate_label << " will be created.");
+    // 	m_candidateList.addCandidate(new_candidate_label);
+    // }
+    // else
+    // {
+    // 	new_candidate_label = computed_label;
+    // }
 
     octomap::ColorOcTreeNode::Color color = m_candidateList.getColor(new_candidate_label);
 
@@ -75,50 +91,31 @@ namespace octomap_server
     fflush(stdout);
 	}
 
-	uint OctomapServer::computeLabel(const uint candidate_label, const KeySet& occupied_cells, PCLPointCloud::Ptr candidate)
+	uint OctomapServer::computeLabel(const std::map<uint, uint>& labels)
 	{
-	  ROS_INFO_STREAM("Size: " << occupied_cells.size());
+	  uint greatest_overlap_label = 0, greatest_overlap = 0, labelled_nodes = 0;
 
-	  uint greatest_overlap_label = 0;
-	  uint greatest_overlap = 0, labelled_nodes = 0;
+	  ROS_INFO_STREAM("Labels found: ");
+    for (std::map<uint, uint>::const_iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
+    {
+      ROS_INFO_STREAM(
+        "Label: " << map_it->first <<
+        " (" << (uint)m_candidateList.getColor(map_it->first).r << "," << (uint)m_candidateList.getColor(map_it->first).g << ")" <<
+        "; count: " << map_it->second);
 
-	  // first = label, second = count
-	  std::map<uint, uint> labels;
-
-	  if ((double)labelled_nodes / occupied_cells.size() >= 0.05)
-	  // {
-	  //   greatest_overlap_label = candidate_label;
-	  //   ROS_INFO_STREAM("New label " << greatest_overlap_label << " will be created.");
-	  //   m_candidateList.addCandidate(greatest_overlap_label);
-	  // }
-	  // else
-	  {
-	    ROS_INFO_STREAM("Labels found: ");
-	    for (std::map<uint, uint>::iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
-	    {
-	      ROS_INFO_STREAM(
-	        "Label: " << map_it->first <<
-	        " (" << (uint)m_candidateList.getColor(map_it->first).r << "," << (uint)m_candidateList.getColor(map_it->first).g << ")" <<
-	        "; count: " << map_it->second);
-
-	      if (map_it->first != m_unlabelled && map_it->second > greatest_overlap)
-	      {
-	        greatest_overlap = map_it->second;
-	        greatest_overlap_label = map_it->first;
-	      }
-	    }
-
-	    ROS_INFO_STREAM(
-	      "Candidate " << candidate_label << " will be merged into candidate " << greatest_overlap_label <<
-	      " (" << (uint)m_candidateList.getColor(greatest_overlap_label).r << "," << (uint)m_candidateList.getColor(greatest_overlap_label).g << ")");
-	  }
+      if (map_it->first != octomap_server::UNLABELLED && map_it->second > greatest_overlap)
+      {
+        greatest_overlap = map_it->second;
+        greatest_overlap_label = map_it->first;
+      }
+    }
 
 	  return greatest_overlap_label;
 	}
 
 	void OctomapServer::computeOverlaps(const KeySet& occupied_cells, std::map<uint, uint>& labels, uint& labelled_nodes)
 	{
-	  labels[m_unlabelled] = 0;
+	  labels[octomap_server::UNLABELLED] = 0;
 	  
 	  for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
 	  {
@@ -132,13 +129,11 @@ namespace octomap_server
 
 	      labels[existing_label]++;
 	      
-	      if (existing_label != m_unlabelled) labelled_nodes++;
-	      else labels[m_unlabelled]++;
+	      if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
+	      // else labels[octomap_server::UNLABELLED]++;
 	    }
-	    else labels[m_unlabelled]++;
+	    else labels[octomap_server::UNLABELLED]++;
 	  }
-
-	  ROS_INFO_STREAM("Total overlap with existing candidates is " << (double)labelled_nodes / occupied_cells.size() * 100 << " percent.");
 	}
 
 	/**
@@ -175,8 +170,8 @@ namespace octomap_server
 		ROS_INFO_STREAM("\n");
 	  ROS_INFO_STREAM("In CompareGroundTruthsToCandidates service, ground truths given " << req.ground_truths.data.size());
 
-	  // std::ofstream results_stream;
-	  // results_stream.open(req.output_file);
+	  //DEBUG visualisation
+	  PCLPointCloud visualisation_pc;
 
 	  uint counter = 0;
 
@@ -186,8 +181,8 @@ namespace octomap_server
 	  {
 	    counter++;
 
-	    ROS_INFO_STREAM("Ground truth in frame " << pc_msg.header.frame_id);
-	    ROS_INFO_STREAM("World frame: " << m_worldFrameId);
+	    // ROS_INFO_STREAM("Ground truth in frame " << pc_msg.header.frame_id);
+	    // ROS_INFO_STREAM("World frame: " << m_worldFrameId);
 
 	    tf::StampedTransform sensorToWorldTf;
 		  try {
@@ -209,18 +204,33 @@ namespace octomap_server
 	    std::map<uint, uint> candidate_overlaps;
 	    uint total_labelled_nodes = 0;
 
-	    ROS_INFO_STREAM("\nGround truth " << counter << ":");
+	    ROS_INFO_STREAM("");
+	    ROS_INFO_STREAM("Ground truth " << counter << ":");
+	    ROS_INFO_STREAM("Size: " << occupied_cells.size());
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_labelled_nodes);
 
-	    uint proposal = computeLabel(counter, occupied_cells, pcl_pc.makeShared());
+	    // ROS_INFO_STREAM("Total overlap with existing candidates is " << (double)total_labelled_nodes / occupied_cells.size() * 100 << " percent.");
 
-	    ROS_INFO_STREAM("Proposal is candidate " << proposal);
+	    uint proposal = computeLabel(candidate_overlaps);
+
+	    if (proposal == octomap_server::UNLABELLED) ROS_INFO_STREAM("No suitable candidate found");
+	    else ROS_INFO_STREAM("Proposal is candidate " << proposal);
+	    
 	    ROS_INFO_STREAM("Candidate size: " << candidate_sizes[proposal]);
 	    ROS_INFO_STREAM("Overlap: " << candidate_overlaps[proposal]);
+
+	    //DEBUG visualisation
+	    visualisation_pc += pcl_pc;
 	  }
 
-	  // results_stream.close();
+	  //DEBUG visualisation
+	  sensor_msgs::PointCloud2 visualisation_msg;
+	  pcl::toROSMsg(visualisation_pc, visualisation_msg);
+	  visualisation_msg.header.frame_id = m_worldFrameId;
+	  m_visualisation_pub.publish(visualisation_msg);
+
+	  return true;
 	}
 
 	std::map<uint, double> OctomapServer::computeAllCandidateSizes()

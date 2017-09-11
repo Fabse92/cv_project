@@ -36,7 +36,7 @@ namespace evaluation
 
 		  ros::NodeHandle nh_;
 		  tf::TransformListener listener_;
-		  //ros::Publisher frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("ground_truths",5);
+		  ros::Publisher frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("ground_truths",20);
 
 		  public:
 
@@ -141,10 +141,11 @@ namespace evaluation
         }
 
         //DEBUG
-        ros::ServiceClient merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
-        octomap_msgs::MergeCandidates merge_srv;
-        merge_srv.request.candidates = array_pc_msg;
-        merge_client.call(merge_srv);
+
+        // ros::ServiceClient merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
+        // octomap_msgs::MergeCandidates merge_srv;
+        // merge_srv.request.candidates = array_pc_msg;
+        // merge_client.call(merge_srv);
         
         return true;
       }
