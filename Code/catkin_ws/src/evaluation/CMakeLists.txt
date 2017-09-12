@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost COMPONENTS serialization REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
+find_package(candidate_locator)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
