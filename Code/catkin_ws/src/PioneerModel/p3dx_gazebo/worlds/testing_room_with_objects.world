@@ -87,7 +87,7 @@
       <pose>0.497681 0 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>2115 50000000</sim_time>
+      <sim_time>0</sim_time>
       <real_time>90 482885080</real_time>
       <wall_time>1505130529 379571092</wall_time>
       <model name='ball'>

@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+import rospy
+import roslaunch
+import rospkg
+from std_srvs.srv import Empty
+from geometry_msgs.msg import PointStamped
+
+class Experiments:
+  def __init__(self, launch):
+      self.restart = False
+      
+  def start_experiment(self, req):         
+      empty = Empty()            
+      self.restart = True      
+      return empty
+
+if __name__ == "__main__":
+    rospy.init_node('experiments_server')
+    
+    
+    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    roslaunch.configure_logging(uuid)
+   
+    rospack = rospkg.RosPack()
+   
+    everything = rospack.get_path('p3dx_description')
+    
+    launch = roslaunch.parent.ROSLaunchParent(uuid, [everything+"/launch/everything.launch"])
+    launch.start()   
+      
+    experiment = Experiments(launch)
+    s = rospy.Service('restarter', Empty, experiment.start_experiment)     
+    
+    rospy.wait_for_service("/explore_server/explore_costmap/explore_boundary/get_next_frontier", timeout=None)
+    rospy.sleep(3)
+    rospy.loginfo("System is ready, exploration boundaries will be published")
+    
+    pub = rospy.Publisher('/clicked_point', PointStamped, queue_size=10)
+    point = PointStamped()
+    point.header.frame_id = "map"
+    point.point.x = 3.6
+    point.point.y = 3.2
+    point.point.z = 0
+    pub.publish(point)
+    rospy.sleep(1)
+    pub.publish(point)
+    rospy.sleep(1)
+    point.point.y = -3.4
+    pub.publish(point)
+    rospy.sleep(1)
+    point.point.x = -3.3
+    point.point.y = -3.34
+    pub.publish(point)
+    rospy.sleep(1)
+    point.point.x = -3.3
+    point.point.y = 3.2
+    pub.publish(point)
+    rospy.sleep(1)
+    point.point.x = 3.6
+    point.point.y = 3.2
+    pub.publish(point)
+    rospy.sleep(1)
+    point.point.x = 0
+    point.point.y = 0
+    pub.publish(point)
+    rospy.sleep(1) 
+    
+    start = rospy.Time.now()
+    while not rospy.is_shutdown() and not experiment.restart:
+      #print str((rospy.Time.now() - start).to_sec())
+      continue
+      
+    #rospy.spin()
+    
+

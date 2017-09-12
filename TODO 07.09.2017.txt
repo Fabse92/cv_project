@@ -17,11 +17,7 @@ Further thoughts:
 Alternative: compare surface distances rather than volume overlap?
 
 
-FABIAN:
-Testing script
 
-Fix transforms for ground truth point clouds
-  - Add frames to tf
 
 
 

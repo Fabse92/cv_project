@@ -8,6 +8,7 @@
 #include <evaluation/CompareGroundTruthsToProposals.h>
 #include <octomap_msgs/MergeCandidates.h>
 #include <candidate_locator/ArrayPointClouds.h>
+#include <std_srvs/Empty.h>
 
 #include <tf/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -139,6 +140,13 @@ namespace evaluation
         {
           ROS_ERROR("Failed to compare ground truths to proposals");
         }
+        
+        ros::ServiceClient restart_client = nh_.serviceClient<std_srvs::Empty>("/restarter"); 
+        std_srvs::Empty restart_srv;
+        
+        ROS_INFO("Requesting to restart the system for the next experiment");
+        restart_client.call(restart_srv);
+
 
         //DEBUG
 

@@ -1,0 +1,5 @@
+<launch>
+
+<node name="experiments" pkg="evaluation" type="experiments" output="screen" respawn="true" />
+
+</launch>
