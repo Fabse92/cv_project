@@ -1,9 +1,13 @@
 #include <frontier_exploration/frontier_search.h>
 
 #include <costmap_2d/costmap_2d.h>
-#include<costmap_2d/cost_values.h>
+#include <costmap_2d/cost_values.h>
 #include <geometry_msgs/Point.h>
 #include <boost/foreach.hpp>
+
+#include <frontier_exploration/RequestLabelCertainties.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float32.h>
 
 #include <frontier_exploration/costmap_tools.h>
 #include <frontier_exploration/Frontier.h>
@@ -23,7 +27,7 @@ void FrontierSearch::setCostmap(costmap_2d::Costmap2D& costmap){
   costmap_ = costmap_2d::Costmap2D(costmap);
 }
 
-std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon){
+std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh){
 
     std::list<Frontier> frontier_list;
 
@@ -39,7 +43,29 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
     map_ = costmap_.getCharMap();
     size_x_ = costmap_.getSizeInCellsX();
-    size_y_ = costmap_.getSizeInCellsY();
+    size_y_ = costmap_.getSizeInCellsY();    
+        
+    if(method == "information_gain_with_candidates"){   
+        ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("octomap_server/certainty_at_position"); 
+        request_client.waitForExistence();
+        
+        frontier_exploration::RequestLabelCertainties request_srv;
+        std_msgs::Float32 x,y;
+        x.data = 0.0f;
+        y.data = 0.0f;
+        request_srv.request.X.push_back(x);
+        request_srv.request.Y.push_back(x);
+        
+        ROS_INFO("Requesting for label certainty");
+        if (request_client.call(request_srv))
+        {
+          ROS_INFO("Received label certainty");
+        }
+        else
+        {
+          ROS_ERROR("Failed to provide label certainty");
+        }
+    }
 
     //initialize flag arrays to keep track of visited and frontier cells
     std::vector<bool> frontier_flag(size_x_ * size_y_, false);

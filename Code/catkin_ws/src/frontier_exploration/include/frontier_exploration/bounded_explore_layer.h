@@ -118,6 +118,8 @@ private:
     const geometry_msgs::Polygon polygon;
     
     double prev_x, prev_y;
+    
+    ros::NodeHandle nh_;
 };
 
 }

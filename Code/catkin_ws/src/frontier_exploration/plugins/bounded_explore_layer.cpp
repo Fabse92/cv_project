@@ -51,7 +51,7 @@ namespace frontier_exploration
 
     void BoundedExploreLayer::onInitialize(){
 
-        ros::NodeHandle nh_("~/" + name_);
+        nh_ = ros::NodeHandle("~/" + name_);
         frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("frontiers",5);
         configured_ = false;
         marked_ = false;
@@ -127,7 +127,7 @@ namespace frontier_exploration
         }
         
         //get list of frontiers from search implementation
-        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_);
+        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_, nh_);
 
         if(frontier_list.size() == 0){
             ROS_DEBUG("No frontiers found, exploration complete");

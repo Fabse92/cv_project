@@ -37,6 +37,7 @@ add_service_files(
   FILES
   UpdateBoundaryPolygon.srv
   GetNextFrontier.srv
+  RequestLabelCertainties.srv
 )
 
 add_action_files(

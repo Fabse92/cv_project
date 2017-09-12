@@ -1,6 +1,7 @@
 #ifndef FRONTIER_SEARCH_H_
 #define FRONTIER_SEARCH_H_
 
+#include <ros/ros.h>
 #include <frontier_exploration/Frontier.h>
 #include <costmap_2d/costmap_2d.h>
 #include <geometry_msgs/Polygon.h>
@@ -27,7 +28,7 @@ public:
      * @param position Initial position to search from
      * @return List of frontiers, if any
      */
-    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon);
+    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh);
 
 protected:
 
