@@ -67,7 +67,8 @@ if __name__ == "__main__":
     rospy.sleep(1) 
     
     start = rospy.Time.now()
-    while not rospy.is_shutdown() and not experiment.restart:
+    # restart if node is shutdown, restart service is used or 20 min are over
+    while not rospy.is_shutdown() and not experiment.restart and (rospy.Time.now() - start).to_sec() < 1200:
       #print str((rospy.Time.now() - start).to_sec())
       continue
       

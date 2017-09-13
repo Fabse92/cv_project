@@ -42,14 +42,13 @@ Extra information gain method(s)
 
 General improvements:
 
+Primary:
+
 Lighting in Gazebo
   - Reflectance doesn't seem to working - objects are correctly coloured on top but very darkly shaded or black on the sides
 
 Frames: see if we can't get the octomap in the odom frame so that it updates when the map updates
   - BUT: odom is a non-fixed frame, while the octomap is fixed.
-
-Depth saliency - investigate
-  - Result from meeting: low priority
 
 Saliency threshold - allow possibility that no object detected
 
@@ -59,12 +58,17 @@ Prevent the "trails" around the objects
   - Probably weight of these will only be 1... will this be low enough that we can throw it away?
   - Result from meeting: erode the 2d candidate. Alternative would be to segment the point cloud using point cloud/voxel connectivity to filter out unconnected
 
-Fix the error in the explore server which makes the robot stop moving for no apparent reason
-  - Result from meeting: Increase footprint of the robot as defined in move_base
 
-Improve the accuracy of the robot stopping at the desired view pose (i.e. that it stops at exactly the right place and orientation)
-  - Result from meeting: check the parameters in move_base for the error tolerance
-
-Increase the resolution of the octomap and cost map
+Secondary
 
 Save and load octomap
+
+Fix the error in the explore server which makes the robot stop moving for no apparent reason
+  - Result from meeting: Increase footprint of the robot as defined in move_base
+  
+Implement service to ask if area is part of a wall (a very large object)
+
+Depth saliency - investigate
+  - Result from meeting: low priority
+  
+Increase the resolution of the octomap and cost map

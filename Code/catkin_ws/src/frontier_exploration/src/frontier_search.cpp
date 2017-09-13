@@ -173,7 +173,8 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                   circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
                   Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon);
-                  frontier_list.push_back(new_frontier);                  
+                  if (new_frontier.min_distance != 1)
+                    frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
                   //std::cout << "one frontier computed" << std::endl;                
                 }
@@ -202,8 +203,14 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   costmap_.mapToWorld(ix,iy,robot_x,robot_y);
   
   double distance = sqrt(pow((cell_x-robot_x),2.0) + pow((cell_y-robot_y),2.0));
+  
+  if (distance > 1.5) {
+    output.min_distance = 1;
+    return output;
+  }
+  
   double inf_gain = 0.0;
-  double c1 = 0.05;
+  double c1 = 0.1;
 
   //record initial contact point for frontier
   output.initial.x = cell_x;
