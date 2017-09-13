@@ -75,6 +75,8 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
 
     pcl::toROSMsg(point_cloud, pc_msg);
     pc_msg.header.frame_id = "/camera_depth_frame";
+    //pc_msg.header.frame_id = "/real_camera_pose";
+    
     // pcl_ros::transformPointCloud(
     //   "/map",
     //   map_transform_,
@@ -97,12 +99,14 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
     tf_listener_.waitForTransform(
       "/map",
       "/camera_depth_frame",
+      //"/real_camera_pose",
       stamp,
       ros::Duration(2.0));
 
     tf_listener_.lookupTransform(
       "/map",
       "/camera_depth_frame",
+      //"/real_camera_pose",
       stamp,
       map_transform_);
 

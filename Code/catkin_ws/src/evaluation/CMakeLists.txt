@@ -66,4 +66,8 @@ add_executable(transform_publisher src/transform_publisher.cpp)
 target_link_libraries(transform_publisher ${catkin_LIBRARIES})
 add_dependencies(transform_publisher ${evaluation_EXPORTED_TARGETS})
 
+add_executable(cheater src/cheater.cpp)
+target_link_libraries(cheater ${catkin_LIBRARIES})
+add_dependencies(cheater ${evaluation_EXPORTED_TARGETS})
+
 
