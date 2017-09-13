@@ -21,7 +21,10 @@ int main(int argc, char **argv)
   if (snapshot_client.call(srv))
   {
     ROS_INFO("Received snapshot");
-    image_pub.publish(srv.response.candidates.data[0]);
+    for (unsigned int i = 0; i < srv.response.candidates.data.size(); ++i){
+      image_pub.publish(srv.response.candidates.data[i]);
+      ros::WallDuration(3).sleep();
+    }
   }
   else
   {

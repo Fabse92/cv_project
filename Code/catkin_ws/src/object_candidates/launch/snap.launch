@@ -1,0 +1,3 @@
+<launch>
+  <node name="snapshot_client" type="snapshot_client" pkg="object_candidates" output="screen" />
+</launch>

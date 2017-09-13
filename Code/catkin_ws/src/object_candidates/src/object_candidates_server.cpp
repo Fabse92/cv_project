@@ -16,6 +16,7 @@
 #include <sstream>
 
 
+
 //get most salient region
 vector<Point> seededRegionGrowing(Mat& salmap, Mat iorMap, Mat& considered, double& ma, double& meanSaliency, float candidateThreshold){
 	Point p_ma;
@@ -144,14 +145,16 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
    
   vector<Mat> salientBlobs;
   vector<float> means;
+  vector<float> means2;
   
   Mat iorMap = salmap.clone();
   while(true){
     Mat blob;
     msr = seededRegionGrowing(salmap,iorMap,blob,lastMax,meanSaliency,0.6);
-    if (meanSaliency < 120) break;
+    if (meanSaliency < 150) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
+    means2.push_back(meanSaliency);
     meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);    
@@ -160,33 +163,38 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
   while(true){
     Mat blob;
     msr = seededRegionGrowing(salmap,iorMap,blob,lastMax,meanSaliency,0.7);
-    if (meanSaliency < 120) break;
+    if (meanSaliency < 150) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
+    means2.push_back(meanSaliency);
     meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);
   }
   cout << "Number of salient blobs: " << salientBlobs.size() << endl;
-  for (i = 0; i < salientBlobs.size() - 1; ++i){
-    for (j = i+1; j < salientBlobs.size(); ++j){
-      if (areaOverUnion(salientBlobs[i],salientBlobs[j]) > 0.5){ // duplicate is removed
-        if (means[i] < means[j]) {
-          swap(salientBlobs[i],salientBlobs[j]);
-          swap(means[i],means[j]);
-          swap(msrs[i],msrs[j]);
+  if (salientBlobs.size() > 0) {
+    for (i = 0; i < salientBlobs.size() - 1; ++i){
+      for (j = i+1; j < salientBlobs.size(); ++j){
+        if (areaOverUnion(salientBlobs[i],salientBlobs[j]) > 0.5){ // duplicate is removed
+          if (means[i] < means[j]) {
+            swap(salientBlobs[i],salientBlobs[j]);
+            swap(means[i],means[j]);
+            swap(means2[i],means2[j]);
+            swap(msrs[i],msrs[j]);
+          }
+          salientBlobs.erase(salientBlobs.begin()+j);
+          means.erase(means.begin()+j);
+          means2.erase(means2.begin()+j);
+          msrs.erase(msrs.begin()+j);
+          if (i > 0) i = i - 1;
+          j = i;
         }
-        salientBlobs.erase(salientBlobs.begin()+j);
-        means.erase(means.begin()+j);
-        msrs.erase(msrs.begin()+j);
-        if (i > 0) i = i - 1;
-        j = i;
       }
     }
-  }
-  
-  for (unsigned j = 0; j < salientBlobs.size(); ++j){    
-    //std::cout << means[j] << std::endl;
+    
+    for (unsigned j = 0; j < salientBlobs.size(); ++j){    
+      std::cout << means2[j] << std::endl;
+    }
   }
   
   cout << "Number of different salient blobs: " << salientBlobs.size() << endl;   
@@ -194,6 +202,20 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
     cout << means[i] << endl;
   } */ 
   return salientBlobs;
+}
+
+cv::Mat removeOuterRingOfPixels(cv::Mat img){
+  cv::Mat output = img.clone();
+  for(int row = 0; row < img.rows; row++) {
+    for(int col = 0; col < img.cols; col++) {
+      if(img.at<uchar>(row + 1,col) == 0 ||
+         img.at<uchar>(row - 1,col) == 0 ||
+         img.at<uchar>(row,col + 1) == 0 ||
+         img.at<uchar>(row,col - 1) == 0)
+            output.at<uchar>(row,col) = 0;
+    }
+  }
+  return output;
 }
 
 std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segmentedImage, vector<Mat>& blobs ) {
@@ -256,7 +278,11 @@ std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segm
       thresh -= 0.025; 
     }    
     if (thresh >= 0.25){
-      colorCandidates.push_back(colorCandidate);
+      colorCandidates.push_back(removeOuterRingOfPixels(colorCandidate));
+      //cv::imshow("before", colorCandidate*255.f);
+      //cv::imshow("after", removeOuterRingOfPixels(colorCandidate)*255.f);
+      //cv::imshow("after2", removeOuterRingOfPixels(removeOuterRingOfPixels(colorCandidate))*255.f);
+      //  waitKey(0);
     }    
   }   
   
