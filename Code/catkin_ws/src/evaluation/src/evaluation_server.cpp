@@ -84,8 +84,8 @@ namespace evaluation
         
         // TEST - merge ground truth point clouds into octomap
         bool merge_ground_truths = false;
+        uint merge_ground_truths_counter = 0;
         nh_.param("merge_ground_truths", merge_ground_truths, merge_ground_truths);
-        if (merge_ground_truths) uint counter = 0;
         
         BOOST_FOREACH(std::string object, objects){  
           fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
@@ -98,11 +98,11 @@ namespace evaluation
           // TEST - merge ground truth point clouds into octomap
           if (merge_ground_truths)
           {
-            counter ++;
+            merge_ground_truths_counter ++;
             BOOST_FOREACH(pcl::PointXYZRGB& point, *cloud)
             {
               point.r = 0;
-              point.g = counter;
+              point.g = merge_ground_truths_counter;
               point.b = 5;
             }
           }

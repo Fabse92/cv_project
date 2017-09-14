@@ -63,6 +63,7 @@
 #include <octomap_msgs/MergeCandidates.h>
 #include <octomap_msgs/conversions.h>
 #include <evaluation/CompareGroundTruthsToProposals.h>
+#include <frontier_exploration/RequestLabelCertainties.h>
 
 #include <octomap_ros/conversions.h>
 #include <octomap/octomap.h>
@@ -161,6 +162,7 @@ public:
   bool resetSrv(std_srvs::Empty::Request& req, std_srvs::Empty::Response& resp);
   bool mergeCandidateSrv(MergeSrv::Request  &req, MergeSrv::Response &res);
   bool compareGroundTruthToCandidatesSrv(evaluation::CompareGroundTruthsToProposals::Request& req, evaluation::CompareGroundTruthsToProposals::Response& res);
+  bool requestLabelCertaintiesSrv(frontier_exploration::RequestLabelCertainties::Request& req, frontier_exploration::RequestLabelCertainties::Response& res);
 
   virtual void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud);
   virtual bool openFile(const std::string& filename);
@@ -210,13 +212,13 @@ protected:
 
   void processNewCandidate(const octomap::KeySet& occupied_cells, const PCLPointCloud& new_candidate);
 
-  uint computeLabel(const std::map<uint, uint>& labels);
+  uint computeLabel(const std::map<uint, double>& labels);
 
-  void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, uint>& labels, uint& labelled_nodes);
+  void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, double>& labels, uint& labelled_nodes);
 
   std::map<uint, double> computeAllCandidateSizes();
 
-  double getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey);
+  double getNodeDepth(const octomap::OcTreeKey& inKey);
 
   /// label the input cloud "pc" into ground and nonground. Should be in the robot's fixed frame (not world!)
   void filterGroundPlane(const PCLPointCloud& pc, PCLPointCloud& ground, PCLPointCloud& nonground) const;
@@ -286,7 +288,7 @@ protected:
   ros::Publisher  m_markerPub, m_binaryMapPub, m_fullMapPub, m_pointCloudPub, m_collisionObjectPub, m_mapPub, m_cmapPub, m_fmapPub, m_fmarkerPub, m_visualisation_pub;
   message_filters::Subscriber<sensor_msgs::PointCloud2>* m_pointCloudSub;
   tf::MessageFilter<sensor_msgs::PointCloud2>* m_tfPointCloudSub;
-  ros::ServiceServer m_octomapBinaryService, m_octomapFullService, m_clearBBXService, m_resetService, m_mergeCandidateService, m_compareGroundTruthToCandidatesService;
+  ros::ServiceServer m_octomapBinaryService, m_octomapFullService, m_clearBBXService, m_resetService, m_mergeCandidateService, m_compareGroundTruthToCandidatesService, m_requestLabelCertaintiesService;
   tf::TransformListener m_tfListener;
   boost::recursive_mutex m_config_mutex;
   dynamic_reconfigure::Server<OctomapServerConfig> m_reconfigureServer;

@@ -188,6 +188,7 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_resetService = private_nh.advertiseService("reset", &OctomapServer::resetSrv, this);
   m_mergeCandidateService = private_nh.advertiseService("merge_candidates", &OctomapServer::mergeCandidateSrv, this);
   m_compareGroundTruthToCandidatesService = private_nh.advertiseService("compare_ground_truths_to_proposals", &OctomapServer::compareGroundTruthToCandidatesSrv, this);
+  m_requestLabelCertaintiesService = private_nh.advertiseService("certainty_occupancy_grid", &OctomapServer::requestLabelCertaintiesSrv, this);
 
   dynamic_reconfigure::Server<OctomapServerConfig>::CallbackType f;
   f = boost::bind(&OctomapServer::reconfigureCallback, this, _1, _2);

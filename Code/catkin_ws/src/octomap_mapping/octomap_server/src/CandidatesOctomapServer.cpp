@@ -9,12 +9,12 @@ namespace octomap_server
 	void OctomapServer::processNewCandidate(const KeySet& occupied_cells, const PCLPointCloud& new_candidate)
 	{
 		uint new_candidate_label = new_candidate.points[0].r + new_candidate.points[0].g;
-		std::map<uint, uint> label_overlaps;
+		std::map<uint, double> label_overlaps;
     uint labelled_nodes = 0;
 
     ROS_INFO_STREAM("----------");
     ROS_INFO_STREAM("Candidate " << new_candidate_label);
-    ROS_INFO_STREAM("Size: " << occupied_cells.size());
+    ROS_INFO_STREAM("Size: " << occupied_cells.size() * pow(m_octree->getNodeSize(16), 3));
 
     computeOverlaps(occupied_cells, label_overlaps, labelled_nodes);
 
@@ -91,12 +91,13 @@ namespace octomap_server
     fflush(stdout);
 	}
 
-	uint OctomapServer::computeLabel(const std::map<uint, uint>& labels)
+	uint OctomapServer::computeLabel(const std::map<uint, double>& labels)
 	{
-	  uint greatest_overlap_label = 0, greatest_overlap = 0, labelled_nodes = 0;
+	  uint greatest_overlap_label = 0, labelled_nodes = 0;
+	  double greatest_overlap = 0;
 
 	  ROS_INFO_STREAM("Labels found: ");
-    for (std::map<uint, uint>::const_iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
+    for (std::map<uint, double>::const_iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
     {
       ROS_INFO_STREAM(
         "Label: " << map_it->first <<
@@ -113,7 +114,7 @@ namespace octomap_server
 	  return greatest_overlap_label;
 	}
 
-	void OctomapServer::computeOverlaps(const KeySet& occupied_cells, std::map<uint, uint>& labels, uint& labelled_nodes)
+	void OctomapServer::computeOverlaps(const KeySet& occupied_cells, std::map<uint, double>& labels, uint& labelled_nodes)
 	{
 	  labels[octomap_server::UNLABELLED] = 0;
 	  
@@ -122,12 +123,14 @@ namespace octomap_server
 	    // Find what's at that cell already
 	    ColorOcTreeNode* node = m_octree->search(*it, 0);
 
-	    if (node != NULL)
+	    if (node != NULL && !node->hasChildren())
 	    {
 	      // Check the label and increment appropriate counter
 	      uint existing_label = m_candidateList.getLabel(node->getColor());
 
-	      labels[existing_label]++;
+	      // labels[existing_label]++;
+	      // ROS_INFO_STREAM("Node size: " << pow(m_octree->getNodeSize(getNodeDepth(*it))), 3);
+	      labels[existing_label] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
 	      
 	      if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
 	      // else labels[octomap_server::UNLABELLED]++;
@@ -139,8 +142,8 @@ namespace octomap_server
 	/**
 	  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
 	*/
-	double OctomapServer::getNodeDepth(const octomap::OcTree *inOcTree, const octomap::OcTreeKey& inKey){
-	  octomap::OcTreeNode* lOriginNode = inOcTree->search(inKey);
+	double OctomapServer::getNodeDepth(const OcTreeKey& inKey){
+	  octomap::OcTreeNode* lOriginNode = m_octree->search(inKey);
 	  unsigned int lCount = 0;
 	  int i = 1;
 
@@ -148,7 +151,7 @@ namespace octomap_server
 	  lNextKey[0] = inKey[0] + i;
 
 	  // Count the number of time we fall on the same node in the positive x direction
-	  while(inOcTree->search(lNextKey) == lOriginNode){
+	  while(m_octree->search(lNextKey) == lOriginNode){
 	      ++lCount;
 	      lNextKey[0] = inKey[0] + ++i;
 	  }
@@ -157,12 +160,12 @@ namespace octomap_server
 	  lNextKey[0] = inKey[0] - i;
 
 	  // Count the number of time we fall on the same node in the negative x direction
-	  while(inOcTree->search(lNextKey) == lOriginNode){
+	  while(m_octree->search(lNextKey) == lOriginNode){
 	      ++lCount;
 	      lNextKey[0] = inKey[0] - ++i;
 	  }
 
-	  return inOcTree->getTreeDepth() - log2(lCount + 1);
+	  return m_octree->getTreeDepth() - log2(lCount + 1);
 	}
 
 	bool OctomapServer::compareGroundTruthToCandidatesSrv(evaluation::CompareGroundTruthsToProposals::Request& req, evaluation::CompareGroundTruthsToProposals::Response& res)
@@ -201,12 +204,12 @@ namespace octomap_server
 
 	    calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors, false, free_cells, occupied_cells);
 
-	    std::map<uint, uint> candidate_overlaps;
+	    std::map<uint, double> candidate_overlaps;
 	    uint total_labelled_nodes = 0;
 
 	    ROS_INFO_STREAM("");
 	    ROS_INFO_STREAM("Ground truth " << counter << ":");
-	    ROS_INFO_STREAM("Size: " << occupied_cells.size());
+	    ROS_INFO_STREAM("Size: " << occupied_cells.size() * pow(m_octree->getNodeSize(16), 3));
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_labelled_nodes);
 
@@ -237,13 +240,47 @@ namespace octomap_server
 	{
 	  std::map<uint, double> labels_counter;
 
-	  for (OcTreeT::tree_iterator tree_it = m_octree->begin_tree(), tree_end = m_octree->end_tree(); tree_it != tree_end; tree_it++)
+	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
 	  {
-	    ColorOcTreeNode* leaf_node = m_octree->search(tree_it.getKey(), 0);
-	    if (leaf_node != NULL) labels_counter[m_candidateList.getLabel(leaf_node->getColor())]++;
+	    ColorOcTreeNode* leaf_node = m_octree->search(leafs_it.getKey(), 0);
+	    if (leaf_node != NULL) labels_counter[m_candidateList.getLabel(leaf_node->getColor())] += pow(m_octree->getNodeSize(getNodeDepth(leafs_it.getKey())), 3);
 	  }
 
 	  return labels_counter;
 	}
 
+	bool OctomapServer::requestLabelCertaintiesSrv(frontier_exploration::RequestLabelCertainties::Request& req, frontier_exploration::RequestLabelCertainties::Response& res)
+	{
+		ROS_INFO_STREAM("\n");
+	  ROS_INFO_STREAM("In RequestLabelCertainties service");
+
+	  // Check that the input is valid, i.e. we have equal numbers of x and ys
+	  if (req.X.size() != req.Y.size())
+	  {
+	  	ROS_ERROR_STREAM("Lengths of x (" << req.X.size() << ") and y (" << req.Y.size() << ") do not match, aborting RequestLabelCertainties service.");
+	  	return false;
+	  }
+
+	  for (uint i = 0; i < req.X.size(); i++)
+	  {
+	  	ColorOcTreeNode* node = m_octree->search(req.X[i].data, req.Y[i].data, 0);
+	  	
+	  	std_msgs::UInt8 certainty;
+	  	
+	  	if (node != NULL) certainty.data = (uint)node->getColor().b;
+	  	else certainty.data = 0;
+
+	  	res.certainties.push_back(certainty);
+	  }
+
+	  // TEST
+    // ROS_INFO_STREAM("Result returned: ");
+    // BOOST_FOREACH(std_msgs::UInt8 i_msg, res.certainties)
+    // {
+    //   ROS_INFO_STREAM((uint)i_msg.data);
+    // }
+    // END TEST
+
+	  return true;
+	}
 }

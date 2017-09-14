@@ -46,15 +46,20 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     size_y_ = costmap_.getSizeInCellsY();    
         
     if(method == "information_gain_with_candidates"){   
-        ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("octomap_server/certainty_at_position"); 
+        ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("/octomap_server/certainty_occupancy_grid"); 
         request_client.waitForExistence();
         
         frontier_exploration::RequestLabelCertainties request_srv;
         std_msgs::Float32 x,y;
-        x.data = 0.0f;
-        y.data = 0.0f;
-        request_srv.request.X.push_back(x);
-        request_srv.request.Y.push_back(x);
+
+        // for (uint i = 0; i < 20000; i++)
+        // {
+        //   x.data = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/16)) - 8.0;
+        //   y.data = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/16)) - 8.0;
+
+        //   request_srv.request.X.push_back(x);
+        //   request_srv.request.Y.push_back(x);
+        // }
         
         ROS_INFO("Requesting for label certainty");
         if (request_client.call(request_srv))
