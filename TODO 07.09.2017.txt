@@ -4,22 +4,18 @@ Needed for first tests:
 
 PHIL:
 Compare ground truth to proposals service
-First thoughts:
-  - Create point cloud from specific octomap candidate
-  - Create meshes from candidate PC and ground truth PC
-  - Possible to do direct comparison at this point? Check pcl_surface
-  - Otherwise... something
-Further thoughts:
   - Create point cloud from specific octomap candidate
   - Create pcl::ConcaveHull objects from ground truth and candidate to get volumes
   - Apply a pcl::ConcaveHull::CropHull filter to the candidate PC, using the ground truth hull as the filter
   - Create a concave (convex?) hull from the filtered point cloud to get the intersection volume
-Alternative: compare surface distances rather than volume overlap?
+
+
+Fabian:
+Voxel cloud connectivity segmentation
 
 
 
-
-
+Write out evaluation statistics
 
 
 
@@ -30,10 +26,8 @@ Extra information gain method(s)
   - Currently: scored based on known vs. unknown space with bonus for unknown space near objects
   - Possible: additionally take into account label certainty
     - New octomap_server service: takes current gMapping occupancy grid (cost map), for each pixel of cost map get (x,y) co-ord, get this (x,y,z) co-ord from octomap, and if there is an object use setCost in the costmap to set the cost to the weight and return the updated map (costmap_2d package)
+    - provide certainty for each object candidate voxel on ground level
     - Extension: iterate up the z axis and do some kind of average or something
-
-
-
 
 
 
@@ -51,9 +45,7 @@ Frames: see if we can't get the octomap in the odom frame so that it updates whe
   - BUT: odom is a non-fixed frame, while the octomap is fixed.
 
 Prevent the "trails" around the objects
-  - Remove outer ring of pixels from 2d candidate
-  - Check depth when projecting - how to set threshold?
-  - Probably weight of these will only be 1... will this be low enough that we can throw it away?
+  - Remove the removal of outer ring of pixels from 2d candidate
   - Result from meeting: erode the 2d candidate. Alternative would be to segment the point cloud using point cloud/voxel connectivity to filter out unconnected
 
 
