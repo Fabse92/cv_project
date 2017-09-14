@@ -106,7 +106,6 @@ namespace evaluation
               point.b = 5;
             }
           }
-          // END TEST
 
           pcl::toROSMsg<pcl::PointXYZRGB>(*cloud,pc_msg); 
           std::string frame = "/" + object;
@@ -152,7 +151,6 @@ namespace evaluation
           merge_srv.request.candidates = array_pc_msg;
           merge_client.call(merge_srv);
         }
-        // END TEST
         
         ros::ServiceClient comparison_client = nh_.serviceClient<evaluation::CompareGroundTruthsToProposals>("octomap_server/compare_ground_truths_to_proposals"); 
         comparison_client.waitForExistence();
