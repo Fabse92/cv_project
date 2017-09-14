@@ -57,8 +57,8 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     } 
         
     if(method == "information_gain_with_candidates"){   
-        //ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("octomap_server/certainty_at_position"); 
-        //request_client.waitForExistence();
+        ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("/octomap_server/certainty_occupancy_grid"); 
+        request_client.waitForExistence();
         
         frontier_exploration::RequestLabelCertainties request_srv;
         
@@ -73,26 +73,26 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
             request_srv.request.X.push_back(x);
             request_srv.request.Y.push_back(y);
             
-            //unsigned int point = costmap_.getIndex(i,j);
-            
+            //unsigned int point = costmap_.getIndex(i,j);            
           }
         }
                
-        unsigned int mx, my; 
-               
-        /*
+        unsigned int mx, my;               
+        
         ROS_INFO("Requesting for label certainty");
         if (request_client.call(request_srv))
         {
           ROS_INFO("Received label certainty");
           
-          for (unsigned int i = 0; i < size_x_ * size_y_; ++i){
-            std_msgs::UInt8 certainty_msg = request_srv.response.certainties[i];
-            unsigned char certainty = certainty_msg.data;           
+          for (unsigned int i = 0; i < request_srv.response.certainties.size(); ++i){
+            std_msgs::UInt8 certainty_msg = request_srv.response.certainties[i]; 
+            unsigned int certainty = certainty_msg.data;        
             
+            //if (certainty != LETHAL_OBSTACLE and certainty != NO_INFORMATION and certainty != FREE_SPACE and certainty != INSCRIBED_INFLATED_OBSTACLE){
             if (certainty > 0){
+              std::cout << "INDEX: " << i << ", Certainty: " << (unsigned int) certainty << std::endl;
               costmap_.indexToCells(i, mx, my);
-              costmap_.setCost(certainty);
+              //costmap_.setCost(mx,my,certainty);
               
               Frontier new_frontier = buildSimpleFrontier(i, 1.0);
               frontier_list.push_back(new_frontier);
@@ -104,7 +104,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         {
           ROS_ERROR("Failed to provide label certainty");
         }
-        */
+        
     }
 
     //initialize flag arrays to keep track of visited and frontier cells
@@ -234,7 +234,7 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   
   double distance = sqrt(pow((cell_x-robot_x),2.0) + pow((cell_y-robot_y),2.0));
   
-  if (distance > 1.8 || distance < 0.2) {
+  if (distance > 2 || distance < 0.2) {
     output.min_distance = 1;
     return output;
   }
@@ -263,13 +263,13 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
           if(processed_flag[line_point] == false){
             if(previous_point == NO_INFORMATION){
               if(map_[line_point] == LETHAL_OBSTACLE){
-                inf_gain += 10; // bonus value for unknown pixels infront of obstacle
+                inf_gain += 20; // bonus value for unknown pixels infront of obstacle
               } else {
                 inf_gain += 30; // bonus value for unknown pixels infront of object candidate
               }
             } else {
               if(map_[line_point] == LETHAL_OBSTACLE){
-                inf_gain += 2;  // obstacle bonus
+                inf_gain += 10;  // obstacle bonus
               } else {
                 inf_gain += 100 * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
               }

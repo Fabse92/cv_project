@@ -155,7 +155,11 @@ namespace frontier_exploration
             if (counter % 3 == 0){
               red += 2;
             }
-            frontier_point_viz.r = red;
+            //frontier_point_viz.r = red;
+            frontier_point_viz.r = 0;
+            if (frontier.min_distance == 1) {
+              frontier_point_viz.r = 255;
+            }
             frontier_cloud_viz.push_back(frontier_point_viz);
 
             //check if this frontier is the nearest to robot

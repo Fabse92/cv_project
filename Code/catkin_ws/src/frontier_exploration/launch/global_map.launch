@@ -5,7 +5,7 @@
     <arg name="output_client" default="screen" />
     <arg name="output_server" default="screen" />
     <arg name="delay_time" default="0.0" />
-    <arg name="method" default="information_gain_with_candidates" />
+    <arg name="method" default="information_gain" />
 
     <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="$(arg output_client)"/>
 
