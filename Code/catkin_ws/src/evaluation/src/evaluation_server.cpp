@@ -57,7 +57,7 @@ namespace evaluation
         objects.push_back("power_drill");
         objects.push_back("sugar_box");
         objects.push_back("wood_block");
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
         pcl::PCDReader reader;
         
         std::string objects_package_path(ros::package::getPath("objects"));
@@ -82,6 +82,10 @@ namespace evaluation
         geometry_msgs::TransformStamped transform;
         //transform.header.frame_id = //"/map";        
         
+        // TEST - merge ground truth point clouds into octomap
+        bool merge_ground_truths = false;
+        nh_.param("merge_ground_truths", merge_ground_truths, merge_ground_truths);
+        if (merge_ground_truths) uint counter = 0;
         
         BOOST_FOREACH(std::string object, objects){  
           fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
@@ -89,8 +93,22 @@ namespace evaluation
           //fileName = objects_package_path + "/data/"+object+"/"+object+".ply";  
           //pcl::io::loadPLYFile(fileName, *cloud);
           
-          sensor_msgs::PointCloud2 pc_msg;    
-          pcl::toROSMsg<pcl::PointXYZ>(*cloud,pc_msg); 
+          sensor_msgs::PointCloud2 pc_msg;
+
+          // TEST - merge ground truth point clouds into octomap
+          if (merge_ground_truths)
+          {
+            counter ++;
+            BOOST_FOREACH(pcl::PointXYZRGB& point, *cloud)
+            {
+              point.r = 0;
+              point.g = counter;
+              point.b = 5;
+            }
+          }
+          // END TEST
+
+          pcl::toROSMsg<pcl::PointXYZRGB>(*cloud,pc_msg); 
           std::string frame = "/" + object;
           try{
             listener_.lookupTransform("/map", frame,  
@@ -124,6 +142,17 @@ namespace evaluation
           array_pc_msg.data.push_back(pc_msg);
           //frontier_cloud_pub.publish(pc_msg);
         }
+
+        // TEST - merge ground truth point clouds into octomap
+        if (merge_ground_truths)
+        {
+          ROS_INFO("TEST: passing ground truths to be merged into octomap");
+          ros::ServiceClient merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
+          octomap_msgs::MergeCandidates merge_srv;
+          merge_srv.request.candidates = array_pc_msg;
+          merge_client.call(merge_srv);
+        }
+        // END TEST
         
         ros::ServiceClient comparison_client = nh_.serviceClient<evaluation::CompareGroundTruthsToProposals>("octomap_server/compare_ground_truths_to_proposals"); 
         comparison_client.waitForExistence();
@@ -147,14 +176,6 @@ namespace evaluation
         ROS_INFO("Requesting to restart the system for the next experiment");
         restart_client.call(restart_srv);
 
-
-        //DEBUG
-
-        // ros::ServiceClient merge_client = nh_.serviceClient<octomap_msgs::MergeCandidates>("octomap_server/merge_candidates"); 
-        // octomap_msgs::MergeCandidates merge_srv;
-        // merge_srv.request.candidates = array_pc_msg;
-        // merge_client.call(merge_srv);
-        
         return true;
       }
   };
