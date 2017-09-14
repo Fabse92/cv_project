@@ -8,6 +8,7 @@
 #include <frontier_exploration/RequestLabelCertainties.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/UInt8.h>
 
 #include <frontier_exploration/costmap_tools.h>
 #include <frontier_exploration/Frontier.h>
@@ -43,28 +44,67 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
     map_ = costmap_.getCharMap();
     size_x_ = costmap_.getSizeInCellsX();
-    size_y_ = costmap_.getSizeInCellsY();    
+    size_y_ = costmap_.getSizeInCellsY();   
+    
+    unsigned int ix, iy, ix0, iy0;
+   
+    if(method != "frontier"){   
+      costmap_.worldToMap(0.0, 0.0, ix0, iy0);
+      BOOST_FOREACH(unsigned int point, initialFreeSpace(costmap_.getIndex(ix0,iy0), 3, costmap_)){ 
+        costmap_.indexToCells(point,ix,iy);
+        costmap_.setCost(ix,iy,FREE_SPACE);
+      }
+    } 
         
     if(method == "information_gain_with_candidates"){   
-        ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("octomap_server/certainty_at_position"); 
-        request_client.waitForExistence();
+        //ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("octomap_server/certainty_at_position"); 
+        //request_client.waitForExistence();
         
         frontier_exploration::RequestLabelCertainties request_srv;
-        std_msgs::Float32 x,y;
-        x.data = 0.0f;
-        y.data = 0.0f;
-        request_srv.request.X.push_back(x);
-        request_srv.request.Y.push_back(x);
         
+        double wx, wy;
+        
+        for (unsigned int i = 0; i < size_x_; ++i){
+          for (unsigned int j = 0; j < size_y_; ++j){
+            std_msgs::Float32 x,y;
+            costmap_.mapToWorld(i,j,wx,wy);
+            x.data = (float) wx;
+            y.data = (float) wy;
+            request_srv.request.X.push_back(x);
+            request_srv.request.Y.push_back(y);
+            
+            //unsigned int point = costmap_.getIndex(i,j);
+            
+          }
+        }
+               
+        unsigned int mx, my; 
+               
+        /*
         ROS_INFO("Requesting for label certainty");
         if (request_client.call(request_srv))
         {
           ROS_INFO("Received label certainty");
+          
+          for (unsigned int i = 0; i < size_x_ * size_y_; ++i){
+            std_msgs::UInt8 certainty_msg = request_srv.response.certainties[i];
+            unsigned char certainty = certainty_msg.data;           
+            
+            if (certainty > 0){
+              costmap_.indexToCells(i, mx, my);
+              costmap_.setCost(certainty);
+              
+              Frontier new_frontier = buildSimpleFrontier(i, 1.0);
+              frontier_list.push_back(new_frontier);
+            }
+          }
+          
         }
         else
         {
           ROS_ERROR("Failed to provide label certainty");
         }
+        */
     }
 
     //initialize flag arrays to keep track of visited and frontier cells
@@ -76,16 +116,6 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
     //find closest clear cell to start search
     unsigned int clear, pos = costmap_.getIndex(mx,my);
-    
-    unsigned int ix, iy, ix0, iy0;
-   
-    if(method == "information_gain"){   
-      costmap_.worldToMap(0.0, 0.0, ix0, iy0);
-      BOOST_FOREACH(unsigned int point, initialFreeSpace(costmap_.getIndex(ix0,iy0), 3, costmap_)){ 
-        costmap_.indexToCells(point,ix,iy);
-        costmap_.setCost(ix,iy,FREE_SPACE);
-      }
-    }
     
     if(nearestCell(clear, pos, FREE_SPACE, costmap_)){
         bfs.push(clear);
@@ -99,7 +129,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
     int counter = 0, counter2 = 0;
     int pixelsOfAngle = angleToNumberOfPixels(horizontal_fov,pos,circle_radius,costmap_);
-
+    
     while(!bfs.empty()){
         unsigned int idx = bfs.front();
         bfs.pop();
@@ -127,7 +157,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               // 'information_gain' is a new method
               // it defines 'frontiers' as possible next poses on a free cell
               // frontiers might be randomly sampled from all possible reachable free cells
-            }else if (method == "information_gain"){
+            }else{
               std::vector<unsigned int> circle_part;
               if (!visited_flag[nbr]) {
                 visited_flag[nbr] = true;    
@@ -135,7 +165,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                 costmap_.indexToCells(nbr,ix,iy);
                 costmap_.mapToWorld(ix,iy,x,y);
                 if(map_[nbr] == FREE_SPACE && pointInPolygon(x,y,polygon)){ 
-                    /*//bfs.push(nbr);
+                    /* //bfs.push(nbr);
                     BOOST_FOREACH(unsigned point, initialFreeSpace(pos, 4, costmap_)){                    
                       Frontier new_frontier = buildSimpleFrontier(point, 1.0);
                       frontier_list.push_back(new_frontier);
@@ -169,10 +199,10 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                       //}         
                         }
                     }
-                }*/
+                } */
                   circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
-                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon);
+                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon, method);
                   if (new_frontier.min_distance != 1)
                     frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
@@ -182,12 +212,13 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
            } 
         }
     }
+    
     std::cout << "ALL FRONTIERS COMPUTED" << std::endl;
     return frontier_list;
 
 }
 
-Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon){
+Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method){
   
   Frontier output;      
   output.size = 1;
@@ -204,13 +235,13 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   
   double distance = sqrt(pow((cell_x-robot_x),2.0) + pow((cell_y-robot_y),2.0));
   
-  if (distance > 1.5) {
+  if (distance > 1.8 || distance < 0.2) {
     output.min_distance = 1;
     return output;
   }
   
   double inf_gain = 0.0;
-  double c1 = 0.1;
+  double c1 = 0.05;
 
   //record initial contact point for frontier
   output.initial.x = cell_x;
@@ -229,12 +260,20 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
       costmap_.indexToCells(line_point,ix,iy);
       costmap_.mapToWorld(ix,iy,x,y);
       if(pointInPolygon(x,y,polygon)){
-        if(map_[line_point] == LETHAL_OBSTACLE){
+        if(map_[line_point] == LETHAL_OBSTACLE || (map_[line_point] > 0 && map_[line_point] < 253)){
           if(processed_flag[line_point] == false){
             if(previous_point == NO_INFORMATION){
-              inf_gain += 10; // bonus value for unknown pixels infront of obstacle
+              if(map_[line_point] == LETHAL_OBSTACLE){
+                inf_gain += 10; // bonus value for unknown pixels infront of obstacle
+              } else {
+                inf_gain += 30; // bonus value for unknown pixels infront of object candidate
+              }
             } else {
-              inf_gain += 2;  // obstacle bonus
+              if(map_[line_point] == LETHAL_OBSTACLE){
+                inf_gain += 2;  // obstacle bonus
+              } else {
+                inf_gain += 100 * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
+              }
             }
             processed_flag[line_point] = true;
           }
@@ -243,6 +282,7 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
           if(map_[line_point] == NO_INFORMATION){
             inf_gain += 1;    // value of a pixel with unknown value
           }
+          processed_flag[line_point] = true;
         }
         previous_point = map_[line_point];
       }

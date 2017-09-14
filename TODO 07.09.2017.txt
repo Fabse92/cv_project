@@ -50,8 +50,6 @@ Lighting in Gazebo
 Frames: see if we can't get the octomap in the odom frame so that it updates when the map updates
   - BUT: odom is a non-fixed frame, while the octomap is fixed.
 
-Saliency threshold - allow possibility that no object detected
-
 Prevent the "trails" around the objects
   - Remove outer ring of pixels from 2d candidate
   - Check depth when projecting - how to set threshold?
