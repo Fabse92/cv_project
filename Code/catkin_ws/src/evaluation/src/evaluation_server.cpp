@@ -86,6 +86,7 @@ namespace evaluation
         bool merge_ground_truths = false;
         uint merge_ground_truths_counter = 0;
         nh_.param("merge_ground_truths", merge_ground_truths, merge_ground_truths);
+        ROS_INFO_STREAM("Value of merge_ground_truths is " << merge_ground_truths);
         
         BOOST_FOREACH(std::string object, objects){  
           fileName = objects_package_path + "/data/"+object+"/"+object+"_downsampled.pcd";    
@@ -98,9 +99,9 @@ namespace evaluation
           // TEST - merge ground truth point clouds into octomap
           if (merge_ground_truths)
           {
-            merge_ground_truths_counter ++;
             BOOST_FOREACH(pcl::PointXYZRGB& point, *cloud)
             {
+              merge_ground_truths_counter ++;
               point.r = 0;
               point.g = merge_ground_truths_counter;
               point.b = 5;
