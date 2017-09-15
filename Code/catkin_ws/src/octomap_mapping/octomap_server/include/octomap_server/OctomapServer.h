@@ -216,6 +216,8 @@ protected:
 
   void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, double>& labels, uint& labelled_nodes);
 
+  double calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal);
+
   std::map<uint, double> computeAllCandidateSizes();
 
   double getNodeDepth(const octomap::OcTreeKey& inKey);

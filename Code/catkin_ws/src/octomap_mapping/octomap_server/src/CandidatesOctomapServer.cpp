@@ -1,4 +1,5 @@
 #include <octomap_server/OctomapServer.h>
+#include <pcl/surface/convex_hull.h>
 
 using namespace octomap;
 using octomap_msgs::Octomap;
@@ -139,6 +140,77 @@ namespace octomap_server
 	  }
 	}
 
+	double OctomapServer::calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal)
+	{
+		PCLPointCloud::Ptr proposal_pc(new PCLPointCloud);
+
+		for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+		{
+			octomap::OcTreeKey node_key = leafs_it.getKey();
+			
+			ColorOcTreeNode* leaf_node = m_octree->search(node_key, 0);
+
+			ROS_INFO_STREAM("Here 1");
+			
+			if ((uint) leaf_node->getColor().b == proposal)
+			{
+				uint counter = 0;
+
+				uint node_size = m_octree->getNodeSize(getNodeDepth(node_key));
+				point3d node_centre = m_octree->keyToCoord(node_key);
+
+				proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
+
+				// Calculate corner points of node and add those to proposal_pc
+				double offset = node_size/2;
+				for (double x = node_centre.x() - offset; x <= node_centre.x() + offset; x += offset * 2)
+				{
+					for (double y = node_centre.y() - offset; y <= node_centre.y() + offset; y += offset * 2)
+					{
+						for (double z = node_centre.z() - offset; z <= node_centre.z() + offset; z += offset * 2)
+						{
+							proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
+							counter++;
+							if (counter % 100 == 0) ROS_INFO_STREAM(counter);
+						}
+					}
+				}
+
+				ROS_INFO_STREAM(counter << " points");
+			}
+
+			ROS_INFO_STREAM("Here 3");
+
+			// Create convex hulls from proposal_pc and ground_truth
+			pcl::ConvexHull<PCLPoint> ground_truth_ch, proposal_ch;
+			PCLPointCloud ground_truth_hull_pc, proposal_hull_pc;
+
+			ROS_INFO_STREAM("Here 4");
+
+			ground_truth_ch.setComputeAreaVolume(true);
+			proposal_ch.setComputeAreaVolume(true);
+			ground_truth_ch.setDimension(3);
+			proposal_ch.setDimension(3);
+			ground_truth_ch.setInputCloud(ground_truth_pc);
+			proposal_ch.setInputCloud(proposal_pc);
+
+			ROS_INFO_STREAM("Here 5");
+			
+			ground_truth_ch.reconstruct(ground_truth_hull_pc);
+			proposal_ch.reconstruct(proposal_hull_pc);
+
+			ROS_INFO_STREAM("Here 6");
+
+			// Get volume of both
+			ROS_INFO_STREAM("Volume of ground truth: " << ground_truth_ch.getTotalVolume());
+			ROS_INFO_STREAM("Volume of proposal: " << proposal_ch.getTotalVolume());
+			
+			// Do convex hull overlap filter thing (crop hull)
+			// Create convex hull of overlap
+
+		}
+	}
+
 	/**
 	  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
 	*/
@@ -179,6 +251,7 @@ namespace octomap_server
 	  uint counter = 0;
 
 	  std::map<uint, double> candidate_sizes = computeAllCandidateSizes();
+	  res.nof_candidates.data = candidate_sizes.size();
 
 	  BOOST_FOREACH(sensor_msgs::PointCloud2& pc_msg, req.ground_truths.data)
 	  {
@@ -217,11 +290,25 @@ namespace octomap_server
 
 	    uint proposal = computeLabel(candidate_overlaps);
 
+	    // double convex_hull_overlap = calculateConvexHullOverlap(pcl_pc.makeShared(), proposal);
+
 	    if (proposal == octomap_server::UNLABELLED) ROS_INFO_STREAM("No suitable candidate found");
 	    else ROS_INFO_STREAM("Proposal is candidate " << proposal);
 	    
 	    ROS_INFO_STREAM("Candidate size: " << candidate_sizes[proposal]);
 	    ROS_INFO_STREAM("Overlap: " << candidate_overlaps[proposal]);
+
+	    std_msgs::Float64 overlap;
+	    std_msgs::Float64 proposal_vol;
+	    std_msgs::Float64 groundtruth_vol;
+
+	    overlap.data = candidate_overlaps[proposal];
+	    proposal_vol.data = candidate_sizes[proposal];
+	    groundtruth_vol.data = occupied_cells.size() * pow(m_octree->getNodeSize(16), 3);
+
+	    res.overlaps.push_back(overlap);
+	    res.proposal_vol.push_back(proposal_vol);
+	    res.groundtruth_vol.push_back(groundtruth_vol);
 
 	    //DEBUG visualisation
 	    visualisation_pc += pcl_pc;

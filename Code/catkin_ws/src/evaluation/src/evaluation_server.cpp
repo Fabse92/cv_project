@@ -92,7 +92,7 @@ namespace evaluation
         // TEST - merge ground truth point clouds into octomap
         bool merge_ground_truths = false;
         uint merge_ground_truths_counter = 0;
-        nh_.param("merge_ground_truths", merge_ground_truths, merge_ground_truths);
+        nh_.param<bool>("/evaluation_server/merge_ground_truths", merge_ground_truths, merge_ground_truths);
         ROS_INFO_STREAM("Value of merge_ground_truths is " << merge_ground_truths);
         
         BOOST_FOREACH(std::string object, objects){  
