@@ -1,6 +1,6 @@
 <launch>
   <node name="evaluation_server" type="evaluation_server" pkg="evaluation" output="screen" >
-  	<param name="merge_ground_truths" type="bool" value="true" />
+  	<param name="merge_ground_truths" type="bool" value="false" />
   </node>
   <node name="transform_publisher" type="transform_publisher" pkg="evaluation" output="screen" />
   <node name="cheater" type="cheater" pkg="evaluation" output="screen" />
