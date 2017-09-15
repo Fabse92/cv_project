@@ -42,6 +42,7 @@ namespace evaluation
 		  tf::TransformListener listener_;
 		  ros::Publisher frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("ground_truths",20);
 		  double evaluation_time = 0.0;
+		  int nbv_count = 0;
 
 		  public:
 
@@ -50,6 +51,9 @@ namespace evaluation
       {
         clock_t begin, end;
         begin = clock();
+        if (req.restart.data == false){
+          ++nbv_count;
+        }
         std::vector<std::string> objects;
         objects.push_back("ball");
         objects.push_back("banana");
@@ -170,12 +174,15 @@ namespace evaluation
         if (comparison_client.call(comparison_srv))
         {
           ROS_INFO("Received statistics of comparison");
+          std::string experiment_number; 
+          nh_.param<std::string>("/evaluation_server/experiment_number", experiment_number, "0");
           std::ofstream stats;
-          stats.open(evaluation_package_path + "/statistics/stats");
+          stats.open(evaluation_package_path + "/statistics/experiment_" + experiment_number);
+          
           for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
             int positives, negatives;
             unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
-            
+            stats << "nbv_count: nbv_count " << "time: " << double(begin) / CLOCKS_PER_SEC - evaluation_time << "IoU_threshold" << IoU_threshold << "\n";
             for (unsigned int gt = 0; gt < comparison_srv.response.overlaps.size(); ++gt){
               double overlap = comparison_srv.response.overlaps[gt].data;
               double proposal_vol = comparison_srv.response.proposal_vol[gt].data;
