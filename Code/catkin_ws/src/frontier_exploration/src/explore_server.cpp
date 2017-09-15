@@ -95,10 +95,11 @@ private:
       {
         ROS_INFO_STREAM("Evaluation performed!");
       }
-    
-      as_.setSucceeded();
-      boost::unique_lock<boost::mutex> lock(move_client_lock_);
-      move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+      if (restart){
+        as_.setSucceeded();
+        boost::unique_lock<boost::mutex> lock(move_client_lock_);
+        move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
+      }
     }
 
     /**

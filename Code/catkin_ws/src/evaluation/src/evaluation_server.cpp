@@ -176,29 +176,60 @@ namespace evaluation
           ROS_INFO("Received statistics of comparison");
           std::string experiment_number; 
           nh_.param<std::string>("/evaluation_server/experiment_number", experiment_number, "0");
-          std::ofstream stats;
-          stats.open(evaluation_package_path + "/statistics/experiment_" + experiment_number);
+          std::ofstream stats, detailed_stats;
+          stats.open(evaluation_package_path + "/statistics/experiment_" + experiment_number, std::ios_base::app);
+          detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment_" + experiment_number, std::ios_base::app);
           
           for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
-            int positives, negatives;
+            unsigned int tp = 0, fp = 0, fn = 0;
             unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
-            stats << "nbv_count: nbv_count " << "time: " << double(begin) / CLOCKS_PER_SEC - evaluation_time << "IoU_threshold" << IoU_threshold << "\n";
-            for (unsigned int gt = 0; gt < comparison_srv.response.overlaps.size(); ++gt){
+            unsigned int nof_objects = comparison_srv.response.overlaps.size();
+            detailed_stats << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << double(begin) / CLOCKS_PER_SEC - evaluation_time << ", IoU_threshold" << IoU_threshold << "\n";
+            stats << nbv_count << "," << nof_candidates << "," << nof_objects << "," << double(begin) / CLOCKS_PER_SEC - evaluation_time << "," << IoU_threshold << ",";
+            for (unsigned int gt = 0; gt < nof_objects; ++gt){
               double overlap = comparison_srv.response.overlaps[gt].data;
               double proposal_vol = comparison_srv.response.proposal_vol[gt].data;
               double groundtruth_vol = comparison_srv.response.groundtruth_vol[gt].data;
               
               double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
-              stats << "IoU: " << IoU << "overlap: " << overlap << ", proposal_vol: " << proposal_vol << "groundtruth_vol: " << groundtruth_vol << "\n"; 
+              detailed_stats << "IoU: " << IoU << ", overlap: " << overlap << ", proposal_vol: " << proposal_vol << ", groundtruth_vol: " << groundtruth_vol << "\n"; 
               
               if (IoU > IoU_threshold){
-                ++positives;
+                ++tp; // correct candidate
               } else{
-                ++negatives;
-              }
-            }         
+                ++fn; // no (correct) candidate for ground truth
+              }              
+            }
+            fp = nof_candidates - tp;
+            double recall    = (double) tp / (tp + fn);
+            double precision = (double) tp / (tp + fp);
+            detailed_stats << "recall: " << recall << ", precision: " << precision << ", tp: " << tp << ", fp: " << fp << ", fn: " << fn  << "\n\n";             
+            stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
+            
+            /*tp = 0, fp = 0, fn = 0;
+            for (unsigned int gt = 0; gt < nof_objects; ++gt){
+              double overlap = comparison_srv.response.overlaps_ch[gt].data;
+              double proposal_vol = comparison_srv.response.proposal_vol_ch[gt].data;
+              double groundtruth_vol = comparison_srv.response.groundtruth_vol_ch[gt].data;
+              
+              double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
+              detailed_stats << "IoU_ch: " << IoU << ", overlap_ch: " << overlap << ", proposal_vol_ch: " << proposal_vol << ", groundtruth_vol_ch: " << groundtruth_vol << "\n"; 
+              
+              if (IoU > IoU_threshold){
+                ++tp; // correct candidate
+              } else{
+                ++fn; // no (correct) candidate for ground truth
+              }              
+            }
+            fp = nof_candidates - tp;
+            recall    = (double) tp / (tp + fn);
+            precision = (double) tp / (tp + fp);
+            detailed_stats << "recall_ch: " << recall << ", precision_ch: " << precision << ", tp_ch: " << tp << ", fp_ch: " << fp << ", fn_ch: " << fn  << "\n\n";             
+            stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
+            */
           }
           stats.close(); 
+          detailed_stats.close();
         }
         else
         {

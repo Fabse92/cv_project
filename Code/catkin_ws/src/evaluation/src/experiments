@@ -3,6 +3,8 @@
 import rospy
 import roslaunch
 import rospkg
+import os, errno
+
 from std_srvs.srv import Empty
 from geometry_msgs.msg import PointStamped
 
@@ -17,7 +19,7 @@ class Experiments:
 
 if __name__ == "__main__":
     rospy.init_node('experiments_server')
-    
+   
     
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
@@ -25,6 +27,18 @@ if __name__ == "__main__":
     rospack = rospkg.RosPack()
    
     everything = rospack.get_path('p3dx_description')
+    evaluation = rospack.get_path('evaluation')
+    
+    try:
+      os.makedirs(evaluation+"/statistics")
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+            
+    experiment_number = 1;
+    experiment_file = open(evaluation+"/statistics/experiment_"+str(experiment_number), 'w')
+    experiment_file.write("nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
+    experiment_file.close()
     
     launch = roslaunch.parent.ROSLaunchParent(uuid, [everything+"/launch/everything.launch"])
     launch.start()   
@@ -67,12 +81,12 @@ if __name__ == "__main__":
     rospy.sleep(1) 
     
     start = rospy.Time.now()
-    # restart if node is shutdown, restart service is used or 20 min are over
-    while not rospy.is_shutdown() and not experiment.restart and (rospy.Time.now() - start).to_sec() < 1200:
+    # restart if node is shutdown, restart service is used or 17 min are over
+    while not rospy.is_shutdown() and not experiment.restart and (rospy.Time.now() - start).to_sec() < 1020:
       #print str((rospy.Time.now() - start).to_sec())
       continue
     
-    if (rospy.Time.now() - start).to_sec() >= 1200:
+    if (rospy.Time.now() - start).to_sec() >= 1020:
       rospy.loginfo("System restart, because time is up")
     elif experiment.restart:
       rospy.loginfo("System restart, because evaluation is done")
