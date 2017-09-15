@@ -1,4 +1,10 @@
 
 candidate_locator/ArrayPointClouds ground_truths
-
 ---
+std_msgs/UInt8 nof_candidates
+std_msgs/Float64[] overlaps
+std_msgs/Float64[] proposal_vol
+std_msgs/Float64[] groundtruth_vol
+std_msgs/Float64[] overlaps_ch
+std_msgs/Float64[] proposal_vol_ch
+std_msgs/Float64[] groundtruth_vol_ch

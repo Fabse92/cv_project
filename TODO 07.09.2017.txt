@@ -17,6 +17,28 @@ Voxel cloud connectivity segmentation
 
 Write out evaluation statistics
 
+- what values we need:
+-- for each ground truth
+--- Overlap
+--- Total vol of proposal
+--- total vol of ground truth
+-- total number of candidates
+
+- Intersection over Union
+-- Overlap / (Total Vol of proposal + total vol of ground truth - overlap)
+
+- Define threshold: 
+-- count correct and incorrect candidates
+
+-> recall and precision  
+
+- output
+-- current time, current next best view iteration, current number of candidates
+-- one version for each evaluation method
+--- recall and precision
+--- overlap, vol of proposal and vol of ground truth for each ground truth         
+
+
 
 
 Needed for subsequent tests:

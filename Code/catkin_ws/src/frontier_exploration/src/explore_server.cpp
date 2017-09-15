@@ -86,9 +86,10 @@ private:
     move_base_msgs::MoveBaseGoal move_client_goal_;
     
     ros::ServiceClient evaluation_client = nh_.serviceClient<evaluation::Evaluate>("evaluate");
-    evaluation::Evaluate eval_srv;
 
-    void finishedTask(){
+    void finishedTask(bool restart){
+      evaluation::Evaluate eval_srv;
+      eval_srv.request.restart.data = restart;
       ROS_INFO("Requesting evaluation");
       if (evaluation_client.call(eval_srv))
       {
@@ -199,7 +200,7 @@ private:
                 if(retry_ == 0 && success_){
                   if (method == "frontier") {
                     ROS_WARN("Finished exploring room");
-                    finishedTask();
+                    finishedTask(true);
                     return;
                   }                    
 
@@ -256,7 +257,7 @@ private:
             double used_time = current_time - starting_time;
             if (used_time > available_time) {
               ROS_WARN("Time is up!");
-              finishedTask();
+              finishedTask(true);
               return;
             } else {
               ROS_INFO_STREAM("Remaining time " << available_time - used_time);
@@ -297,6 +298,7 @@ private:
                 if (octomap_merge_client.call(octomap_merge_srv))
                 {
                   ROS_INFO("Candidates merged");
+                  finishedTask(false);
                 }
                 else
                 {
