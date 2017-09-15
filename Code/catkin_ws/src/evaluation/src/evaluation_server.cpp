@@ -26,6 +26,9 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <string>
+#include <ctime>     
+#include <fstream>  
+#include <iterator>      
 
 #include <boost/foreach.hpp>
 
@@ -38,12 +41,15 @@ namespace evaluation
 		  ros::NodeHandle nh_;
 		  tf::TransformListener listener_;
 		  ros::Publisher frontier_cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("ground_truths",20);
+		  double evaluation_time = 0.0;
 
 		  public:
 
       bool evaluate(evaluation::Evaluate::Request  &req,
                evaluation::Evaluate::Response &res)
       {
+        clock_t begin, end;
+        begin = clock();
         std::vector<std::string> objects;
         objects.push_back("ball");
         objects.push_back("banana");
@@ -61,6 +67,7 @@ namespace evaluation
         pcl::PCDReader reader;
         
         std::string objects_package_path(ros::package::getPath("objects"));
+        std::string evaluation_package_path(ros::package::getPath("evaluation"));
         std::string fileName;
         candidate_locator::ArrayPointClouds array_pc_msg; 
         
@@ -163,18 +170,44 @@ namespace evaluation
         if (comparison_client.call(comparison_srv))
         {
           ROS_INFO("Received statistics of comparison");
+          std::ofstream stats;
+          stats.open(evaluation_package_path + "/statistics/stats");
+          for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
+            int positives, negatives;
+            unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
+            
+            for (unsigned int gt = 0; gt < comparison_srv.response.overlaps.size(); ++gt){
+              double overlap = comparison_srv.response.overlaps[gt].data;
+              double proposal_vol = comparison_srv.response.proposal_vol[gt].data;
+              double groundtruth_vol = comparison_srv.response.groundtruth_vol[gt].data;
+              
+              double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
+              stats << "IoU: " << IoU << "overlap: " << overlap << ", proposal_vol: " << proposal_vol << "groundtruth_vol: " << groundtruth_vol << "\n"; 
+              
+              if (IoU > IoU_threshold){
+                ++positives;
+              } else{
+                ++negatives;
+              }
+            }         
+          }
+          stats.close(); 
         }
         else
         {
           ROS_ERROR("Failed to compare ground truths to proposals");
         }
         
-        ros::ServiceClient restart_client = nh_.serviceClient<std_srvs::Empty>("/restarter"); 
-        std_srvs::Empty restart_srv;
+        if (req.restart.data){
+          ros::ServiceClient restart_client = nh_.serviceClient<std_srvs::Empty>("/restarter"); 
+          std_srvs::Empty restart_srv;
+          
+          ROS_INFO("Requesting to restart the system for the next experiment");
+          restart_client.call(restart_srv);
+        }
+        end = clock();
+        evaluation_time += double(end - begin) / CLOCKS_PER_SEC;
         
-        ROS_INFO("Requesting to restart the system for the next experiment");
-        restart_client.call(restart_srv);
-
         return true;
       }
   };
