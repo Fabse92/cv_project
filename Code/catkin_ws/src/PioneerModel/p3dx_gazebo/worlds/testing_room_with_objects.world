@@ -13,7 +13,7 @@
       </attenuation>
       <direction>0.5 0.1 -0.9</direction>
     </light>
-    <light name='lamp' type='point'>
+    <light name='ceiling_lamp' type='point'>
       <pose>-0.242974 -0.494324 3.75 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
@@ -22,6 +22,58 @@
         <constant>1</constant>
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='lamp1' type='point'>
+      <pose>3.04 2.38 0.52 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>10</range>
+        <constant>1</constant>
+        <linear>0.34</linear>
+        <quadratic>0.1</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='lamp2' type='point'>
+      <pose>3.04 -2.96 0.52 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>10</range>
+        <constant>1</constant>
+        <linear>0.35</linear>
+        <quadratic>0.1</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='lamp3' type='point'>
+      <pose>-2.73 -2.96 0.52 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>10</range>
+        <constant>1</constant>
+        <linear>0.3</linear>
+        <quadratic>0.1</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+    <light name='lamp4' type='point'>
+      <pose>-2.73 2.38 0.52 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>10</range>
+        <constant>1</constant>
+        <linear>0.3</linear>
+        <quadratic>0.1</quadratic>
       </attenuation>
       <cast_shadows>0</cast_shadows>
       <direction>0 0 -1</direction>
