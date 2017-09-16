@@ -140,8 +140,8 @@
     </model>
     <state world_name='default'>
       <sim_time>0</sim_time>
-      <real_time>90 482885080</real_time>
-      <wall_time>1505130529 379571092</wall_time>
+      <real_time>0</real_time>
+      <wall_time>0</wall_time>
       <model name='ball'>
         <pose>3 -3e-06 0.000386 0.007542 0.0051 1.8e-05</pose>
         <link name='ball_link'>

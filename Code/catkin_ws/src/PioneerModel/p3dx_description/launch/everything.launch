@@ -26,7 +26,9 @@
 
   <include file="$(find object_candidates)/launch/servers.launch" />
   
-  <include file="$(find evaluation)/launch/servers.launch" />
+  <include file="$(find evaluation)/launch/servers.launch">
+    <arg name="use_sim_time" value="$(arg use_sim_time)" />
+  </include>
 
   <include file="$(find candidate_locator)/launch/servers.launch" >
     <!-- <arg name="output" value="$(arg output)" /> -->

@@ -3,7 +3,9 @@
 import rospy
 import roslaunch
 import rospkg
+
 import os, errno
+import os.path
 
 from std_srvs.srv import Empty
 from geometry_msgs.msg import PointStamped
@@ -36,10 +38,11 @@ if __name__ == "__main__":
             raise
             
     experiment_number = 1;
-    experiment_file = open(evaluation+"/statistics/experiment_"+str(experiment_number), 'w')
-    experiment_file.write("nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
-    experiment_file.close()
-    
+    if not os.path.isfile(evaluation+"/statistics/experiment"):
+      experiment_file = open(evaluation+"/statistics/experiment", 'w')
+      experiment_file.write("experiment_number,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
+      experiment_file.close()
+      
     launch = roslaunch.parent.ROSLaunchParent(uuid, [everything+"/launch/everything.launch"])
     launch.start()   
       

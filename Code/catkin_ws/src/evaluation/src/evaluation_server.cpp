@@ -51,6 +51,7 @@ namespace evaluation
       {
         clock_t begin, end;
         begin = clock();
+        double now = ros::Time::now().toSec();
         if (req.restart.data == false){
           ++nbv_count;
         }
@@ -177,15 +178,15 @@ namespace evaluation
           std::string experiment_number; 
           nh_.param<std::string>("/evaluation_server/experiment_number", experiment_number, "0");
           std::ofstream stats, detailed_stats;
-          stats.open(evaluation_package_path + "/statistics/experiment_" + experiment_number, std::ios_base::app);
-          detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment_" + experiment_number, std::ios_base::app);
+          stats.open(evaluation_package_path + "/statistics/experiment", std::ios_base::app);
+          detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment", std::ios_base::app);
           
           for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
             unsigned int tp = 0, fp = 0, fn = 0;
             unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
             unsigned int nof_objects = comparison_srv.response.overlaps.size();
-            detailed_stats << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << double(begin) / CLOCKS_PER_SEC - evaluation_time << ", IoU_threshold" << IoU_threshold << "\n";
-            stats << nbv_count << "," << nof_candidates << "," << nof_objects << "," << double(begin) / CLOCKS_PER_SEC - evaluation_time << "," << IoU_threshold << ",";
+            detailed_stats << "experiment_number: " << experiment_number << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", IoU_threshold" << IoU_threshold << "\n";
+            stats << experiment_number << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << IoU_threshold << ",";
             for (unsigned int gt = 0; gt < nof_objects; ++gt){
               double overlap = comparison_srv.response.overlaps[gt].data;
               double proposal_vol = comparison_srv.response.proposal_vol[gt].data;

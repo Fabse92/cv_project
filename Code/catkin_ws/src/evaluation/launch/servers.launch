@@ -1,4 +1,8 @@
 <launch>
+
+  <arg name="use_sim_time" default="true"/>
+  
+  <param name="use_sim_time" value="$(arg use_sim_time)"/>
   <node name="evaluation_server" type="evaluation_server" pkg="evaluation" output="screen" >
   	<param name="merge_ground_truths" type="bool" value="false" />
   	<param name="experiment_number" type="str" value="1" />
