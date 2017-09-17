@@ -201,7 +201,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                 } */
                   circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
-                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon, method);
+                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon, method, nh);
                   if (new_frontier.min_distance != 1)
                     frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
@@ -217,7 +217,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
 
 }
 
-Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method){
+Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh){
   
   Frontier output;      
   output.size = 1;
@@ -237,6 +237,17 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   if (distance > 2 || distance < 0.2) {
     output.min_distance = 1;
     return output;
+  }
+  
+  double inf_obstacle, inf_obstacle_unexplored, inf_object, inf_object_unexplored, inf_unexplored; 
+  nh.param<double>("/explore_server/inf_obstacle", inf_obstacle, -1.0);
+  nh.param<double>("/explore_server/inf_obstacle_unexplored", inf_obstacle_unexplored, -1.0);
+  nh.param<double>("/explore_server/inf_object", inf_object, -1.0);
+  nh.param<double>("/explore_server/inf_object_unexplored", inf_object_unexplored, -1.0);
+  nh.param<double>("/explore_server/inf_unexplored", inf_unexplored, -1.0);
+  
+  if (inf_obstacle == -1.0 || inf_obstacle_unexplored == -1.0 || inf_object == -1.0 || inf_object_unexplored == -1.0 || inf_unexplored == -1.0){
+    ROS_WARN("Information gain parameter not set!");
   }
   
   double inf_gain = 0.0;
@@ -263,15 +274,15 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
           if(processed_flag[line_point] == false){
             if(previous_point == NO_INFORMATION){
               if(map_[line_point] == LETHAL_OBSTACLE){
-                inf_gain += 20; // bonus value for unknown pixels infront of obstacle
+                inf_gain += inf_obstacle_unexplored; // bonus value for unknown pixels infront of obstacle
               } else {
-                inf_gain += 30; // bonus value for unknown pixels infront of object candidate
+                inf_gain += inf_object_unexplored; // bonus value for unknown pixels infront of object candidate
               }
             } else {
               if(map_[line_point] == LETHAL_OBSTACLE){
-                inf_gain += 10;  // obstacle bonus
+                inf_gain += inf_obstacle;  // obstacle bonus
               } else {
-                inf_gain += 100 * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
+                inf_gain += inf_object * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
               }
             }
             processed_flag[line_point] = true;
@@ -279,7 +290,7 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
           break;
         } else if(processed_flag[line_point] == false){
           if(map_[line_point] == NO_INFORMATION){
-            inf_gain += 1;    // value of a pixel with unknown value
+            inf_gain += inf_unexplored;    // value of a pixel with unknown value
           }
           processed_flag[line_point] = true;
         }

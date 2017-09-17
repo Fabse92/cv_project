@@ -43,7 +43,7 @@ protected:
     
     Frontier buildSimpleFrontier(unsigned int cell, double dist);
     
-    Frontier buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method);
+    Frontier buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh);
 
     /**
      * @brief isNewFrontierCell Evaluate if candidate cell is a valid candidate for a new frontier.

@@ -1,0 +1,3 @@
+nbv_method,       repeat experiment, available_time, world,                             inf_gain: obstacle, unexplored infront of obstacle, object, unexplored infront of object, unexplored
+information_gain, 10,                1500,           testing_room_with_objects2.world,            10,       20,                              100,   30,                           1
+frontier,         10,                1500,           testing_room_with_objects2.world,            10,       20,                              100,   30,                           1

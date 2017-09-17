@@ -1,11 +1,12 @@
 <launch>
 
   <arg name="use_sim_time" default="true"/>
+  <arg name="method" default="unknown"/>
   
   <param name="use_sim_time" value="$(arg use_sim_time)"/>
   <node name="evaluation_server" type="evaluation_server" pkg="evaluation" output="screen" >
   	<param name="merge_ground_truths" type="bool" value="false" />
-  	<param name="experiment_number" type="str" value="1" />
+  	<param name="method" type="str" value="$(arg method)"/>
   </node>
   <node name="transform_publisher" type="transform_publisher" pkg="evaluation" output="screen" />
   <node name="cheater" type="cheater" pkg="evaluation" output="screen" />

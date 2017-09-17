@@ -6,6 +6,12 @@
     <arg name="output_server" default="screen" />
     <arg name="delay_time" default="0.0" />
     <arg name="method" default="information_gain" />
+    <arg name="available_time" default="600.0" />
+    <arg name="inf_obstacle" default="10.0" />
+    <arg name="inf_obstacle_unexplored" default="20.0" />
+    <arg name="inf_object" default="100.0" />
+    <arg name="inf_object_unexplored" default="30.0" />
+    <arg name="inf_unexplored" default="1.0" />
 
     <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="$(arg output_client)"/>
 
@@ -16,8 +22,13 @@
         <!--<remap from="move_base/goal" to="wobtata"/>-->
         <param name="frequency" type="double" value="2.0"/>
         <param name="goal_aliasing" type="double" value="$(arg sensor_range)"/>
-        <param name="available_time" type="double" value="600.0"/>
+        <param name="available_time" type="double" value="$(arg available_time)"/>
         <param name="method" type="str" value="$(arg method)"/>
+        <param name="inf_obstacle" type="double" value="$(arg inf_obstacle)"/>
+        <param name="inf_obstacle_unexplored" type="double" value="$(arg inf_obstacle_unexplored)"/>
+        <param name="inf_object" type="double" value="$(arg inf_object)"/>
+        <param name="inf_object_unexplored" type="double" value="$(arg inf_object_unexplored)"/>
+        <param name="inf_unexplored" type="double" value="$(arg inf_unexplored)"/>
 
         #All standard costmap_2d parameters as in move_base, other than BoundedExploreLayer
         <rosparam ns="explore_costmap" subst_value="true">

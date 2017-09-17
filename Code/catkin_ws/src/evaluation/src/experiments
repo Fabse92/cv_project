@@ -28,7 +28,7 @@ if __name__ == "__main__":
    
     rospack = rospkg.RosPack()
    
-    everything = rospack.get_path('p3dx_description')
+    description = rospack.get_path('p3dx_description')
     evaluation = rospack.get_path('evaluation')
     
     try:
@@ -36,14 +36,96 @@ if __name__ == "__main__":
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-            
-    experiment_number = 1;
+
     if not os.path.isfile(evaluation+"/statistics/experiment"):
       experiment_file = open(evaluation+"/statistics/experiment", 'w')
-      experiment_file.write("experiment_number,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
+      experiment_file.write("method,world,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
       experiment_file.close()
       
-    launch = roslaunch.parent.ROSLaunchParent(uuid, [everything+"/launch/everything.launch"])
+    if not os.path.isfile(evaluation+"/temp"):  
+      setup_file = open(evaluation+"/experiment_setup", 'r')  
+      temp_file = open(evaluation+"/temp", 'w')  
+      count = 0
+      for line in setup_file:
+        if count != 0:
+          line = line.replace(" ", "")
+          line = line.replace("\n", "")
+          split = line.split(",")
+          method = split[0]
+          repeats = int(split[1])
+          time = float(split[2])
+          world = split[3]
+          inf_obstacle = float(split[4])
+          inf_obstacle_unexplored = float(split[5])
+          inf_object = float(split[6])
+          inf_object_unexplored = float(split[7])
+          inf_unexplored = float(split[8])
+          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
+        count += 1
+      setup_file.close()
+      temp_file.close()
+      
+    temp_file = open(evaluation+"/temp", 'r')
+    lines = []
+    first = True
+    for line in temp_file:
+      lines.append(line)
+      if first:
+        first = False
+        line = line.replace(" ", "")
+        line = line.replace("\n", "")
+        split = line.split(",")
+        method = split[0]
+        repeats = int(split[1])
+        time = float(split[2])
+        world = split[3]
+        inf_obstacle = float(split[4])
+        inf_obstacle_unexplored = float(split[5])
+        inf_object = float(split[6])
+        inf_object_unexplored = float(split[7])
+        inf_unexplored = float(split[8])  
+    temp_file.close()
+    
+    temp_file = open(evaluation+"/temp", 'w')
+    first = True
+    for line in lines:
+      if first:
+        first = False
+        repeats = repeats - 1
+        if repeats != 0:          
+          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
+      else:
+        temp_file.write(line)
+    temp_file.close()
+    
+    lines = []
+    everything_file = open(description+"/launch/everything.launch", 'r')
+    for line in everything_file:
+      lines.append(line)
+    everything_file.close()
+    everything_file = open(description+"/launch/everything.launch", 'w')
+    for line in lines:
+      if "<arg name=\"method\" default=" in line:
+        everything_file.write("  <arg name=\"method\" default=\""+method+"\" />\n")
+      elif "<arg name=\"world\" default=" in line:
+        everything_file.write("  <arg name=\"world\" default=\""+world+"\" />\n")
+      elif "<arg name=\"available_time\" default=" in line:
+        everything_file.write("  <arg name=\"available_time\" default=\""+str(time)+"\" />\n")
+      elif "<arg name=\"inf_obstacle\" default=" in line:
+        everything_file.write("  <arg name=\"inf_obstacle\" default=\""+str(inf_obstacle)+"\" />\n")
+      elif "<arg name=\"inf_obstacle_unexplored\" default=" in line:
+        everything_file.write("  <arg name=\"inf_obstacle_unexplored\" default=\""+str(inf_obstacle_unexplored)+"\" />\n")
+      elif "<arg name=\"inf_object\" default=" in line:
+        everything_file.write("  <arg name=\"inf_object\" default=\""+str(inf_object)+"\" />\n")
+      elif "<arg name=\"inf_object_unexplored\" default=" in line:
+        everything_file.write("  <arg name=\"inf_object_unexplored\" default=\""+str(inf_object_unexplored)+"\" />\n")
+      elif "<arg name=\"inf_unexplored\" default=" in line:
+        everything_file.write("  <arg name=\"inf_unexplored\" default=\""+str(inf_unexplored)+"\" />\n")
+      else:
+        everything_file.write(line)
+    everything_file.close()
+      
+    launch = roslaunch.parent.ROSLaunchParent(uuid, [description+"/launch/everything.launch"])
     launch.start()   
       
     experiment = Experiments(launch)
@@ -84,12 +166,12 @@ if __name__ == "__main__":
     rospy.sleep(1) 
     
     start = rospy.Time.now()
-    # restart if node is shutdown, restart service is used or 17 min are over
-    while not rospy.is_shutdown() and not experiment.restart and (rospy.Time.now() - start).to_sec() < 1020:
+    # restart if node is shutdown, restart service is used or time is over
+    while not rospy.is_shutdown() and not experiment.restart and (rospy.Time.now() - start).to_sec() < time+420:
       #print str((rospy.Time.now() - start).to_sec())
       continue
     
-    if (rospy.Time.now() - start).to_sec() >= 1020:
+    if (rospy.Time.now() - start).to_sec() >= time+420:
       rospy.loginfo("System restart, because time is up")
     elif experiment.restart:
       rospy.loginfo("System restart, because evaluation is done")
