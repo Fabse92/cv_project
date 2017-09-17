@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     if not os.path.isfile(evaluation+"/statistics/experiment"):
       experiment_file = open(evaluation+"/statistics/experiment", 'w')
-      experiment_file.write("method,world,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
+      experiment_file.write("method,world,cheat_mode,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
       experiment_file.close()
       
     if not os.path.isfile(evaluation+"/temp"):  
@@ -55,12 +55,13 @@ if __name__ == "__main__":
           repeats = int(split[1])
           time = float(split[2])
           world = split[3]
-          inf_obstacle = float(split[4])
-          inf_obstacle_unexplored = float(split[5])
-          inf_object = float(split[6])
-          inf_object_unexplored = float(split[7])
-          inf_unexplored = float(split[8])
-          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
+          cheat_mode = split[4]
+          inf_obstacle = float(split[5])
+          inf_obstacle_unexplored = float(split[6])
+          inf_object = float(split[7])
+          inf_object_unexplored = float(split[8])
+          inf_unexplored = float(split[9])
+          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+cheat_mode+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
         count += 1
       setup_file.close()
       temp_file.close()
@@ -79,11 +80,12 @@ if __name__ == "__main__":
         repeats = int(split[1])
         time = float(split[2])
         world = split[3]
-        inf_obstacle = float(split[4])
-        inf_obstacle_unexplored = float(split[5])
-        inf_object = float(split[6])
-        inf_object_unexplored = float(split[7])
-        inf_unexplored = float(split[8])  
+        cheat_mode = split[4]
+        inf_obstacle = float(split[5])
+        inf_obstacle_unexplored = float(split[6])
+        inf_object = float(split[7])
+        inf_object_unexplored = float(split[8])
+        inf_unexplored = float(split[9]) 
     temp_file.close()
     
     temp_file = open(evaluation+"/temp", 'w')
@@ -93,7 +95,7 @@ if __name__ == "__main__":
         first = False
         repeats = repeats - 1
         if repeats != 0:          
-          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
+          temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+cheat_mode+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
       else:
         temp_file.write(line)
     temp_file.close()
@@ -109,6 +111,8 @@ if __name__ == "__main__":
         everything_file.write("  <arg name=\"method\" default=\""+method+"\" />\n")
       elif "<arg name=\"world\" default=" in line:
         everything_file.write("  <arg name=\"world\" default=\""+world+"\" />\n")
+      elif "<arg name=\"cheat_mode\" default=" in line:
+        everything_file.write("  <arg name=\"cheat_mode\" default=\""+cheat_mode+"\" />\n")
       elif "<arg name=\"available_time\" default=" in line:
         everything_file.write("  <arg name=\"available_time\" default=\""+str(time)+"\" />\n")
       elif "<arg name=\"inf_obstacle\" default=" in line:

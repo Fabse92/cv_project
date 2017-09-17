@@ -38,6 +38,8 @@ private:
 	cv::Mat depth_image_;
 	bool cam_model_assigned = false;
 	uint candidate_id_ = 1;
+	
+	std::string camera_frame_;
 
 	void candidatesCallback(const object_candidates::SnapshotMsg& msg);
 	void getTransforms(const ros::Time& stamp);

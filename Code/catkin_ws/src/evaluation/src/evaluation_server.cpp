@@ -179,6 +179,8 @@ namespace evaluation
           nh_.param<std::string>("/evaluation_server/method", method, "unknown");
           std::string world; 
           nh_.param<std::string>("/world", world, "unknown");
+          bool cheat_mode;
+          nh_.param<bool>("/cheat_mode", cheat_mode, true);
           std::ofstream stats, detailed_stats;
           stats.open(evaluation_package_path + "/statistics/experiment", std::ios_base::app);
           detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment", std::ios_base::app);
@@ -187,8 +189,8 @@ namespace evaluation
             unsigned int tp = 0, fp = 0, fn = 0;
             unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
             unsigned int nof_objects = comparison_srv.response.overlaps.size();
-            detailed_stats << "method: " << method << "world: " << world << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", IoU_threshold" << IoU_threshold << "\n";
-            stats << method << "," << world << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << IoU_threshold << ",";
+            detailed_stats << "method: " << method << "world: " << world << "cheat_mode: " << cheat_mode << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", IoU_threshold" << IoU_threshold << "\n";
+            stats << method << "," << world << "," << cheat_mode << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << IoU_threshold << ",";
             for (unsigned int gt = 0; gt < nof_objects; ++gt){
               double overlap = comparison_srv.response.overlaps[gt].data;
               double proposal_vol = comparison_srv.response.proposal_vol[gt].data;

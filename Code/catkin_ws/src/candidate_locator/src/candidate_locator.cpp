@@ -8,6 +8,13 @@ CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
 
   // pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
+  
+    bool cheat_mode; 
+    nh_.param<bool>("/cheat_mode", cheat_mode, true);
+    
+    camera_frame_ = "/camera_depth_frame";
+    if (cheat_mode)    
+      camera_frame_ = "/real_camera_pose";
 
   ROS_INFO("Constructed CandidateLocator.");
 }
@@ -74,8 +81,8 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
     this->calculateObjectPoints(candidate, point_cloud);
 
     pcl::toROSMsg(point_cloud, pc_msg);
-    //pc_msg.header.frame_id = "/camera_depth_frame";
-    pc_msg.header.frame_id = "/real_camera_pose";
+          
+    pc_msg.header.frame_id = camera_frame_;
     
     // pcl_ros::transformPointCloud(
     //   "/map",
@@ -98,15 +105,13 @@ void CandidateLocator::getTransforms(const ros::Time& stamp)
   {
     tf_listener_.waitForTransform(
       "/map",
-      //"/camera_depth_frame",
-      "/real_camera_pose",
+      camera_frame_,
       stamp,
       ros::Duration(2.0));
 
     tf_listener_.lookupTransform(
       "/map",
-      //"/camera_depth_frame",
-      "/real_camera_pose",
+      camera_frame_,
       stamp,
       map_transform_);
 

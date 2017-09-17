@@ -12,7 +12,9 @@
   <arg name="inf_object" default="100.0" />
   <arg name="inf_object_unexplored" default="30.0" />
   <arg name="inf_unexplored" default="1.0" />
-
+  <arg name="cheat_mode" default="true" />
+  
+  <param name="cheat_mode" type="bool" value="$(arg cheat_mode)"/>
   <param name="world" type="str" value="$(arg world)"/>
 
   <include file="$(find p3dx_description)/launch/rviz.launch" />
