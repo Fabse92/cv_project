@@ -71,6 +71,8 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_initConfig(true),
   m_candidateIntegration(false)
 {
+  ROS_INFO_STREAM("Constructing OctomapServer object...");
+
   double probHit, probMiss, thresMin, thresMax;
 
   ros::NodeHandle private_nh(private_nh_);
@@ -131,6 +133,7 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
 #endif
   }
 
+  ROS_INFO_STREAM("Initialising m_octree...");
 
   // initialize octomap object & params
   m_octree = new OcTreeT(m_res);
@@ -141,6 +144,15 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_treeDepth = m_octree->getTreeDepth();
   m_maxTreeDepth = m_treeDepth;
   m_gridmap.info.resolution = m_res;
+
+  ROS_INFO_STREAM("Initialising m_gtsOctree...");
+
+  // initialize octomap for holding ground truths
+  m_gtsOctree = new OcTreeT(m_res);
+  m_gtsOctree->setProbHit(probHit);
+  m_gtsOctree->setProbMiss(probMiss);
+  m_gtsOctree->setClampingThresMin(thresMin);
+  m_gtsOctree->setClampingThresMax(thresMax);
 
   double r, g, b, a;
   private_nh.param("color/r", r, 0.0);
@@ -212,6 +224,11 @@ OctomapServer::~OctomapServer(){
     m_octree = NULL;
   }
 
+  if (m_gtsOctree){
+    delete m_gtsOctree;
+    m_gtsOctree = NULL;
+  }
+
 }
 
 bool OctomapServer::openFile(const std::string& filename){
@@ -231,6 +248,10 @@ bool OctomapServer::openFile(const std::string& filename){
     if (m_octree){
       delete m_octree;
       m_octree = NULL;
+    }
+    if (m_gtsOctree){
+      delete m_gtsOctree;
+      m_gtsOctree = NULL;
     }
     m_octree = dynamic_cast<OcTreeT*>(tree);
     if (!m_octree){
@@ -384,7 +405,7 @@ void OctomapServer::insertScan(const tf::Point& sensorOriginTf, const PCLPointCl
 
   setGroundCellsAsFree(ground, sensorOrigin, true, free_cells);
 
-  calculateFreeAndOccupiedCellsFromNonGround(nonground, sensorOrigin, colors, true, free_cells, occupied_cells);
+  calculateFreeAndOccupiedCellsFromNonGround(nonground, sensorOrigin, colors, m_octree, free_cells, occupied_cells);
 
   #ifdef COLOR_OCTOMAP_SERVER
   if (m_candidateIntegration)
@@ -500,7 +521,7 @@ void OctomapServer::setGroundCellsAsFree(
 }
 
 void OctomapServer::calculateFreeAndOccupiedCellsFromNonGround(
-  const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, unsigned char* colors, bool update_tree, KeySet& free_cells, KeySet& occupied_cells)
+  const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, unsigned char* colors, OcTreeT* octree, KeySet& free_cells, KeySet& occupied_cells)
 {
   // all other points: free on ray, occupied on endpoint:
   for (PCLPointCloud::const_iterator it = nonground.begin(); it != nonground.end(); ++it){
@@ -509,19 +530,16 @@ void OctomapServer::calculateFreeAndOccupiedCellsFromNonGround(
     if ((m_maxRange < 0.0) || ((point - sensorOrigin).norm() <= m_maxRange) ) {
 
       // free cells
-      if (m_octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
+      if (octree->computeRayKeys(sensorOrigin, point, m_keyRay)){
         free_cells.insert(m_keyRay.begin(), m_keyRay.end());
       }
       // occupied endpoint
       OcTreeKey key;
-      if (m_octree->coordToKeyChecked(point, key)){
+      if (octree->coordToKeyChecked(point, key)){
         occupied_cells.insert(key);
 
-        if (update_tree)
-        {
-          updateMinKey(key, m_updateBBXMin);
-          updateMaxKey(key, m_updateBBXMax);
-        }
+        updateMinKey(key, m_updateBBXMin);
+        updateMaxKey(key, m_updateBBXMax);
 
         #ifdef COLOR_OCTOMAP_SERVER // NB: Only read and interpret color if it's an occupied node
         if (!m_candidateIntegration)
@@ -531,23 +549,20 @@ void OctomapServer::calculateFreeAndOccupiedCellsFromNonGround(
           colors[1] = ((rgb >> 8) & 0xff);
           colors[2] = (rgb & 0xff);
 
-          if (update_tree) m_octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
+          octree->averageNodeColor(it->x, it->y, it->z, colors[0], colors[1], colors[2]);
         }
         #endif
       }
     } else {// ray longer than maxrange:;
       point3d new_end = sensorOrigin + (point - sensorOrigin).normalized() * m_maxRange;
-      if (m_octree->computeRayKeys(sensorOrigin, new_end, m_keyRay)){
+      if (octree->computeRayKeys(sensorOrigin, new_end, m_keyRay)){
         free_cells.insert(m_keyRay.begin(), m_keyRay.end());
 
         octomap::OcTreeKey endKey;
-        if (m_octree->coordToKeyChecked(new_end, endKey)){
+        if (octree->coordToKeyChecked(new_end, endKey)){
           free_cells.insert(endKey);
-          if (update_tree)
-          {
-            updateMinKey(endKey, m_updateBBXMin);
-            updateMaxKey(endKey, m_updateBBXMax);
-          }
+          updateMinKey(endKey, m_updateBBXMin);
+          updateMaxKey(endKey, m_updateBBXMax);
         } else{
           ROS_ERROR_STREAM("Could not generate Key for endpoint "<<new_end);
         }

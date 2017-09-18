@@ -106,10 +106,10 @@ public:
   public:
     CandidateList() {};
 
-    std::vector<uint> getAllLabels() { return labels; }
-    std::vector<octomap::ColorOcTreeNode::Color> getAllColors() { return colors; }
+    std::vector<uint> getAllLabels() const { return labels; }
+    std::vector<octomap::ColorOcTreeNode::Color> getAllColors() const { return colors; }
 
-    void addCandidate(uint newLabel)
+    void addCandidate(const uint newLabel)
     {
       octomap::ColorOcTreeNode::Color newColor(0, 0, 1);
       bool newColorUnique = false;
@@ -130,7 +130,7 @@ public:
       colors.push_back(newColor);
     }
     
-    uint getLabel(octomap::ColorOcTreeNode::Color color)
+    uint getLabel(const octomap::ColorOcTreeNode::Color color) const
     {
       for (int i = 0; i < colors.size(); i++)
       {
@@ -141,7 +141,7 @@ public:
       return 0;
     }
 
-    octomap::ColorOcTreeNode::Color getColor(uint label)
+    octomap::ColorOcTreeNode::Color getColor(const uint label) const
     {
       if (label == octomap_server::UNLABELLED) return octomap::ColorOcTreeNode::Color(0, 0, 0);
       
@@ -206,11 +206,13 @@ protected:
 
   void setGroundCellsAsFree(const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, bool update_tree, octomap::KeySet& free_cells);
 
-  void calculateFreeAndOccupiedCellsFromNonGround(const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, unsigned char* colors, bool update_tree, octomap::KeySet& free_cells, octomap::KeySet& occupied_cells);
+  void calculateFreeAndOccupiedCellsFromNonGround(const PCLPointCloud& nonground, const octomap::point3d& sensorOrigin, unsigned char* colors, OcTreeT* octree, octomap::KeySet& free_cells, octomap::KeySet& occupied_cells);
 
   void insertCloud(PCLPointCloud pc, const std::string& frame_id, const ros::Time& stamp);
 
   void processNewCandidate(const octomap::KeySet& occupied_cells, const PCLPointCloud& new_candidate);
+
+  void insertCandidateIntoOctree(OcTreeT* octree, CandidateList* list, const octomap::KeySet& occupied_cells, const uint& new_candidate_label);
 
   uint computeLabel(const std::map<uint, double>& labels);
 
@@ -218,7 +220,8 @@ protected:
 
   double calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal);
 
-  std::map<uint, double> computeAllCandidateSizes();
+  std::map<uint, double> computeAllCandidateVolumes(const OcTreeT* octree, const CandidateList* list);
+  std::map<uint, double> computeAllCandidateVolumesTreeIt(const OcTreeT* octree, const CandidateList* list);
 
   double getNodeDepth(const octomap::OcTreeKey& inKey);
 
@@ -296,6 +299,7 @@ protected:
   dynamic_reconfigure::Server<OctomapServerConfig> m_reconfigureServer;
 
   OcTreeT* m_octree;
+  OcTreeT* m_gtsOctree;
   octomap::KeyRay m_keyRay;  // temp storage for ray casting
   octomap::OcTreeKey m_updateBBXMin;
   octomap::OcTreeKey m_updateBBXMax;
@@ -349,6 +353,7 @@ protected:
   bool m_useColoredMap;
 
   CandidateList m_candidateList;
+  CandidateList m_gtsList;
   // std::vector<std::pair<uint, octomap::ColorOcTreeNode::Color>> candidate_list;
 };
 }

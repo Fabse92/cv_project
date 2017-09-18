@@ -15,7 +15,7 @@ namespace octomap_server
 
     ROS_INFO_STREAM("----------");
     ROS_INFO_STREAM("Candidate " << new_candidate_label);
-    ROS_INFO_STREAM("Size: " << occupied_cells.size() * pow(m_octree->getNodeSize(16), 3));
+    ROS_INFO_STREAM("occupied_cells.size() = " << occupied_cells.size());
 
     computeOverlaps(occupied_cells, label_overlaps, labelled_nodes);
 
@@ -46,16 +46,23 @@ namespace octomap_server
     // 	new_candidate_label = computed_label;
     // }
 
-    octomap::ColorOcTreeNode::Color color = m_candidateList.getColor(new_candidate_label);
+    insertCandidateIntoOctree(m_octree, &m_candidateList, occupied_cells, new_candidate_label);
+
+    fflush(stdout);
+	}
+
+	void OctomapServer::insertCandidateIntoOctree(OcTreeT* octree, CandidateList* list, const octomap::KeySet& occupied_cells, const uint& new_candidate_label)
+  {
+    octomap::ColorOcTreeNode::Color color = list->getColor(new_candidate_label);
 
     uint null_nodes = 0, non_null_nodes = 0;
 
     // Apply label
     for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
     {
-      ColorOcTreeNode* node = m_octree->search(*it, 0);
+      ColorOcTreeNode* node = octree->search(*it, 0);
 
-      m_octree->updateNode(*it, true);
+      octree->updateNode(*it, true);
 
       if (node != NULL)
       {
@@ -81,16 +88,14 @@ namespace octomap_server
       }
       else
       {
-        ColorOcTreeNode* node = m_octree->search(*it, 0);
+        ColorOcTreeNode* node = octree->search(*it, 0);
         node->setColor(color);
         null_nodes++;
       }
     }
 
     ROS_INFO_STREAM("Null nodes: " << null_nodes << "; non-null nodes: " << non_null_nodes);
-
-    fflush(stdout);
-	}
+  }
 
 	uint OctomapServer::computeLabel(const std::map<uint, double>& labels)
 	{
@@ -119,24 +124,40 @@ namespace octomap_server
 	{
 	  labels[octomap_server::UNLABELLED] = 0;
 	  
-	  for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
-	  {
-	    // Find what's at that cell already
-	    ColorOcTreeNode* node = m_octree->search(*it, 0);
+	  // for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
+	  // {
+	  //   // Find what's at that cell already
+	  //   ColorOcTreeNode* node = m_octree->search(*it, 0);
 
-	    if (node != NULL && !node->hasChildren())
-	    {
-	      // Check the label and increment appropriate counter
-	      uint existing_label = m_candidateList.getLabel(node->getColor());
+	  //   if (node != NULL && !node->hasChildren())
+	  //   {
+	  //     // Check the label and increment appropriate counter
+	  //     uint existing_label = m_candidateList.getLabel(node->getColor());
 
-	      // labels[existing_label]++;
-	      // ROS_INFO_STREAM("Node size: " << pow(m_octree->getNodeSize(getNodeDepth(*it))), 3);
-	      labels[existing_label] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
+	  //     // labels[existing_label]++;
+	  //     // ROS_INFO_STREAM("Node size: " << pow(m_octree->getNodeSize(getNodeDepth(*it))), 3);
+	  //     labels[existing_label] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
 	      
-	      if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
-	      // else labels[octomap_server::UNLABELLED]++;
-	    }
-	    else labels[octomap_server::UNLABELLED]++;
+	  //     if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
+	  //     // else labels[octomap_server::UNLABELLED]++;
+	  //   }
+	  //   else labels[octomap_server::UNLABELLED]++;
+	  // }
+
+	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+	  {
+	  	octomap::OcTreeKey node_key = leafs_it.getKey();
+
+	  	if (occupied_cells.find(node_key) != occupied_cells.end())
+	  	{
+	  		ColorOcTreeNode* node = m_octree->search(node_key, 0);
+
+			  if (node != NULL && !node->hasChildren())
+		    {
+		      // labels[m_candidateList.getLabel(node->getColor())] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
+		      labels[m_candidateList.getLabel(node->getColor())] += pow(leafs_it.getSize(), 3);
+		    }
+	  	}
 	  }
 	}
 
@@ -211,35 +232,6 @@ namespace octomap_server
 		}
 	}
 
-	/**
-	  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
-	*/
-	double OctomapServer::getNodeDepth(const OcTreeKey& inKey){
-	  octomap::OcTreeNode* lOriginNode = m_octree->search(inKey);
-	  unsigned int lCount = 0;
-	  int i = 1;
-
-	  octomap::OcTreeKey lNextKey(inKey);
-	  lNextKey[0] = inKey[0] + i;
-
-	  // Count the number of time we fall on the same node in the positive x direction
-	  while(m_octree->search(lNextKey) == lOriginNode){
-	      ++lCount;
-	      lNextKey[0] = inKey[0] + ++i;
-	  }
-
-	  i = 1;
-	  lNextKey[0] = inKey[0] - i;
-
-	  // Count the number of time we fall on the same node in the negative x direction
-	  while(m_octree->search(lNextKey) == lOriginNode){
-	      ++lCount;
-	      lNextKey[0] = inKey[0] - ++i;
-	  }
-
-	  return m_octree->getTreeDepth() - log2(lCount + 1);
-	}
-
 	bool OctomapServer::compareGroundTruthToCandidatesSrv(evaluation::CompareGroundTruthsToProposals::Request& req, evaluation::CompareGroundTruthsToProposals::Response& res)
 	{
 		ROS_INFO_STREAM("\n");
@@ -248,20 +240,31 @@ namespace octomap_server
 	  //DEBUG visualisation
 	  PCLPointCloud visualisation_pc;
 
-	  uint counter = 0;
+	  // Get the volumes of all candidates in m_octree
+	  std::map<uint, double> candidate_volumes = computeAllCandidateVolumes(m_octree, &m_candidateList);
+	  res.nof_candidates.data = candidate_volumes.size();
+	  
+	  //DEBUG
+	  ROS_INFO_STREAM("Candidate volumes (leaf iterator): ");
+	  for (std::map<uint, double>::iterator cand_it = candidate_volumes.begin(), cand_end = candidate_volumes.end(); cand_it != cand_end; cand_it++)
+	  {
+	  	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
+	  }
+	  ROS_INFO_STREAM("Candidate volumes (tree iterator, checking hasChildren() ): ");
+	  std::map<uint, double> candidate_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_octree, &m_candidateList);
+	  for (std::map<uint, double>::iterator cand_it = candidate_volumes_treeIt.begin(), cand_end = candidate_volumes_treeIt.end(); cand_it != cand_end; cand_it++)
+	  {
+	  	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
+	  }
+	  //END DEBUG
 
-	  std::map<uint, double> candidate_sizes = computeAllCandidateSizes();
-	  res.nof_candidates.data = candidate_sizes.size();
+	  tf::StampedTransform sensorToWorldTf;
+	  std::vector<PCLPointCloud> pcl_pc_list;
 
+	  // Convert the ground truth PCs from ROS message to PCL
 	  BOOST_FOREACH(sensor_msgs::PointCloud2& pc_msg, req.ground_truths.data)
 	  {
-	    counter++;
-
-	    // ROS_INFO_STREAM("Ground truth in frame " << pc_msg.header.frame_id);
-	    // ROS_INFO_STREAM("World frame: " << m_worldFrameId);
-
-	    tf::StampedTransform sensorToWorldTf;
-		  try {
+	  	try {
 		    m_tfListener.lookupTransform(m_worldFrameId, pc_msg.header.frame_id, pc_msg.header.stamp, sensorToWorldTf);
 		  } catch(tf::TransformException& ex){
 		    ROS_ERROR_STREAM( "Transform error of sensor data: " << ex.what() << ", quitting evaluation");
@@ -269,20 +272,68 @@ namespace octomap_server
 		    return false;
 		  }
 
-		  PCLPointCloud pcl_pc;
+	  	PCLPointCloud pcl_pc;
 	    fromROSMsg(pc_msg, pcl_pc);
 
-	    KeySet free_cells, occupied_cells;
-	    unsigned char* colors = new unsigned char[3];
+	    pcl_pc_list.push_back(pcl_pc);
+	  }
 
-	    calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors, false, free_cells, occupied_cells);
+	  // Iterate through the ground truths and insert them into m_gts_octree
+	  BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
+	  {
+	  	uint new_candidate_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
+
+	  	m_gtsList.addCandidate(new_candidate_label);
+
+	  	KeySet free_cells_gts, occupied_cells_gts;
+    	unsigned char* colors_gts = new unsigned char[3];
+
+	  	calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors_gts, m_gtsOctree, free_cells_gts, occupied_cells_gts);
+
+	  	insertCandidateIntoOctree(m_gtsOctree, &m_gtsList, occupied_cells_gts, new_candidate_label);
+	  };
+
+	  // Get the volumes of all ground truths in m_gtsOctree
+	  std::map<uint, double> gt_volumes = computeAllCandidateVolumes(m_gtsOctree, &m_gtsList);
+
+	  //DEBUG
+	  ROS_INFO_STREAM("Ground truth volumes (leaf iterator):");
+	  // for (const auto& label_and_vol : gt_volumes)
+	  for (std::map<uint, double>::iterator gt_it = gt_volumes.begin(), gt_end = gt_volumes.end(); gt_it != gt_end; gt_it++)
+	  {
+	  	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
+	  }
+	  ROS_INFO_STREAM("Ground truth volumes (tree iterator, checking hasChildren() ): ");
+	  std::map<uint, double> gt_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_gtsOctree, &m_gtsList);
+	  for (std::map<uint, double>::iterator gt_it = gt_volumes_treeIt.begin(), gt_end = gt_volumes_treeIt.end(); gt_it != gt_end; gt_it++)
+	  {
+	  	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
+	  }
+	  //END DEBUG
+
+	  uint counter = 0;
+
+	  // Iterate through the ground truths, compare them to the candidates in m_octree and find the
+	  // candidate with the greatest overlap.
+	  BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
+	  {
+	    counter++;
+
+	    // ROS_INFO_STREAM("Ground truth in frame " << pc_msg.header.frame_id);
+	    // ROS_INFO_STREAM("World frame: " << m_worldFrameId);
+
+	    KeySet free_cells, occupied_cells;
+    	unsigned char* colors = new unsigned char[3];
+
+	    calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors, m_octree, free_cells, occupied_cells);
 
 	    std::map<uint, double> candidate_overlaps;
 	    uint total_labelled_nodes = 0;
 
 	    ROS_INFO_STREAM("");
 	    ROS_INFO_STREAM("Ground truth " << counter << ":");
-	    ROS_INFO_STREAM("Size: " << occupied_cells.size() * pow(m_octree->getNodeSize(16), 3));
+	    ROS_INFO_STREAM("Point cloud size: " << pcl_pc.size());
+	    ROS_INFO_STREAM("occupied_cells.size(): " << occupied_cells.size());
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_labelled_nodes);
 
@@ -295,7 +346,7 @@ namespace octomap_server
 	    if (proposal == octomap_server::UNLABELLED) ROS_INFO_STREAM("No suitable candidate found");
 	    else ROS_INFO_STREAM("Proposal is candidate " << proposal);
 	    
-	    ROS_INFO_STREAM("Candidate size: " << candidate_sizes[proposal]);
+	    ROS_INFO_STREAM("Candidate size: " << candidate_volumes[proposal]);
 	    ROS_INFO_STREAM("Overlap: " << candidate_overlaps[proposal]);
 
 	    std_msgs::Float64 overlap;
@@ -303,7 +354,7 @@ namespace octomap_server
 	    std_msgs::Float64 groundtruth_vol;
 
 	    overlap.data = candidate_overlaps[proposal];
-	    proposal_vol.data = candidate_sizes[proposal];
+	    proposal_vol.data = candidate_volumes[proposal];
 	    groundtruth_vol.data = occupied_cells.size() * pow(m_octree->getNodeSize(16), 3);
 
 	    res.overlaps.push_back(overlap);
@@ -314,6 +365,9 @@ namespace octomap_server
 	    visualisation_pc += pcl_pc;
 	  }
 
+	  // Clear m_gtsOctree
+	  m_gtsOctree->clear();
+
 	  //DEBUG visualisation
 	  sensor_msgs::PointCloud2 visualisation_msg;
 	  pcl::toROSMsg(visualisation_pc, visualisation_msg);
@@ -321,19 +375,6 @@ namespace octomap_server
 	  m_visualisation_pub.publish(visualisation_msg);
 
 	  return true;
-	}
-
-	std::map<uint, double> OctomapServer::computeAllCandidateSizes()
-	{
-	  std::map<uint, double> labels_counter;
-
-	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
-	  {
-	    ColorOcTreeNode* leaf_node = m_octree->search(leafs_it.getKey(), 0);
-	    if (leaf_node != NULL) labels_counter[m_candidateList.getLabel(leaf_node->getColor())] += pow(m_octree->getNodeSize(getNodeDepth(leafs_it.getKey())), 3);
-	  }
-
-	  return labels_counter;
 	}
 
 	bool OctomapServer::requestLabelCertaintiesSrv(frontier_exploration::RequestLabelCertainties::Request& req, frontier_exploration::RequestLabelCertainties::Response& res)
@@ -369,5 +410,67 @@ namespace octomap_server
     // END TEST
 
 	  return true;
+	}
+
+	std::map<uint, double> OctomapServer::computeAllCandidateVolumes(const OcTreeT* octree, const CandidateList* list)
+	{
+	  std::map<uint, double> labels_counter;
+
+	  for (OcTreeT::leaf_iterator leafs_it = octree->begin_leafs(), leafs_end = octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+	  {
+	    ColorOcTreeNode* leaf_node = octree->search(leafs_it.getKey(), 0);
+	    
+  		labels_counter[list->getLabel(leaf_node->getColor())] += pow(leafs_it.getSize(), 3);
+  		// if (getNodeDepth(leafs_it.getKey()) != octree->getTreeDepth()) ROS_INFO_STREAM("Node level: " << getNodeDepth(leafs_it.getKey()));
+	  }
+
+	  return labels_counter;
+	}
+
+	std::map<uint, double> OctomapServer::computeAllCandidateVolumesTreeIt(const OcTreeT* octree, const CandidateList* list)
+	{
+	  std::map<uint, double> labels_counter;
+
+	  for (OcTreeT::tree_iterator tree_it = octree->begin_tree(), tree_end = octree->end_tree(); tree_it != tree_end; tree_it++)
+	  {
+	    ColorOcTreeNode* tree_node = octree->search(tree_it.getKey(), 0);
+	    if (tree_node != NULL && !tree_node->hasChildren())
+    	{
+    		// labels_counter[list->getLabel(tree_node->getColor())] += pow(octree->getNodeSize(getNodeDepth(tree_it.getKey())), 3);
+    		labels_counter[list->getLabel(tree_node->getColor())] += pow(tree_it.getSize(), 3);
+    		// if (getNodeDepth(tree_it.getKey()) != octree->getTreeDepth()) ROS_INFO_STREAM("Node level: " << getNodeDepth(tree_it.getKey()));
+    	}
+	  }
+
+	  return labels_counter;
+	}
+
+	/**
+	  Copied from https://github.com/OctoMap/octomap/issues/40. Author: GitHub user fmder.
+	*/
+	double OctomapServer::getNodeDepth(const OcTreeKey& inKey){
+	  octomap::OcTreeNode* lOriginNode = m_octree->search(inKey);
+	  unsigned int lCount = 0;
+	  int i = 1;
+
+	  octomap::OcTreeKey lNextKey(inKey);
+	  lNextKey[0] = inKey[0] + i;
+
+	  // Count the number of time we fall on the same node in the positive x direction
+	  while(m_octree->search(lNextKey) == lOriginNode){
+	      ++lCount;
+	      lNextKey[0] = inKey[0] + ++i;
+	  }
+
+	  i = 1;
+	  lNextKey[0] = inKey[0] - i;
+
+	  // Count the number of time we fall on the same node in the negative x direction
+	  while(m_octree->search(lNextKey) == lOriginNode){
+	      ++lCount;
+	      lNextKey[0] = inKey[0] - ++i;
+	  }
+
+	  return m_octree->getTreeDepth() - log2(lCount + 1);
 	}
 }
