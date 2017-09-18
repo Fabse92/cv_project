@@ -3,6 +3,15 @@
 
 #include "candidate_locator.h"
 
+#include <pcl/ModelCoefficients.h>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_clusters.h>
+// #include <pcl/visualization/cloud_viewer.h>
+
 CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
 {
   sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
@@ -26,6 +35,65 @@ void CandidateLocator::candidatesCallback(const object_candidates::SnapshotMsg& 
   //   msg.rgb_image,
   //   msg.rgb_info,
   //   msg.candidates));
+}
+
+pcl::PointCloud<pcl::PointXYZRGB> CandidateLocator::getMinCluster(pcl::PointCloud<pcl::PointXYZRGB> point_cloud){
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+    *cloud_filtered = point_cloud;
+    
+    //writer.write<pcl::PointXYZRGB> ("original.pcd", point_cloud, false); // !*
+
+    /*
+    pcl::visualization::CloudViewer viewer("Cloud Viewer");
+    viewer.showCloud(cloud_filtered);
+    while  (! viewer.wasStopped ())
+    { //no -op  until  viewer  stopped
+    }*/
+
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+    tree->setInputCloud (cloud_filtered);
+
+    std::vector<pcl::PointIndices> cluster_indices;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> ec;
+    ec.setClusterTolerance (0.02); // 2cm
+    ec.setMinClusterSize (50);
+    ec.setMaxClusterSize (25000);
+    ec.setSearchMethod (tree);
+    ec.setInputCloud (cloud_filtered);
+    ec.extract (cluster_indices);
+
+    int j = 0;
+    double min_dist = 9999999;
+    int min_cluster = -1;
+    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> cloud_clusters;
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+    {
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+      for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
+        pcl::PointXYZRGB point = cloud_filtered->points[*pit];
+        cloud_cluster->points.push_back (point);
+        Eigen::Vector3f vector(point.x,point.y,point.z);
+        double dist = vector.norm();
+        if (dist < min_dist){
+          min_dist = dist;
+          min_cluster = j;
+        }        
+      }
+      cloud_cluster->width = cloud_cluster->points.size ();
+      cloud_cluster->height = 1;
+      cloud_cluster->is_dense = true;
+
+      cloud_clusters.push_back(cloud_cluster);
+
+      ROS_INFO_STREAM("PointCloud representing the Cluster " << j << " has " << cloud_cluster->points.size () << " data points.");
+      j++;
+    }
+    
+    if (min_cluster == -1)
+      return point_cloud;
+      
+    return *cloud_clusters[min_cluster];
 }
 
 candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
@@ -80,7 +148,7 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
     ROS_INFO_STREAM("Candidate " << candidate_id_ << ": ");
     this->calculateObjectPoints(candidate, point_cloud);
 
-    pcl::toROSMsg(point_cloud, pc_msg);
+    pcl::toROSMsg(this->getMinCluster(point_cloud), pc_msg);
           
     pc_msg.header.frame_id = camera_frame_;
     

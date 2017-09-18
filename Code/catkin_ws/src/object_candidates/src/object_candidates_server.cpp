@@ -150,27 +150,27 @@ vector<Mat> getSalientBlobs(Mat& salmap, vector<vector<Point>>& msrs){
   Mat iorMap = salmap.clone();
   while(true){
     Mat blob;
-    msr = seededRegionGrowing(salmap,iorMap,blob,lastMax,meanSaliency,0.6);
-    if (meanSaliency < 150) break;
+    msr = seededRegionGrowing(salmap,iorMap,blob,lastMax,meanSaliency,0.65);
+    if (meanSaliency < 130) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
     means2.push_back(meanSaliency);
     meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);    
-  }
+  }/*
   iorMap = salmap.clone();
   while(true){
     Mat blob;
     msr = seededRegionGrowing(salmap,iorMap,blob,lastMax,meanSaliency,0.7);
-    if (meanSaliency < 150) break;
+    if (meanSaliency < 130) break;
     ior(iorMap,0.9);
     salientBlobs.push_back(blob);
     means2.push_back(meanSaliency);
     meanSaliency = meanSaliency * std::sqrt(msrs.size());  
     means.push_back(meanSaliency);
     msrs.push_back(msr);
-  }
+  }*/
   cout << "Number of salient blobs: " << salientBlobs.size() << endl;
   if (salientBlobs.size() > 0) {
     for (i = 0; i < salientBlobs.size() - 1; ++i){
@@ -237,7 +237,7 @@ std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segm
   salmap.convertTo(salmap,CV_8U);
   blobs = getSalientBlobs(salmap, msrs);
   cout << "Saliency calculated" << endl;
-  segmentedImage = runEgbisOnMat(img, 1, 200, 100, &num_ccs, segments);
+  segmentedImage = runEgbisOnMat(img, 1, 200, 75, &num_ccs, segments);
   std::cout << "Number of segments: " << segments.size() << " == " << num_ccs << endl;
   
   for(unsigned i = 0; i < segments.size(); ++i){
@@ -278,7 +278,8 @@ std::vector<cv::Mat> getObjectCandidates(cv::Mat img, cv::Mat& salmap, Mat& segm
       thresh -= 0.025; 
     }    
     if (thresh >= 0.25){
-      colorCandidates.push_back(removeOuterRingOfPixels(colorCandidate));
+      //colorCandidates.push_back(removeOuterRingOfPixels(colorCandidate));
+      colorCandidates.push_back(colorCandidate);
       //cv::imshow("before", colorCandidate*255.f);
       //cv::imshow("after", removeOuterRingOfPixels(colorCandidate)*255.f);
       //cv::imshow("after2", removeOuterRingOfPixels(removeOuterRingOfPixels(colorCandidate))*255.f);
