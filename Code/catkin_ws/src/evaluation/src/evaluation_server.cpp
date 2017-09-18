@@ -111,9 +111,10 @@ namespace evaluation
           // TEST - merge ground truth point clouds into octomap
           if (merge_ground_truths)
           {
+            merge_ground_truths_counter ++;
+            
             BOOST_FOREACH(pcl::PointXYZRGB& point, *cloud)
             {
-              merge_ground_truths_counter ++;
               point.r = 0;
               point.g = merge_ground_truths_counter;
               point.b = 5;
