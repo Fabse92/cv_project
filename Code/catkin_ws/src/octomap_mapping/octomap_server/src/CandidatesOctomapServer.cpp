@@ -242,7 +242,7 @@ namespace octomap_server
 
 	  // Get the volumes of all candidates in m_octree
 	  std::map<uint, double> candidate_volumes = computeAllCandidateVolumes(m_octree, &m_candidateList);
-	  res.nof_candidates.data = candidate_volumes.size();
+	  res.nof_candidates.data = (uint)candidate_volumes.size();
 	  
 	  //DEBUG
 	  ROS_INFO_STREAM("Candidate volumes (leaf iterator): ");
@@ -278,50 +278,54 @@ namespace octomap_server
 	    pcl_pc_list.push_back(pcl_pc);
 	  }
 
-	  // Iterate through the ground truths and insert them into m_gts_octree
-	  BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
+	  // If this is the first evaluation for this run, iterate through the ground truths and insert them into m_gts_octree
+	  uint counter = 1;
+	  if (!m_groundTruthsIntegrated)
 	  {
-	  	uint new_candidate_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
+	  	BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
+		  {
+		  	// uint ground_truth_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
 
-	  	m_gtsList.addCandidate(new_candidate_label);
+		  	m_gtsList.addCandidate(counter);
 
-	  	KeySet free_cells_gts, occupied_cells_gts;
-    	unsigned char* colors_gts = new unsigned char[3];
+		  	KeySet free_cells_gts, occupied_cells_gts;
+	    	unsigned char* colors_gts = new unsigned char[3];
 
-	  	calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors_gts, m_gtsOctree, free_cells_gts, occupied_cells_gts);
+		  	calculateFreeAndOccupiedCellsFromNonGround(pcl_pc, pointTfToOctomap(sensorToWorldTf.getOrigin()), colors_gts, m_gtsOctree, free_cells_gts, occupied_cells_gts);
 
-	  	insertCandidateIntoOctree(m_gtsOctree, &m_gtsList, occupied_cells_gts, new_candidate_label);
-	  };
+		  	insertCandidateIntoOctree(m_gtsOctree, &m_gtsList, occupied_cells_gts, counter);
+
+		  	counter++;
+		  }
+
+		  m_groundTruthsIntegrated = true;
+	  }
 
 	  // Get the volumes of all ground truths in m_gtsOctree
 	  std::map<uint, double> gt_volumes = computeAllCandidateVolumes(m_gtsOctree, &m_gtsList);
 
 	  //DEBUG
-	  ROS_INFO_STREAM("Ground truth volumes (leaf iterator):");
-	  // for (const auto& label_and_vol : gt_volumes)
-	  for (std::map<uint, double>::iterator gt_it = gt_volumes.begin(), gt_end = gt_volumes.end(); gt_it != gt_end; gt_it++)
-	  {
-	  	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
-	  }
-	  ROS_INFO_STREAM("Ground truth volumes (tree iterator, checking hasChildren() ): ");
-	  std::map<uint, double> gt_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_gtsOctree, &m_gtsList);
-	  for (std::map<uint, double>::iterator gt_it = gt_volumes_treeIt.begin(), gt_end = gt_volumes_treeIt.end(); gt_it != gt_end; gt_it++)
-	  {
-	  	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
-	  }
+	  // ROS_INFO_STREAM("Ground truth volumes (leaf iterator):");
+	  // // for (const auto& label_and_vol : gt_volumes)
+	  // for (std::map<uint, double>::iterator gt_it = gt_volumes.begin(), gt_end = gt_volumes.end(); gt_it != gt_end; gt_it++)
+	  // {
+	  // 	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
+	  // }
+	  // ROS_INFO_STREAM("Ground truth volumes (tree iterator, checking hasChildren() ): ");
+	  // std::map<uint, double> gt_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_gtsOctree, &m_gtsList);
+	  // for (std::map<uint, double>::iterator gt_it = gt_volumes_treeIt.begin(), gt_end = gt_volumes_treeIt.end(); gt_it != gt_end; gt_it++)
+	  // {
+	  // 	ROS_INFO_STREAM("Label: " << gt_it->first << ", volume: " << gt_it->second);
+	  // }
 	  //END DEBUG
-
-	  uint counter = 0;
 
 	  // Iterate through the ground truths, compare them to the candidates in m_octree and find the
 	  // candidate with the greatest overlap.
+	  counter = 1;
 	  BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
 	  {
-	    counter++;
-
-	    // ROS_INFO_STREAM("Ground truth in frame " << pc_msg.header.frame_id);
-	    // ROS_INFO_STREAM("World frame: " << m_worldFrameId);
-
+	    // uint ground_truth_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
+	    
 	    KeySet free_cells, occupied_cells;
     	unsigned char* colors = new unsigned char[3];
 
@@ -331,6 +335,7 @@ namespace octomap_server
 	    uint total_labelled_nodes = 0;
 
 	    ROS_INFO_STREAM("");
+	    // ROS_INFO_STREAM("Ground truth " << ground_truth_label << ":");
 	    ROS_INFO_STREAM("Ground truth " << counter << ":");
 	    ROS_INFO_STREAM("Point cloud size: " << pcl_pc.size());
 	    ROS_INFO_STREAM("occupied_cells.size(): " << occupied_cells.size());
@@ -355,18 +360,20 @@ namespace octomap_server
 
 	    overlap.data = candidate_overlaps[proposal];
 	    proposal_vol.data = candidate_volumes[proposal];
-	    groundtruth_vol.data = occupied_cells.size() * pow(m_octree->getNodeSize(16), 3);
+	    groundtruth_vol.data = gt_volumes[counter];
 
 	    res.overlaps.push_back(overlap);
 	    res.proposal_vol.push_back(proposal_vol);
 	    res.groundtruth_vol.push_back(groundtruth_vol);
+
+	    counter++;
 
 	    //DEBUG visualisation
 	    visualisation_pc += pcl_pc;
 	  }
 
 	  // Clear m_gtsOctree
-	  m_gtsOctree->clear();
+	  // m_gtsOctree->clear();
 
 	  //DEBUG visualisation
 	  sensor_msgs::PointCloud2 visualisation_msg;

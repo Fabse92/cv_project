@@ -354,7 +354,7 @@ protected:
 
   CandidateList m_candidateList;
   CandidateList m_gtsList;
-  // std::vector<std::pair<uint, octomap::ColorOcTreeNode::Color>> candidate_list;
+  bool m_groundTruthsIntegrated;
 };
 }
 

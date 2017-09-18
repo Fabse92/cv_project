@@ -69,7 +69,8 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_compressMap(true),
   m_incrementalUpdate(false),
   m_initConfig(true),
-  m_candidateIntegration(false)
+  m_candidateIntegration(false),
+  m_groundTruthsIntegrated(false)
 {
   ROS_INFO_STREAM("Constructing OctomapServer object...");
 
