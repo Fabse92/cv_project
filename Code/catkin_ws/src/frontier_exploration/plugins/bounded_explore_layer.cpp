@@ -119,6 +119,14 @@ namespace frontier_exploration
             geometry_msgs::PoseStamped temp_pose = start_pose;
             tf_listener_.transformPose(layered_costmap_->getGlobalFrameID(),temp_pose,start_pose);
         }
+        
+        if (first_){
+          first_ = false;
+          unsigned int size_x_ = original_costmap_.getSizeInCellsX();
+          unsigned int size_y_ = original_costmap_.getSizeInCellsY();
+          std::vector<int> IoR_map(size_x_ * size_y_, 0);
+          IoR_map_ = IoR_map;
+        }
 
         //initialize frontier search implementation
         FrontierSearch frontierSearch(*(layered_costmap_->getCostmap()));
@@ -127,7 +135,7 @@ namespace frontier_exploration
         }
         
         //get list of frontiers from search implementation
-        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_, nh_);
+        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_, nh_, IoR_map_);
 
         if(frontier_list.size() == 0){
             ROS_DEBUG("No frontiers found, exploration complete");

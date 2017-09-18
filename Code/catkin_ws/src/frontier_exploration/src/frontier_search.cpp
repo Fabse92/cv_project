@@ -28,7 +28,7 @@ void FrontierSearch::setCostmap(costmap_2d::Costmap2D& costmap){
   costmap_ = costmap_2d::Costmap2D(costmap);
 }
 
-std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh){
+std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh, std::vector<int> &IoR_map){
 
     std::list<Frontier> frontier_list;
 
@@ -201,7 +201,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                 } */
                   circle_part = selectConsecutivePointsOfCircleRandomly(circleCells(nbr, circle_radius, costmap_), pixelsOfAngle);
                   std::vector<bool> processed_flag(size_x_ * size_y_, false);
-                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon, method, nh);
+                  Frontier new_frontier = buildInformationGainFrontier(pos, nbr, circle_part, processed_flag, polygon, method, nh, IoR_map);
                   if (new_frontier.min_distance != 1)
                     frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
@@ -212,15 +212,26 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         }
     }
     
+    BOOST_FOREACH(unsigned obstacle, obstacle_list_){
+      IoR_map[obstacle] += 4;      
+    }
+    
+    BOOST_FOREACH(unsigned cell, IoR_map){
+      if (IoR_map[cell] > 0)
+        IoR_map[cell] -= 1;
+    }
+    
     std::cout << "ALL FRONTIERS COMPUTED" << std::endl;
     return frontier_list;
 
 }
 
-Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh){
+Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> points, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh, std::vector<int> &IoR_map){
   
   Frontier output;      
   output.size = 1;
+
+  std::vector<unsigned int> obstacle_list;
   
   unsigned char previous_point = map_[cell];
   unsigned int x0, y0, x1, y1, ix, iy;
@@ -278,12 +289,13 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
               } else {
                 inf_gain += inf_object_unexplored; // bonus value for unknown pixels infront of object candidate
               }
-            } else {
-              if(map_[line_point] == LETHAL_OBSTACLE){
+            }
+            if(map_[line_point] == LETHAL_OBSTACLE){
+              if (IoR_map[line_point] < 6) // is this obstacle not inhibited?
                 inf_gain += inf_obstacle;  // obstacle bonus
-              } else {
-                inf_gain += inf_object * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
-              }
+              obstacle_list.push_back(line_point);
+            } else {
+              inf_gain += inf_object * std::pow(2.0,-(map_[line_point]-1));  // object candidate bonus
             }
             processed_flag[line_point] = true;
           }
@@ -311,6 +323,11 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
   // therefore negated information gain is weighted with the distance from robot to the pose
 
   output.min_distance = -inf_gain * exp(-c1 * distance);
+  
+  if (output.min_distance < min_dist_){
+    min_dist_ = output.min_distance;
+    obstacle_list_ = obstacle_list;
+  }
   
   ROS_DEBUG_STREAM("Information gain: " << inf_gain << ", Distance: " << distance << ", Value: " << output.min_distance); 
   

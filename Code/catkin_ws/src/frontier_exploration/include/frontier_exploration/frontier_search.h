@@ -28,7 +28,7 @@ public:
      * @param position Initial position to search from
      * @return List of frontiers, if any
      */
-    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh);
+    std::list<Frontier> searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh, std::vector<int> &IoR_map);
 
 protected:
 
@@ -43,7 +43,7 @@ protected:
     
     Frontier buildSimpleFrontier(unsigned int cell, double dist);
     
-    Frontier buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh);
+    Frontier buildInformationGainFrontier(unsigned int robot_position, unsigned int cell, std::vector<unsigned int> circle, std::vector<bool> processed_flag, geometry_msgs::Polygon polygon, std::string method, ros::NodeHandle nh, std::vector<int> &IoR_map);
 
     /**
      * @brief isNewFrontierCell Evaluate if candidate cell is a valid candidate for a new frontier.
@@ -58,6 +58,8 @@ private:
     costmap_2d::Costmap2D& costmap_, real_costmap_;
     unsigned char* map_;
     unsigned int size_x_ , size_y_;
+    double min_dist_ = std::numeric_limits<double>::infinity();
+    std::vector<unsigned int> obstacle_list_;
 
 };
 
