@@ -33,6 +33,12 @@ double yaw(double x1, double y1, double x2, double y2) {
     return yaw;
 }
 
+double fRand(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
+
 namespace frontier_exploration
 {
 
@@ -223,6 +229,8 @@ namespace frontier_exploration
 
         if (method_ == "frontier") {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(start_pose.pose.position, next_frontier.pose.position) );
+        } else if (method_ == "random") {
+            next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw(fRand(-1.570796,1.570796));
         } else {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yaw(selected.initial.x, selected.initial.y, selected.middle.x, selected.middle.y) );
             std::cout << "Orientation: " << next_frontier.pose.orientation << std::endl;

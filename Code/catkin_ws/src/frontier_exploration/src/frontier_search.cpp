@@ -94,8 +94,8 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
               costmap_.indexToCells(i, mx, my);
               //costmap_.setCost(mx,my,certainty);
               
-              Frontier new_frontier = buildSimpleFrontier(i, 1.0);
-              frontier_list.push_back(new_frontier);
+              //Frontier new_frontier = buildSimpleFrontier(i, 1.0);
+              //frontier_list.push_back(new_frontier);
             }
           }
           
@@ -135,8 +135,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         bfs.pop();
 
         //iterate over 4-connected neighbourhood
-        BOOST_FOREACH(unsigned nbr, nhood4(idx, costmap_)){
-        
+        BOOST_FOREACH(unsigned nbr, nhood4(idx, costmap_)){        
             // distinguish between different methods how to find and define 'frontiers'
             // 'frontier' is the original method of the package            
             // the size of a frontier defines the number of connected cells on the border between discovered free cells and undiscovered cells   
@@ -152,11 +151,26 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                   if(new_frontier.size > 1){
                       frontier_list.push_back(new_frontier);
                   }
+              }              
+            }else if (method == "random"){
+              if (!visited_flag[nbr]) {
+                visited_flag[nbr] = true;    
+                double x, y;            
+                costmap_.indexToCells(nbr,ix,iy);
+                costmap_.mapToWorld(ix,iy,x,y);
+                if(map_[nbr] == FREE_SPACE && pointInPolygon(x,y,polygon)){ 
+                  bfs.push(nbr);  
+                  std::random_device rd;
+                  std::mt19937 rng(rd());
+                  std::uniform_int_distribution<int> uni(-100000,100000);
+                  int rand = uni(rng);
+                  Frontier new_frontier = buildSimpleFrontier(nbr, (double) rand);
+                  frontier_list.push_back(new_frontier);
+                }
               }
-              
-              // 'information_gain' is a new method
-              // it defines 'frontiers' as possible next poses on a free cell
-              // frontiers might be randomly sampled from all possible reachable free cells
+            // 'information_gain' is a new method
+            // it defines 'frontiers' as possible next poses on a free cell
+            // frontiers might be randomly sampled from all possible reachable free cells
             }else{
               std::vector<unsigned int> circle_part;
               if (!visited_flag[nbr]) {
@@ -205,23 +219,26 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
                   if (new_frontier.min_distance != 1)
                     frontier_list.push_back(new_frontier);                  
                   bfs.push(nbr);
-                  //std::cout << "one frontier computed" << std::endl;                
+                  //std::cout << "one frontier computed" << std::endl;
                 }
               }
            } 
         }
     }
     
-    BOOST_FOREACH(unsigned obstacle, obstacle_list_){
-      IoR_map[obstacle] += 4;      
+    if(method != "random" && method != "frontier"){ 
+      BOOST_FOREACH(unsigned obstacle, obstacle_list_){
+        IoR_map[obstacle] += 4;      
+      }
+      
+      BOOST_FOREACH(unsigned cell, IoR_map){
+        if (IoR_map[cell] > 0)
+          IoR_map[cell] -= 1;
+      }
+      
+      std::cout << "ALL FRONTIERS COMPUTED" << std::endl;
     }
     
-    BOOST_FOREACH(unsigned cell, IoR_map){
-      if (IoR_map[cell] > 0)
-        IoR_map[cell] -= 1;
-    }
-    
-    std::cout << "ALL FRONTIERS COMPUTED" << std::endl;
     return frontier_list;
 
 }
