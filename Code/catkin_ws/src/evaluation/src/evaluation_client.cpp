@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   
   ros::ServiceClient evaluation_client = nh.serviceClient<evaluation::Evaluate>("evaluate");
   evaluation::Evaluate eval_srv;
-  eval_srv.request.restart.data = false;
+  eval_srv.request.restart.data = true;
 
   ROS_INFO("Requesting evaluation");
   if (evaluation_client.call(eval_srv))

@@ -45,6 +45,7 @@ private:
 	void getTransforms(const ros::Time& stamp);
 	void calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud<pcl::PointXYZRGB>& msg);
 	void cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
+	pcl::PointCloud<pcl::PointXYZRGB> getMinCluster(pcl::PointCloud<pcl::PointXYZRGB> point_cloud);
 };
 
 #endif

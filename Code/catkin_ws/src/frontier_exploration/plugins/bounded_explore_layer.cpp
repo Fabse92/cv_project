@@ -33,6 +33,12 @@ double yaw(double x1, double y1, double x2, double y2) {
     return yaw;
 }
 
+double fRand(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
+
 namespace frontier_exploration
 {
 
@@ -119,6 +125,14 @@ namespace frontier_exploration
             geometry_msgs::PoseStamped temp_pose = start_pose;
             tf_listener_.transformPose(layered_costmap_->getGlobalFrameID(),temp_pose,start_pose);
         }
+        
+        if (first_){
+          first_ = false;
+          unsigned int size_x_ = original_costmap_.getSizeInCellsX();
+          unsigned int size_y_ = original_costmap_.getSizeInCellsY();
+          std::vector<int> IoR_map(size_x_ * size_y_, 0);
+          IoR_map_ = IoR_map;
+        }
 
         //initialize frontier search implementation
         FrontierSearch frontierSearch(*(layered_costmap_->getCostmap()));
@@ -127,7 +141,7 @@ namespace frontier_exploration
         }
         
         //get list of frontiers from search implementation
-        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_, nh_);
+        std::list<Frontier> frontier_list = frontierSearch.searchFrom(start_pose.pose.position, method_, circle_radius_, horizontal_fov_, polygon_, nh_, IoR_map_);
 
         if(frontier_list.size() == 0){
             ROS_DEBUG("No frontiers found, exploration complete");
@@ -215,6 +229,8 @@ namespace frontier_exploration
 
         if (method_ == "frontier") {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(start_pose.pose.position, next_frontier.pose.position) );
+        } else if (method_ == "random") {
+            next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw(fRand(-1.570796,1.570796));
         } else {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yaw(selected.initial.x, selected.initial.y, selected.middle.x, selected.middle.y) );
             std::cout << "Orientation: " << next_frontier.pose.orientation << std::endl;

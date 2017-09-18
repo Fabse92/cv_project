@@ -118,6 +118,8 @@ private:
     const geometry_msgs::Polygon polygon;
     
     double prev_x, prev_y;
+    std::vector<int> IoR_map_;
+    bool first_ = true;
     
     ros::NodeHandle nh_;
 };
