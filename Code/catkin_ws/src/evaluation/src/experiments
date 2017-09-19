@@ -90,15 +90,21 @@ if __name__ == "__main__":
     
     temp_file = open(evaluation+"/temp", 'w')
     first = True
+    remove = False
     for line in lines:
       if first:
         first = False
         repeats = repeats - 1
         if repeats != 0:          
           temp_file.write(method+","+str(repeats)+","+str(time)+","+world+","+cheat_mode+","+str(inf_obstacle)+","+str(inf_obstacle_unexplored)+","+str(inf_object)+","+str(inf_object_unexplored)+","+str(inf_unexplored)+"\n")
+        elif len(lines) == 1:
+          remove = True
       else:
         temp_file.write(line)
     temp_file.close()
+    
+    if remove:
+      os.remove(evaluation+"/temp")
     
     lines = []
     everything_file = open(description+"/launch/everything.launch", 'r')
