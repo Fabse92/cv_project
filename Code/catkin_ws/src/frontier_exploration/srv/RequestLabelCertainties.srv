@@ -1,5 +1,6 @@
+
+---
 std_msgs/Float32[] X
 std_msgs/Float32[] Y
----
 std_msgs/UInt8[] certainties
 

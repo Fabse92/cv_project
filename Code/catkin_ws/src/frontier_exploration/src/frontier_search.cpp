@@ -62,21 +62,6 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         
         frontier_exploration::RequestLabelCertainties request_srv;
         
-        double wx, wy;
-        
-        for (unsigned int i = 0; i < size_x_; ++i){
-          for (unsigned int j = 0; j < size_y_; ++j){
-            std_msgs::Float32 x,y;
-            costmap_.mapToWorld(i,j,wx,wy);
-            x.data = (float) wx;
-            y.data = (float) wy;
-            request_srv.request.X.push_back(x);
-            request_srv.request.Y.push_back(y);
-            
-            //unsigned int point = costmap_.getIndex(i,j);            
-          }
-        }
-               
         unsigned int mx, my;               
         
         ROS_INFO("Requesting for label certainty");
@@ -85,14 +70,16 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
           ROS_INFO("Received label certainty");
           
           for (unsigned int i = 0; i < request_srv.response.certainties.size(); ++i){
+            double wx = (double)request_srv.response.X[i].data;
+            double wy = (double)request_srv.response.Y[i].data;
             std_msgs::UInt8 certainty_msg = request_srv.response.certainties[i]; 
             unsigned int certainty = certainty_msg.data;        
             
             //if (certainty != LETHAL_OBSTACLE and certainty != NO_INFORMATION and certainty != FREE_SPACE and certainty != INSCRIBED_INFLATED_OBSTACLE){
             if (certainty > 0){
-              std::cout << "INDEX: " << i << ", Certainty: " << (unsigned int) certainty << std::endl;
-              costmap_.indexToCells(i, mx, my);
-              //costmap_.setCost(mx,my,certainty);
+              std::cout << "(" << wx << ", " << wy << "), Certainty: " << (unsigned int) certainty << std::endl;
+              costmap_.worldToMap(wx, wy, mx, my);
+              costmap_.setCost(mx,my,certainty);
               
               //Frontier new_frontier = buildSimpleFrontier(i, 1.0);
               //frontier_list.push_back(new_frontier);

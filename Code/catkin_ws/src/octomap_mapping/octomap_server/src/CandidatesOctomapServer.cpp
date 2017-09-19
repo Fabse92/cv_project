@@ -380,31 +380,45 @@ namespace octomap_server
 	  ROS_INFO_STREAM("In RequestLabelCertainties service");
 
 	  // Check that the input is valid, i.e. we have equal numbers of x and ys
-	  if (req.X.size() != req.Y.size())
-	  {
-	  	ROS_ERROR_STREAM("Lengths of x (" << req.X.size() << ") and y (" << req.Y.size() << ") do not match, aborting RequestLabelCertainties service.");
-	  	return false;
-	  }
+	  // if (req.X.size() != req.Y.size())
+	  // {
+	  // 	ROS_ERROR_STREAM("Lengths of x (" << req.X.size() << ") and y (" << req.Y.size() << ") do not match, aborting RequestLabelCertainties service.");
+	  // 	return false;
+	  // }
 
-	  for (uint i = 0; i < req.X.size(); i++)
-	  {
-	  	ColorOcTreeNode* node = m_octree->search(req.X[i].data, req.Y[i].data, 0);
+	  // for (uint i = 0; i < req.X.size(); i++)
+	  // {
+	  // 	ColorOcTreeNode* node = m_octree->search(req.X[i].data, req.Y[i].data, 0);
 	  	
-	  	std_msgs::UInt8 certainty;
+	  // 	std_msgs::UInt8 certainty;
 	  	
-	  	if (node != NULL) certainty.data = (uint)node->getColor().b;
-	  	else certainty.data = 0;
+	  // 	if (node != NULL) certainty.data = (uint)node->getColor().b;
+	  // 	else certainty.data = 0;
 
-	  	res.certainties.push_back(certainty);
+	  // 	res.certainties.push_back(certainty);
+	  // }
+
+	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+	  {
+	  	point3d pt = leafs_it.getCoordinate();
+
+	  	if (pt.z() >= 0 && pt.z() < m_res)
+	  	{
+	  		ColorOcTreeNode* leaf_node = m_octree->search(leafs_it.getKey(), 0);
+
+	  		std_msgs::Float32 x;
+	  		std_msgs::Float32 y;
+	  		std_msgs::UInt8 certs;
+
+	  		x.data = pt.x();
+	  		y.data = pt.y();
+	  		certs.data = (uint)leaf_node->getColor().b;
+
+	  		res.X.push_back(x);
+	  		res.Y.push_back(y);
+	  		res.certainties.push_back(certs);
+	  	}
 	  }
-
-	  // TEST
-    // ROS_INFO_STREAM("Result returned: ");
-    // BOOST_FOREACH(std_msgs::UInt8 i_msg, res.certainties)
-    // {
-    //   ROS_INFO_STREAM((uint)i_msg.data);
-    // }
-    // END TEST
 
 	  return true;
 	}
