@@ -359,6 +359,7 @@ private:
         if (state == actionlib::SimpleClientGoalState::ABORTED){
             ROS_ERROR("Failed to move");
             as_.setAborted();
+            finishedTask(true);
         }else if(state == actionlib::SimpleClientGoalState::SUCCEEDED){
             moving_ = false;
         }
