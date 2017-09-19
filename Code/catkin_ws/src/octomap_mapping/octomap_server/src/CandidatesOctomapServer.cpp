@@ -238,24 +238,24 @@ namespace octomap_server
 	  ROS_INFO_STREAM("In CompareGroundTruthsToCandidates service, ground truths given " << req.ground_truths.data.size());
 
 	  //DEBUG visualisation
-	  PCLPointCloud visualisation_pc;
+	  // PCLPointCloud visualisation_pc;
 
 	  // Get the volumes of all candidates in m_octree
 	  std::map<uint, double> candidate_volumes = computeAllCandidateVolumes(m_octree, &m_candidateList);
 	  res.nof_candidates.data = (uint)candidate_volumes.size();
 	  
 	  //DEBUG
-	  ROS_INFO_STREAM("Candidate volumes (leaf iterator): ");
-	  for (std::map<uint, double>::iterator cand_it = candidate_volumes.begin(), cand_end = candidate_volumes.end(); cand_it != cand_end; cand_it++)
-	  {
-	  	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
-	  }
-	  ROS_INFO_STREAM("Candidate volumes (tree iterator, checking hasChildren() ): ");
-	  std::map<uint, double> candidate_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_octree, &m_candidateList);
-	  for (std::map<uint, double>::iterator cand_it = candidate_volumes_treeIt.begin(), cand_end = candidate_volumes_treeIt.end(); cand_it != cand_end; cand_it++)
-	  {
-	  	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
-	  }
+	  // ROS_INFO_STREAM("Candidate volumes (leaf iterator): ");
+	  // for (std::map<uint, double>::iterator cand_it = candidate_volumes.begin(), cand_end = candidate_volumes.end(); cand_it != cand_end; cand_it++)
+	  // {
+	  // 	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
+	  // }
+	  // ROS_INFO_STREAM("Candidate volumes (tree iterator, checking hasChildren() ): ");
+	  // std::map<uint, double> candidate_volumes_treeIt = computeAllCandidateVolumesTreeIt(m_octree, &m_candidateList);
+	  // for (std::map<uint, double>::iterator cand_it = candidate_volumes_treeIt.begin(), cand_end = candidate_volumes_treeIt.end(); cand_it != cand_end; cand_it++)
+	  // {
+	  // 	ROS_INFO_STREAM("Label: " << cand_it->first << ", volume: " << cand_it->second);
+	  // }
 	  //END DEBUG
 
 	  tf::StampedTransform sensorToWorldTf;
@@ -284,8 +284,6 @@ namespace octomap_server
 	  {
 	  	BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
 		  {
-		  	// uint ground_truth_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
-
 		  	m_gtsList.addCandidate(counter);
 
 		  	KeySet free_cells_gts, occupied_cells_gts;
@@ -323,9 +321,7 @@ namespace octomap_server
 	  // candidate with the greatest overlap.
 	  counter = 1;
 	  BOOST_FOREACH(PCLPointCloud pcl_pc, pcl_pc_list)
-	  {
-	    // uint ground_truth_label = pcl_pc.points[0].r + pcl_pc.points[0].g;
-	    
+	  { 
 	    KeySet free_cells, occupied_cells;
     	unsigned char* colors = new unsigned char[3];
 
@@ -335,14 +331,11 @@ namespace octomap_server
 	    uint total_labelled_nodes = 0;
 
 	    ROS_INFO_STREAM("");
-	    // ROS_INFO_STREAM("Ground truth " << ground_truth_label << ":");
 	    ROS_INFO_STREAM("Ground truth " << counter << ":");
 	    ROS_INFO_STREAM("Point cloud size: " << pcl_pc.size());
 	    ROS_INFO_STREAM("occupied_cells.size(): " << occupied_cells.size());
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_labelled_nodes);
-
-	    // ROS_INFO_STREAM("Total overlap with existing candidates is " << (double)total_labelled_nodes / occupied_cells.size() * 100 << " percent.");
 
 	    uint proposal = computeLabel(candidate_overlaps);
 
@@ -369,17 +362,14 @@ namespace octomap_server
 	    counter++;
 
 	    //DEBUG visualisation
-	    visualisation_pc += pcl_pc;
+	    // visualisation_pc += pcl_pc;
 	  }
 
-	  // Clear m_gtsOctree
-	  // m_gtsOctree->clear();
-
 	  //DEBUG visualisation
-	  sensor_msgs::PointCloud2 visualisation_msg;
-	  pcl::toROSMsg(visualisation_pc, visualisation_msg);
-	  visualisation_msg.header.frame_id = m_worldFrameId;
-	  m_visualisation_pub.publish(visualisation_msg);
+	  // sensor_msgs::PointCloud2 visualisation_msg;
+	  // pcl::toROSMsg(visualisation_pc, visualisation_msg);
+	  // visualisation_msg.header.frame_id = m_worldFrameId;
+	  // m_visualisation_pub.publish(visualisation_msg);
 
 	  return true;
 	}
