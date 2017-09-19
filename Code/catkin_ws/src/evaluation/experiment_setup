@@ -1,4 +1,8 @@
 nbv_method,       repeat, time, world,                            cheat mode, inf_gain: obstacle, unexplored infront of obstacle, object, unexplored infront of object, unexplored
-information_gain, 10,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
-random,           10,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
-frontier,         10,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
+information_gain, 1,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
+random,           1,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
+frontier,         1,     1500, testing_room_with_objects2.world, true,                 10,       20,                             100,   30,                           2
+information_gain, 1,     1500, testing_room_with_objects.world,  true,                 10,       20,                             100,   30,                           2
+information_gain, 1,     1500, testing_room_with_objects2.world, false,                10,       20,                             100,   30,                           2
+information_gain, 1,     1500, testing_room_with_objects2.world, true,                 10,        0,                               0,    0,                           2 
+information_gain, 1,     1500, testing_room_with_objects2.world, true,                 1,         0,                               1,    0,                           1       
