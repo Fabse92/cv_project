@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     if not os.path.isfile(evaluation+"/statistics/experiment"):
       experiment_file = open(evaluation+"/statistics/experiment", 'w')
-      experiment_file.write("method,world,cheat_mode,nbv_count,nof_candidates,nof_objects,time,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
+      experiment_file.write("method,world,cheat_mode,nbv_count,nof_candidates,nof_objects,time, inf_obstacle, inf_obstacle_unexplored, inf_object, inf_object_unexplored, inf_unexplored,IoU_threshold,recall,precision,tp,fp,fn" + '\n')#,recall_ch,precision_ch,tp_ch,fp_ch,fn_ch"+ '\n')
       experiment_file.close()
       
     if not os.path.isfile(evaluation+"/temp"):  
