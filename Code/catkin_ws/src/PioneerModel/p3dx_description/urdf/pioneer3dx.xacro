@@ -278,6 +278,15 @@ work original in ucs-ros-pkg.
 
   <link name="camera_depth_frame">
   </link>
+
+  <joint name="kinect2_ir_optical_joint" type="fixed">
+    <origin rpy="-1.571 0 -1.571"/>
+    <parent link="camera_link"/>
+    <child link="kinect2_ir_optical_frame"/>
+  </joint>
+
+  <link name="kinect2_ir_optical_frame">
+  </link>
 	
 	<xacro:property name="camera_link" value="0.05" /> <!-- Size of square 'camera' box -->
 

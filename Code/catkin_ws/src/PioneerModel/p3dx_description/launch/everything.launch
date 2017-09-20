@@ -2,9 +2,9 @@
 
   <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find candidate_locator)/debug_config.conf"/> -->
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find octomap_server)/debug_config.conf"/>
-  <arg name="use_sim_time" default="true" />
+  <arg name="use_sim_time" default="false" />
   <arg name="output" default="screen" />
-  <arg name="method" default="information_gain" />
+  <arg name="method" default="frontier" />
   <arg name="world" default="testing_room_with_objects2.world" />
   <arg name="available_time" default="600.0" />
   <arg name="inf_obstacle" default="10.0" />

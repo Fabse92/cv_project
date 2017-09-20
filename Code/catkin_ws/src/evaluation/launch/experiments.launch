@@ -1,5 +1,5 @@
 <launch>
-<param name="use_sim_time" value="true"/>
+<param name="use_sim_time" value="false"/>
 <node name="experiments" pkg="evaluation" type="experiments" output="screen" respawn="true" respawn_delay="20" />
 
 </launch>

@@ -23,6 +23,7 @@
       <!--<remap from="scan" to="p3dx/laser/scan"/>-->
       <param name="map_frame" value="/map"/>
       <param name="base_frame" value="$(arg base_frame)"/>
+      <remap from="odom" to="/odom"/>
       <param name="odom_frame" value="/odom"/>
       <param name="map_update_interval" value="5.0"/>
       <param name="maxUrange" value="6.0"/>

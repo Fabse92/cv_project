@@ -1,0 +1,1 @@
+rosbag record -a -O /media/phil/Data/CVProj/demo/demo.bag -x "/kinect2/hd/(.*)|/kinect2/qhd/(.*)|/kinect2/sd/image_ir(.*)|/kinect2/sd/image_depth|/kinect2/sd/image_depth_compressed|/kinect2/(.*)compressed|/octomap_binary|/octomap_full|/octomap_point_cloud_centers|/projected_map|/free_cells_vis_array|/RosAria/sona(.*)"

@@ -15,7 +15,7 @@
 CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
 {
                                            //     /depth/image_raw
-  sub_depth_cam_info_ = it_.subscribeCamera("/kinect2/sd/camera_info", 1000, &CandidateLocator::cameraInfoCallback, this);
+  sub_depth_cam_info_ = it_.subscribeCamera("/kinect2/sd/image_depth_rect", 1000, &CandidateLocator::cameraInfoCallback, this);
 
   // pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
   
@@ -149,7 +149,9 @@ candidate_locator::ArrayPointClouds CandidateLocator::locateCandidates(
     ROS_INFO_STREAM("Candidate " << candidate_id_ << ": ");
     this->calculateObjectPoints(candidate, point_cloud);
 
-    pcl::toROSMsg(this->getMinCluster(point_cloud), pc_msg);
+    // pcl::toROSMsg(this->getMinCluster(point_cloud), pc_msg);
+    pcl::toROSMsg(point_cloud, pc_msg);
+    ROS_INFO_STREAM("Point cloud size: " << point_cloud.size());
           
     pc_msg.header.frame_id = camera_frame_;
     
@@ -234,17 +236,17 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
     {
       if (candidate.ptr<uchar>(i)[nCols-1-j] != 0)
       {
-        candidate_size++;
-
         double yAngle;
         if (nRows>1) yAngle = atan2( (double)i - 0.5*(double)(nRows-1), fl);
         else            yAngle = 0.0;
 
-        double depth = depth_image_.at<float>(i, nCols-j);
-
+        double depth = depth_image_.at<float>(i, nCols-j) / 1000;
+        ROS_INFO_STREAM("Depth: " << depth);
         if(depth > point_cloud_cutoff &&
            depth < point_cloud_cutoff_max)
         {
+          candidate_size++;
+
           pcl::PointXYZRGB pclPoint;
           pclPoint.x = depth * tan(yAngle);
           pclPoint.y = depth * tan(pAngle);
@@ -263,7 +265,7 @@ void CandidateLocator::calculateObjectPoints(cv::Mat& candidate, pcl::PointCloud
     }
   }
 
-  ROS_INFO_STREAM("Point cloud created for candidate. Candidate size: " << candidate_size);
+  ROS_INFO_STREAM("Point cloud created for candidate. Candidate size: " << candidate_size << ", " << point_cloud.size());
 }
 
 void CandidateLocator::cameraInfoCallback(const sensor_msgs::ImageConstPtr& depth_img_msg, const sensor_msgs::CameraInfoConstPtr& info_msg)
