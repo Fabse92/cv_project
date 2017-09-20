@@ -14,7 +14,8 @@
 
 CandidateLocator::CandidateLocator() : it_(nh_), tf_listener_(ros::Duration(60))
 {
-  sub_depth_cam_info_ = it_.subscribeCamera("camera/depth/image_raw", 1000, &CandidateLocator::cameraInfoCallback, this);
+                                           //     /depth/image_raw
+  sub_depth_cam_info_ = it_.subscribeCamera("/kinect2/sd/camera_info", 1000, &CandidateLocator::cameraInfoCallback, this);
 
   // pub_point_clouds_ = nh_.advertise<candidate_locator::ArrayPointClouds>("/candidate_point_clouds", 1);
   

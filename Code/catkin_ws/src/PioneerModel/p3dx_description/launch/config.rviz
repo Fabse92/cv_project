@@ -295,14 +295,14 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /camera/depth/points
+      Topic: /kinect2/sd/points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /camera/rgb/image_raw
+      Image Topic: /kinect2/sd/image_color_rect
       Max Value: 1
       Median window: 5
       Min Value: 0
