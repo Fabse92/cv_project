@@ -77,13 +77,15 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
             unsigned int certainty = certainty_msg.data;        
             
             //if (certainty != LETHAL_OBSTACLE and certainty != NO_INFORMATION and certainty != FREE_SPACE and certainty != INSCRIBED_INFLATED_OBSTACLE){
-            if (certainty > 0){
+            if (certainty > 0){              
               //ROS_INFO_STREAM("(" << wx << ", " << wy << "), Certainty: " << (unsigned int) certainty);
               costmap_.worldToMap(wx, wy, mx, my);
-              costmap_.setCost(mx,my,certainty);
-              
-              //Frontier new_frontier = buildSimpleFrontier(costmap_.getIndex(mx,my), 1.0);
-              //frontier_list.push_back(new_frontier);
+              if (certainty > costmap_.getCost(mx,my) || costmap_.getCost(mx,my) == INSCRIBED_INFLATED_OBSTACLE || costmap_.getCost(mx,my) == LETHAL_OBSTACLE || costmap_.getCost(mx,my) == NO_INFORMATION){
+                costmap_.setCost(mx,my,certainty);
+                
+                //Frontier new_frontier = buildSimpleFrontier(costmap_.getIndex(mx,my), 1.0);
+                //frontier_list.push_back(new_frontier);
+              }
             }
           }
           
