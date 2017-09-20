@@ -1,2 +1,2 @@
-information_gain_with_objects, 3, 1500, testing_room_with_objects2.world, true,        10,       20,                             100,   30,                           2                                                                    
-information_gain_with_objects, 3, 1500, testing_room_with_objects2.world, false,       10,       20,                             100,   30,                           2                                                                               
+information_gain_with_candidates, 3, 1500, testing_room_with_objects2.world, true,        10,       20,                             100,   30,                           2                                                                    
+information_gain_with_candidates, 3, 1500, testing_room_with_objects2.world, false,       10,       20,                             100,   30,                           2                                                                               

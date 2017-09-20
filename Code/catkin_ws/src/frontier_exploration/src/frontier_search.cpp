@@ -57,13 +57,14 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     } 
         
     if(method == "information_gain_with_candidates"){   
+       
         ros::ServiceClient request_client = nh.serviceClient<frontier_exploration::RequestLabelCertainties>("/octomap_server/certainty_occupancy_grid"); 
         request_client.waitForExistence();
         
         frontier_exploration::RequestLabelCertainties request_srv;
         
-        unsigned int mx, my;               
-        
+        unsigned int mx, my; 
+
         ROS_INFO("Requesting for label certainty");
         if (request_client.call(request_srv))
         {
@@ -77,11 +78,11 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
             
             //if (certainty != LETHAL_OBSTACLE and certainty != NO_INFORMATION and certainty != FREE_SPACE and certainty != INSCRIBED_INFLATED_OBSTACLE){
             if (certainty > 0){
-              std::cout << "(" << wx << ", " << wy << "), Certainty: " << (unsigned int) certainty << std::endl;
+              //ROS_INFO_STREAM("(" << wx << ", " << wy << "), Certainty: " << (unsigned int) certainty);
               costmap_.worldToMap(wx, wy, mx, my);
               costmap_.setCost(mx,my,certainty);
               
-              //Frontier new_frontier = buildSimpleFrontier(i, 1.0);
+              //Frontier new_frontier = buildSimpleFrontier(costmap_.getIndex(mx,my), 1.0);
               //frontier_list.push_back(new_frontier);
             }
           }
