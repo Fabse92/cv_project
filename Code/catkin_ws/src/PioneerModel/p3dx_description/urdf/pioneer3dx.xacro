@@ -232,7 +232,7 @@ work original in ucs-ros-pkg.
 	<!-- Camera 3.141592654 1.57079632679 -->
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 0 0" />
-    <origin xyz="${camera_link} 0.0 -0.135" rpy="0 0 0"/>
+    <origin xyz="${camera_link} 0.0 0.05" rpy="0 0 0"/>
     <parent link="front_sonar"/>
     <child link="camera_link"/>
   </joint>

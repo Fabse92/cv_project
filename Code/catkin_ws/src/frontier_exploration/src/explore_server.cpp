@@ -85,16 +85,16 @@ private:
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_client_;
     move_base_msgs::MoveBaseGoal move_client_goal_;
     
-    ros::ServiceClient evaluation_client = nh_.serviceClient<evaluation::Evaluate>("evaluate");
+    // ros::ServiceClient evaluation_client = nh_.serviceClient<evaluation::Evaluate>("evaluate");
 
     void finishedTask(bool restart){
-      evaluation::Evaluate eval_srv;
-      eval_srv.request.restart.data = restart;
+      // evaluation::Evaluate eval_srv;
+      // eval_srv.request.restart.data = restart;
       ROS_INFO("Requesting evaluation");
-      if (evaluation_client.call(eval_srv))
-      {
-        ROS_INFO_STREAM("Evaluation performed!");
-      }
+      // if (evaluation_client.call(eval_srv))
+      // {
+      //   ROS_INFO_STREAM("Evaluation performed!");
+      // }
       if (restart){
         as_.setSucceeded();
         boost::unique_lock<boost::mutex> lock(move_client_lock_);
