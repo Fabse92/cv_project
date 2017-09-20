@@ -402,8 +402,8 @@ namespace octomap_server
 	  {
 	  	point3d pt = leafs_it.getCoordinate();
 
-	  	if (pt.z() >= 0 && pt.z() < m_res)
-	  	{
+	  	// if (pt.z() >= 0 && pt.z() < m_res)
+	  	// {
 	  		ColorOcTreeNode* leaf_node = m_octree->search(leafs_it.getKey(), 0);
 
 	  		std_msgs::Float32 x;
@@ -417,7 +417,7 @@ namespace octomap_server
 	  		res.X.push_back(x);
 	  		res.Y.push_back(y);
 	  		res.certainties.push_back(certs);
-	  	}
+	  	// }
 	  }
 
 	  return true;
