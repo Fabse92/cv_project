@@ -12,18 +12,12 @@
   <arg name="inf_object" default="100.0" />
   <arg name="inf_object_unexplored" default="30.0" />
   <arg name="inf_unexplored" default="1.0" />
-  <arg name="cheat_mode" default="true" />
+  <arg name="cheat_mode" default="false" />
   
   <param name="cheat_mode" type="bool" value="$(arg cheat_mode)"/>
   <param name="world" type="str" value="$(arg world)"/>
 
   <include file="$(find p3dx_description)/launch/rviz.launch" />
-
-  <include file="$(find p3dx_gazebo)/launch/gazebo.launch" >
-    <arg name="use_sim_time" value="$(arg use_sim_time)" />
-    <arg name="gui" value="false" />
-    <arg name="world" value="$(arg world)"/>
-  </include>
 
   <include file="$(find pointcloud_to_laserscan)/launch/sample_node.launch" />
 
@@ -45,11 +39,6 @@
   </include>
 
   <include file="$(find object_candidates)/launch/servers.launch" />
-
-  <include file="$(find evaluation)/launch/servers.launch">
-    <arg name="use_sim_time" value="$(arg use_sim_time)" />
-    <arg name="method" value="$(arg method)" />
-  </include>
 
   <include file="$(find candidate_locator)/launch/servers.launch" >
     <!-- <arg name="output" value="$(arg output)" /> -->
