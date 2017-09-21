@@ -4,14 +4,14 @@
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find octomap_server)/debug_config.conf"/>
   <arg name="use_sim_time" default="true" />
   <arg name="output" default="screen" />
-  <arg name="method" default="information_gain" />
+  <arg name="method" default="information_gain_with_candidates" />
   <arg name="world" default="testing_room_with_objects2.world" />
-  <arg name="available_time" default="600.0" />
+  <arg name="available_time" default="1500.0" />
   <arg name="inf_obstacle" default="10.0" />
   <arg name="inf_obstacle_unexplored" default="20.0" />
   <arg name="inf_object" default="100.0" />
   <arg name="inf_object_unexplored" default="30.0" />
-  <arg name="inf_unexplored" default="1.0" />
+  <arg name="inf_unexplored" default="2.0" />
   <arg name="cheat_mode" default="true" />
   
   <param name="cheat_mode" type="bool" value="$(arg cheat_mode)"/>
