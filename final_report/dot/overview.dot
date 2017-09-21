@@ -1,0 +1,23 @@
+digraph G {
+  graph [ dpi = 300 ];
+	"Mobile platform" -> "Kinect"
+	"Mobile platform" -> "Odometry"
+	"Kinect" -> "RGB image"
+	"Kinect" -> "Depth image"
+	"Odometry" -> "SLAM"
+	"Kinect" -> "Point Cloud"
+	"Point Cloud" -> "Laserscan" [label = " transform"]
+	"Depth image" -> "3D map with object proposals"
+	"Laserscan" -> "SLAM"
+	"RGB image" -> "2D Object proposals"
+	"SLAM" -> "2D occupancy grid"
+	"SLAM" -> "Estimate of robot pose"
+	"2D Object proposals" -> "3D map with object proposals"
+	"Estimate of robot pose" -> "3D map with object proposals"
+	"3D map with object proposals" -> "NBV planning"
+	"2D occupancy grid" -> "NBV planning"
+	"NBV planning" -> "Navigation"
+	"2D occupancy grid" -> "Navigation"
+	"Estimate of robot pose" -> "Navigation"
+	"Navigation" -> "Mobile platform" [label = " Motor control"]
+}
