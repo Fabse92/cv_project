@@ -7,12 +7,14 @@ digraph G {
 	"Odometry" -> "SLAM"
 	"Kinect" -> "Point Cloud"
 	"Point Cloud" -> "Laserscan" [label = " transform"]
-	"Depth image" -> "3D map with object proposals"
+	"Depth image" -> "Proposal point cloud"
 	"Laserscan" -> "SLAM"
 	"RGB image" -> "2D Object proposals"
 	"SLAM" -> "2D occupancy grid"
 	"SLAM" -> "Estimate of robot pose"
-	"2D Object proposals" -> "3D map with object proposals"
+	"2D Object proposals" -> "Proposal point cloud"
+	"Proposal point cloud" -> "Point cloud clustering"
+	"Point cloud clustering" -> "3D map with object proposals" [label = " projection"]
 	"Estimate of robot pose" -> "3D map with object proposals"
 	"3D map with object proposals" -> "NBV planning"
 	"2D occupancy grid" -> "NBV planning"
