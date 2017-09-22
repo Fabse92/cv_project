@@ -1,0 +1,71 @@
+Hi,
+
+we have read your project plans. We will give detailed comments to each
+group separately beginning of next week. However, here are some general
+comments that we found to apply to everyone. Think about these issues
+before your presentation next week and present answers as they apply to
+your project.
+
+1: What are the risks involved in your project? For example, is there a
+specific part that is critical for your success? If this cannot be
+achieved, do you have a backup plan, and what is it?
+
+2: Define at least one *concrete* scenario or test case for your
+project. Describe what are the inputs (types of images, other
+information?), and what is the scenario or setup of the environment. You
+should have enough detail in this description that when you encounter a
+question during your project such as "should we do A or B", recalling
+the scenario you are targeting will help you decide what is most
+appropriate. Additionally, the scenario will give you a clear goal to
+strive for in your project.
+
+Prepare to give a 15 minute presentation about your project topic and plan.
+
+
+Best,
+
+Mikko & Ge
+
+----------------------------------------------------------------------
+
+Hi,
+
+in addition to the general comments from Friday, here are some comments
+about your plan. Please submit a revised report by December 8th that
+takes these comments into account.
+
+- In 2.3., do you plan to use only data gathered at the start and end
+points of the robot, or also data the robot can collect while moving
+between the viewpoints?
+
+- In 3.2, you mention POMDPs as a possible technique to apply. While
+this is reasonable, here we have some simplifying assumptions in effect.
+For example, a static scene (correct?) - a full POMDP solution might not
+be required.
+
+- At end of Section 3 you mention about existing algorithms for
+registration and SLAM. We encourage you to explore this further, as
+building a SLAM method or a robust registration method from scratch can
+take a lot of time and not be productive towards the project's final goal.
+
+Best,
+
+Mikko and Ge
+
+
+-----------------------------------------------------------------------
+
+Hi,
+
+for the POMDP approach, I think it is good to be aware of it and take
+into account that eventually an extension towards non-greedy planning
+might be made. I think you already covered the Atanasov et al. IEEE TRO
+paper from 2014 that deals with a similar topic. Anyway, for the initial
+part of the project, I suggest to focus on greedy or next best view
+-approaches (i.e., solving a POMDP just one step ahead in time).
+
+For the test setup, we are trying to get one of the YCB object datasets:
+http://ycbbenchmarks.org/ I will let you know once we actually have it
+in case you want to use these objects in your project to build a test scene.
+
+Mikko
