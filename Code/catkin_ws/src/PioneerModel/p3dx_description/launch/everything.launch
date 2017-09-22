@@ -6,13 +6,14 @@
   <arg name="output" default="screen" />
   <arg name="method" default="information_gain_with_candidates" />
   <arg name="world" default="testing_room_with_objects2.world" />
-  <arg name="available_time" default="1500.0" />
+  <arg name="available_time" default="1200.0" />
   <arg name="inf_obstacle" default="10.0" />
   <arg name="inf_obstacle_unexplored" default="20.0" />
   <arg name="inf_object" default="100.0" />
   <arg name="inf_object_unexplored" default="30.0" />
   <arg name="inf_unexplored" default="2.0" />
   <arg name="cheat_mode" default="true" />
+  <arg name="min_certainty" default="1" />
   
   <param name="cheat_mode" type="bool" value="$(arg cheat_mode)"/>
   <param name="world" type="str" value="$(arg world)"/>
@@ -49,6 +50,7 @@
   <include file="$(find evaluation)/launch/servers.launch">
     <arg name="use_sim_time" value="$(arg use_sim_time)" />
     <arg name="method" value="$(arg method)" />
+    <arg name="min_certainty" value="$(arg min_certainty)" />
   </include>
 
   <include file="$(find candidate_locator)/launch/servers.launch" >

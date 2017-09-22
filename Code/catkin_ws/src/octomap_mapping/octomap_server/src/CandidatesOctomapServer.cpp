@@ -241,11 +241,16 @@ namespace octomap_server
 		ROS_INFO_STREAM("\n");
 	  ROS_INFO_STREAM("In CompareGroundTruthsToCandidates service, ground truths given " << req.ground_truths.data.size());
 
+	  uint min_certainty = req.min_certainty.data;
+	  ROS_INFO_STREAM("Minimum certainty required for match: " << min_certainty);
+
 	  //DEBUG visualisation
 	  // PCLPointCloud visualisation_pc;
 
 	  // Get the volumes of all candidates in m_octree
-	  std::map<uint, double> candidate_volumes = computeAllCandidateVolumes(m_octree, &m_candidateList);
+	  std::map<uint, double> candidate_volumes;
+	  std::map<uint, uint> candidate_certainties;
+	  computeAllCandidateVolumesAndCertainties(m_octree, &m_candidateList, candidate_volumes, candidate_certainties);
 	  res.nof_candidates.data = (uint)candidate_volumes.size();
 	  
 	  //DEBUG
@@ -304,7 +309,9 @@ namespace octomap_server
 	  }
 
 	  // Get the volumes of all ground truths in m_gtsOctree
-	  std::map<uint, double> gt_volumes = computeAllCandidateVolumes(m_gtsOctree, &m_gtsList);
+	  std::map<uint, double> gt_volumes;
+	  std::map<uint, uint> gt_certainties;
+	  computeAllCandidateVolumesAndCertainties(m_gtsOctree, &m_gtsList, gt_volumes, gt_certainties);
 
 	  //DEBUG
 	  // ROS_INFO_STREAM("Ground truth volumes (leaf iterator):");
@@ -336,8 +343,9 @@ namespace octomap_server
 
 	    ROS_INFO_STREAM("");
 	    ROS_INFO_STREAM("Ground truth " << counter << ":");
-	    ROS_INFO_STREAM("Point cloud size: " << pcl_pc.size());
-	    ROS_INFO_STREAM("occupied_cells.size(): " << occupied_cells.size());
+	    ROS_INFO_STREAM("Ground truth volume: " << gt_volumes[counter]);
+	    // ROS_INFO_STREAM("Point cloud size: " << pcl_pc.size());
+	    // ROS_INFO_STREAM("occupied_cells.size(): " << occupied_cells.size());
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_overlap_volume);
 
@@ -348,8 +356,9 @@ namespace octomap_server
 	    if (proposal == octomap_server::UNLABELLED) ROS_INFO_STREAM("No suitable candidate found");
 	    else ROS_INFO_STREAM("Proposal is candidate " << proposal);
 	    
-	    ROS_INFO_STREAM("Candidate size: " << candidate_volumes[proposal]);
+	    ROS_INFO_STREAM("Candidate volume: " << candidate_volumes[proposal]);
 	    ROS_INFO_STREAM("Overlap: " << candidate_overlaps[proposal]);
+	    ROS_INFO_STREAM("Candidate certainty: " << candidate_certainties[proposal]);
 
 	    std_msgs::Float64 overlap;
 	    std_msgs::Float64 proposal_vol;
@@ -436,26 +445,31 @@ namespace octomap_server
 
 		ROS_INFO_STREAM("Temp candidate list size: " << candidate_list.getAllLabels().size());
 
-		std::map<uint, double> candidate_volumes = computeAllCandidateVolumes(m_tempOctree, &candidate_list);
+		std::map<uint, double> candidate_volumes;
+		std::map<uint, uint> candidate_certainties;
+		computeAllCandidateVolumesAndCertainties(m_tempOctree, &candidate_list, candidate_volumes, candidate_certainties);
 
 	  m_tempOctree->clear();
 
 		return candidate_volumes[1];
 	}
 
-	std::map<uint, double> OctomapServer::computeAllCandidateVolumes(const OcTreeT* octree, const CandidateList* list)
+	void OctomapServer::computeAllCandidateVolumesAndCertainties(
+		const OcTreeT* octree, const CandidateList* list, std::map<uint, double>& candidate_volumes, std::map<uint, uint>& candidate_certainties)
 	{
-	  std::map<uint, double> labels_counter;
+	  // std::map<uint, double> labels_counter;
 
 	  for (OcTreeT::leaf_iterator leafs_it = octree->begin_leafs(), leafs_end = octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
 	  {
 	    ColorOcTreeNode* leaf_node = octree->search(leafs_it.getKey(), 0);
 	    
-  		labels_counter[list->getLabel(leaf_node->getColor())] += pow(leafs_it.getSize(), 3);
-  		// if (getNodeDepth(leafs_it.getKey()) != octree->getTreeDepth()) ROS_INFO_STREAM("Node level: " << getNodeDepth(leafs_it.getKey()));
-	  }
+	    uint label = list->getLabel(leaf_node->getColor());
+	    uint certainty = leaf_node->getColor().b;
 
-	  return labels_counter;
+  		candidate_volumes[label] += pow(leafs_it.getSize(), 3);
+  		
+  		if (certainty > candidate_certainties[label]) candidate_certainties[label] = certainty;
+	  }
 	}
 
 	std::map<uint, double> OctomapServer::computeAllCandidateVolumesTreeIt(const OcTreeT* octree, const CandidateList* list)

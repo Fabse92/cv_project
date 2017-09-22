@@ -171,6 +171,10 @@ namespace evaluation
         
         evaluation::CompareGroundTruthsToProposals comparison_srv;
         comparison_srv.request.ground_truths = array_pc_msg;
+
+        int min_certainty;
+        nh_.param<int>("/evaluation_server/min_certainty", min_certainty, 1);
+        comparison_srv.request.min_certainty.data = min_certainty;
         
         ROS_INFO("Requesting to compare ground truths to proposals");
         if (comparison_client.call(comparison_srv))

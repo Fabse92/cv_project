@@ -224,7 +224,8 @@ protected:
   double calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal);
 
   double computeSingleCandidateVolume (const octomap::KeySet& occupied_cells);
-  std::map<uint, double> computeAllCandidateVolumes(const OcTreeT* octree, const CandidateList* list);
+  void computeAllCandidateVolumesAndCertainties(
+    const OcTreeT* octree, const CandidateList* list, std::map<uint, double>& candidate_volumes, std::map<uint, uint>& candidate_certainties);
   std::map<uint, double> computeAllCandidateVolumesTreeIt(const OcTreeT* octree, const CandidateList* list);
 
   double getNodeDepth(const octomap::OcTreeKey& inKey);
