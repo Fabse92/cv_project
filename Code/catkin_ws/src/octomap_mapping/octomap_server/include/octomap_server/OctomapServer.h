@@ -218,6 +218,7 @@ protected:
   void insertCandidateIntoOctree(OcTreeT* octree, CandidateList* list, const octomap::KeySet& occupied_cells, const uint& new_candidate_label);
 
   uint computeLabel(const std::map<uint, double>& labels);
+  uint computeLabelWithMinCertainty(const std::map<uint, double>& labels, std::map<uint, uint>& certainties, uint min_certainty);
 
   void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, double>& labels, double& total_overlap_volume);
 

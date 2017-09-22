@@ -108,132 +108,47 @@ namespace octomap_server
 	  ROS_INFO_STREAM("Labels found: ");
     for (std::map<uint, double>::const_iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
     {
-      ROS_INFO_STREAM(
-        "Label: " << map_it->first <<
-        " (" << (uint)m_candidateList.getColor(map_it->first).r << "," << (uint)m_candidateList.getColor(map_it->first).g << ")" <<
-        "; count: " << map_it->second);
+    	uint label = map_it->first;
+    	double overlap = map_it->second;
 
-      if (map_it->first != octomap_server::UNLABELLED && map_it->second > greatest_overlap)
+      ROS_INFO_STREAM(
+        "Label: " << label << " (" << (uint)m_candidateList.getColor(label).r << "," << (uint)m_candidateList.getColor(label).g << ")" <<
+        "; overlap: " << overlap);
+
+      if (label != octomap_server::UNLABELLED && overlap > greatest_overlap)
       {
-        greatest_overlap = map_it->second;
-        greatest_overlap_label = map_it->first;
+        greatest_overlap = overlap;
+        greatest_overlap_label = label;
       }
     }
 
 	  return greatest_overlap_label;
 	}
 
-	void OctomapServer::computeOverlaps(const KeySet& occupied_cells, std::map<uint, double>& labels, double& total_overlap_volume)
+	uint OctomapServer::computeLabelWithMinCertainty(const std::map<uint, double>& labels, std::map<uint, uint>& certainties, uint min_certainty)
 	{
-	  labels[octomap_server::UNLABELLED] = 0;
-	  
-	  // for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
-	  // {
-	  //   // Find what's at that cell already
-	  //   ColorOcTreeNode* node = m_octree->search(*it, 0);
+		uint greatest_overlap_label = 0;
+	  double greatest_overlap = 0;
 
-	  //   if (node != NULL && !node->hasChildren())
-	  //   {
-	  //     // Check the label and increment appropriate counter
-	  //     uint existing_label = m_candidateList.getLabel(node->getColor());
+	  ROS_INFO_STREAM("Labels found: ");
+    for (std::map<uint, double>::const_iterator map_it = labels.begin(), map_end = labels.end(); map_it != map_end; map_it++)
+    {
+    	uint label = map_it->first;
+    	double overlap = map_it->second;
 
-	  //     // labels[existing_label]++;
-	  //     // ROS_INFO_STREAM("Node size: " << pow(m_octree->getNodeSize(getNodeDepth(*it))), 3);
-	  //     labels[existing_label] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
-	      
-	  //     if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
-	  //     // else labels[octomap_server::UNLABELLED]++;
-	  //   }
-	  //   else labels[octomap_server::UNLABELLED]++;
-	  // }
+      ROS_INFO_STREAM(
+        "Label: " << label << " (" << (uint)m_candidateList.getColor(label).r << "," << (uint)m_candidateList.getColor(label).g << ")" <<
+        "; overlap: " << overlap <<
+        "; certainty: " << certainties[label]);
 
-	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
-	  {
-	  	octomap::OcTreeKey node_key = leafs_it.getKey();
+      if (label != octomap_server::UNLABELLED && overlap > greatest_overlap && certainties[label] >= min_certainty)
+      {
+        greatest_overlap = overlap;
+        greatest_overlap_label = label;
+      }
+    }
 
-	  	if (occupied_cells.find(node_key) != occupied_cells.end())
-	  	{
-	  		ColorOcTreeNode* node = m_octree->search(node_key, 0);
-
-			  if (node != NULL && !node->hasChildren())
-		    {
-		      // labels[m_candidateList.getLabel(node->getColor())] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
-		      labels[m_candidateList.getLabel(node->getColor())] += pow(leafs_it.getSize(), 3);
-		      total_overlap_volume += pow(leafs_it.getSize(), 3);
-		    }
-	  	}
-	  }
-	}
-
-	double OctomapServer::calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal)
-	{
-		PCLPointCloud::Ptr proposal_pc(new PCLPointCloud);
-
-		for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
-		{
-			octomap::OcTreeKey node_key = leafs_it.getKey();
-			
-			ColorOcTreeNode* leaf_node = m_octree->search(node_key, 0);
-
-			ROS_INFO_STREAM("Here 1");
-			
-			if ((uint) leaf_node->getColor().b == proposal)
-			{
-				uint counter = 0;
-
-				uint node_size = m_octree->getNodeSize(getNodeDepth(node_key));
-				point3d node_centre = m_octree->keyToCoord(node_key);
-
-				proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
-
-				// Calculate corner points of node and add those to proposal_pc
-				double offset = node_size/2;
-				for (double x = node_centre.x() - offset; x <= node_centre.x() + offset; x += offset * 2)
-				{
-					for (double y = node_centre.y() - offset; y <= node_centre.y() + offset; y += offset * 2)
-					{
-						for (double z = node_centre.z() - offset; z <= node_centre.z() + offset; z += offset * 2)
-						{
-							proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
-							counter++;
-							if (counter % 100 == 0) ROS_INFO_STREAM(counter);
-						}
-					}
-				}
-
-				ROS_INFO_STREAM(counter << " points");
-			}
-
-			ROS_INFO_STREAM("Here 3");
-
-			// Create convex hulls from proposal_pc and ground_truth
-			pcl::ConvexHull<PCLPoint> ground_truth_ch, proposal_ch;
-			PCLPointCloud ground_truth_hull_pc, proposal_hull_pc;
-
-			ROS_INFO_STREAM("Here 4");
-
-			ground_truth_ch.setComputeAreaVolume(true);
-			proposal_ch.setComputeAreaVolume(true);
-			ground_truth_ch.setDimension(3);
-			proposal_ch.setDimension(3);
-			ground_truth_ch.setInputCloud(ground_truth_pc);
-			proposal_ch.setInputCloud(proposal_pc);
-
-			ROS_INFO_STREAM("Here 5");
-			
-			ground_truth_ch.reconstruct(ground_truth_hull_pc);
-			proposal_ch.reconstruct(proposal_hull_pc);
-
-			ROS_INFO_STREAM("Here 6");
-
-			// Get volume of both
-			ROS_INFO_STREAM("Volume of ground truth: " << ground_truth_ch.getTotalVolume());
-			ROS_INFO_STREAM("Volume of proposal: " << proposal_ch.getTotalVolume());
-			
-			// Do convex hull overlap filter thing (crop hull)
-			// Create convex hull of overlap
-
-		}
+	  return greatest_overlap_label;
 	}
 
 	bool OctomapServer::compareGroundTruthToCandidatesSrv(evaluation::CompareGroundTruthsToProposals::Request& req, evaluation::CompareGroundTruthsToProposals::Response& res)
@@ -349,7 +264,7 @@ namespace octomap_server
 
 	    computeOverlaps(occupied_cells, candidate_overlaps, total_overlap_volume);
 
-	    uint proposal = computeLabel(candidate_overlaps);
+	    uint proposal = computeLabelWithMinCertainty(candidate_overlaps, candidate_certainties, min_certainty);
 
 	    // double convex_hull_overlap = calculateConvexHullOverlap(pcl_pc.makeShared(), proposal);
 
@@ -434,6 +349,119 @@ namespace octomap_server
 	  }
 
 	  return true;
+	}
+
+	void OctomapServer::computeOverlaps(const KeySet& occupied_cells, std::map<uint, double>& labels, double& total_overlap_volume)
+	{
+	  // labels[octomap_server::UNLABELLED] = 0;
+	  
+	  // for (KeySet::const_iterator it = occupied_cells.begin(), end=occupied_cells.end(); it!= end; it++)
+	  // {
+	  //   // Find what's at that cell already
+	  //   ColorOcTreeNode* node = m_octree->search(*it, 0);
+
+	  //   if (node != NULL && !node->hasChildren())
+	  //   {
+	  //     // Check the label and increment appropriate counter
+	  //     uint existing_label = m_candidateList.getLabel(node->getColor());
+
+	  //     // labels[existing_label]++;
+	  //     // ROS_INFO_STREAM("Node size: " << pow(m_octree->getNodeSize(getNodeDepth(*it))), 3);
+	  //     labels[existing_label] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
+	      
+	  //     if (existing_label != octomap_server::UNLABELLED) labelled_nodes++;
+	  //     // else labels[octomap_server::UNLABELLED]++;
+	  //   }
+	  //   else labels[octomap_server::UNLABELLED]++;
+	  // }
+
+	  for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+	  {
+	  	octomap::OcTreeKey node_key = leafs_it.getKey();
+
+	  	if (occupied_cells.find(node_key) != occupied_cells.end())
+	  	{
+	  		ColorOcTreeNode* node = m_octree->search(node_key, 0);
+
+			  if (node != NULL && !node->hasChildren() && m_candidateList.getLabel(node->getColor()) != 0)
+		    {
+		      // labels[m_candidateList.getLabel(node->getColor())] += pow(m_octree->getNodeSize(getNodeDepth(*it)), 3);
+		      labels[m_candidateList.getLabel(node->getColor())] += pow(leafs_it.getSize(), 3);
+		      total_overlap_volume += pow(leafs_it.getSize(), 3);
+		    }
+	  	}
+	  }
+	}
+
+	double OctomapServer::calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal)
+	{
+		PCLPointCloud::Ptr proposal_pc(new PCLPointCloud);
+
+		for (OcTreeT::leaf_iterator leafs_it = m_octree->begin_leafs(), leafs_end = m_octree->end_leafs(); leafs_it != leafs_end; leafs_it++)
+		{
+			octomap::OcTreeKey node_key = leafs_it.getKey();
+			
+			ColorOcTreeNode* leaf_node = m_octree->search(node_key, 0);
+
+			ROS_INFO_STREAM("Here 1");
+			
+			if ((uint) leaf_node->getColor().b == proposal)
+			{
+				uint counter = 0;
+
+				uint node_size = m_octree->getNodeSize(getNodeDepth(node_key));
+				point3d node_centre = m_octree->keyToCoord(node_key);
+
+				proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
+
+				// Calculate corner points of node and add those to proposal_pc
+				double offset = node_size/2;
+				for (double x = node_centre.x() - offset; x <= node_centre.x() + offset; x += offset * 2)
+				{
+					for (double y = node_centre.y() - offset; y <= node_centre.y() + offset; y += offset * 2)
+					{
+						for (double z = node_centre.z() - offset; z <= node_centre.z() + offset; z += offset * 2)
+						{
+							proposal_pc->push_back(PCLPoint(node_centre.x(), node_centre.y(), node_centre.z()));
+							counter++;
+							if (counter % 100 == 0) ROS_INFO_STREAM(counter);
+						}
+					}
+				}
+
+				ROS_INFO_STREAM(counter << " points");
+			}
+
+			ROS_INFO_STREAM("Here 3");
+
+			// Create convex hulls from proposal_pc and ground_truth
+			pcl::ConvexHull<PCLPoint> ground_truth_ch, proposal_ch;
+			PCLPointCloud ground_truth_hull_pc, proposal_hull_pc;
+
+			ROS_INFO_STREAM("Here 4");
+
+			ground_truth_ch.setComputeAreaVolume(true);
+			proposal_ch.setComputeAreaVolume(true);
+			ground_truth_ch.setDimension(3);
+			proposal_ch.setDimension(3);
+			ground_truth_ch.setInputCloud(ground_truth_pc);
+			proposal_ch.setInputCloud(proposal_pc);
+
+			ROS_INFO_STREAM("Here 5");
+			
+			ground_truth_ch.reconstruct(ground_truth_hull_pc);
+			proposal_ch.reconstruct(proposal_hull_pc);
+
+			ROS_INFO_STREAM("Here 6");
+
+			// Get volume of both
+			ROS_INFO_STREAM("Volume of ground truth: " << ground_truth_ch.getTotalVolume());
+			ROS_INFO_STREAM("Volume of proposal: " << proposal_ch.getTotalVolume());
+			
+			// Do convex hull overlap filter thing (crop hull)
+			// Create convex hull of overlap
+
+		}
 	}
 
 	double OctomapServer::computeSingleCandidateVolume (const KeySet& occupied_cells)
