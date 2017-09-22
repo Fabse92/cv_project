@@ -132,6 +132,8 @@ public:
     
     uint getLabel(const octomap::ColorOcTreeNode::Color color) const
     {
+      if (color.r == 0 && color.g == 0) return 0;
+
       for (int i = 0; i < colors.size(); i++)
       {
         if (colors[i].r == color.r && colors[i].g == color.g) return labels[i];
@@ -151,6 +153,7 @@ public:
       }
 
       ROS_INFO_STREAM("Color not found for label " << label);
+      return octomap::ColorOcTreeNode::Color(0, 0, 0);
     }
   };
 
@@ -216,10 +219,11 @@ protected:
 
   uint computeLabel(const std::map<uint, double>& labels);
 
-  void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, double>& labels, uint& labelled_nodes);
+  void computeOverlaps(const octomap::KeySet& occupied_cells, std::map<uint, double>& labels, double& total_overlap_volume);
 
   double calculateConvexHullOverlap(const PCLPointCloud::Ptr& ground_truth_pc, uint proposal);
 
+  double computeSingleCandidateVolume (const octomap::KeySet& occupied_cells);
   std::map<uint, double> computeAllCandidateVolumes(const OcTreeT* octree, const CandidateList* list);
   std::map<uint, double> computeAllCandidateVolumesTreeIt(const OcTreeT* octree, const CandidateList* list);
 
@@ -300,6 +304,7 @@ protected:
 
   OcTreeT* m_octree;
   OcTreeT* m_gtsOctree;
+  OcTreeT* m_tempOctree;
   octomap::KeyRay m_keyRay;  // temp storage for ray casting
   octomap::OcTreeKey m_updateBBXMin;
   octomap::OcTreeKey m_updateBBXMax;
