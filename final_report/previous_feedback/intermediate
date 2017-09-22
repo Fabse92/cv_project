@@ -1,0 +1,35 @@
+Hi Phil and Jan,
+
+Thank you for the report, we have read it and here's the feedback.
+
+In general, the content, writing style is good. The system overview
+figure is very helpful and we are also happy with the thorough plans for
+next steps. Overall we think you guys did a good job with the report,
+thanks for the effort.
+
+Regarding the possible improvements, here are some general comments, and
+more details you can find in the attachment.
+
+1. It is very important for the readers to fully understand the problem
+you want to address in the project. Structural wise it would be better
+to have section 1.1 as an individual section 2. And provide more details
+for all the scenarios, e.g. some figures illustrating the different
+scenarios would make your problem much clearer for the readers.
+
+2. In section 1.2 related work, you mixed the content with you gonna do
+with your system (I marked them in the attachment), and those parts
+should be in later section when you actually start to describe your system.
+
+3. It is useful to use some automated spell checker or grammar checking
+tool.
+
+Other details are included in the attachment. Feel free to let us know
+if any of comments is not clear or confusing.
+
+We don't need a revision for this report, the feedback should be taken
+into account when you are preparing for the final report.
+
+Best,
+
+Ge and Mikko
+

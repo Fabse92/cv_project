@@ -1,0 +1,87 @@
+\documentclass[a4paper,11pt,english]{article}
+\usepackage[english]{babel} 
+\usepackage[T1]{fontenc}    
+\usepackage[utf8]{inputenc} 
+\usepackage{graphicx}       
+\usepackage{hyperref}      
+
+
+\begin{document}
+
+\title{Active strategies for object discovery}
+\author{Phil Bradfield \and Jan Fabian Schmid}
+	
+\maketitle 
+
+\section{Introduction}
+%Introduction, which describes the motivation and goal of your project. Describe how your project is connected to existing literature. Include references to scientific papers that are relevant to your topic. Do not copy your text from the intermediate report. Revise and rewrite according to the feedback you got and what the actual outcome of the project was.
+
+\subsection{Motivation}
+\subsection{Related work}
+
+\section{Theoretical background}
+%Theoretical background, which provides the descriptions on what existing theories and ideas that are related to your problem statement. The purpose of this section is to ensure that you are knowledgeable about the related key concepts, theories and models. Do not copy your text from the intermediate report. Revise and rewrite according to the feedback you got and what the actual outcome of the project was.
+
+\subsection{Saliency-based object discovery}
+\subsection{Frontier exploration}
+\subsection{Sampling-based exploration}
+\subsection{Particle filter SLAM}
+\subsection{Euclidean point cloud clustering}
+\subsection{IoR mechanism to guide attention}
+\subsection{Building a 3D map with octomap data structure}
+
+\section{Implementation}
+%Implementation, which connects with the section on theoretical background and describes how the required parts were implemented, and how the overall system is constructed.
+
+\subsection{Overview of the system}
+\begin{itemize}
+	\item our hardware
+	\item flowchart
+\end{itemize}
+
+\subsection{SLAM}
+\begin{itemize}
+	\item input: point cloud to laser scan and odometry from robot
+	\item gmapping
+	\item output: estimate of robot pose and 2d occupancy grid map
+\end{itemize}
+
+\subsection{Generation of object proposals}
+
+\begin{itemize}
+	\item 2D Object candidate generation
+	\item Building the proposal point cloud
+	\item Clustering the point cloud
+	\item Projection of point cloud into map
+	\item merging and handling of candidates in octomap
+\end{itemize}
+
+\subsection{NBV planning}
+
+\begin{itemize}
+	\item random
+	\item frontier exploration
+	\item information gain
+	\begin{itemize}
+	\item using the octomap
+	\item IoR mechanism for obstacles
+	\end{itemize}
+\end{itemize}
+
+\subsection{Robot navigation}
+
+\section{Analysis}
+% Results, which contain the descriptions of the experiments conducted and presents their results.
+
+\subsection{Experimental setups}
+\subsection{Metrics}
+\subsection{Results}
+
+\section{Conclusion}
+%Conclusions, which summarizes the work that was done and the results obtained, and gives suggestions for future work. \textbf{Most importantly}, include a section that contrasts the actual outcome of the project to the plan you submitted: what was planned, what was actually achieved, what were the main reasons for the actual outcome, what you consider you have learned during the project, etc.
+
+\subsection{Summary}
+\subsection{Learnings and deviations from our original plans}
+\subsection{Future work}
+
+\end{document}
