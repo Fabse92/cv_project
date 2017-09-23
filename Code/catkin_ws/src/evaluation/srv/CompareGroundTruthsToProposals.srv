@@ -1,5 +1,6 @@
 
 candidate_locator/ArrayPointClouds ground_truths
+std_msgs/UInt8 min_certainty
 ---
 std_msgs/UInt8 nof_candidates
 std_msgs/Float64[] overlaps

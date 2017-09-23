@@ -171,6 +171,10 @@ namespace evaluation
         
         evaluation::CompareGroundTruthsToProposals comparison_srv;
         comparison_srv.request.ground_truths = array_pc_msg;
+
+        int min_certainty;
+        nh_.param<int>("/evaluation_server/min_certainty", min_certainty, 1);
+        comparison_srv.request.min_certainty.data = min_certainty;
         
         ROS_INFO("Requesting to compare ground truths to proposals");
         if (comparison_client.call(comparison_srv))
@@ -196,8 +200,8 @@ namespace evaluation
             unsigned int tp = 0, fp = 0, fn = 0;
             unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
             unsigned int nof_objects = comparison_srv.response.overlaps.size();
-            detailed_stats << "method: " << method << "world: " << world << "cheat_mode: " << cheat_mode << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", inf_obstacle: " << inf_obstacle << ", inf_obstacle_unexplored: " << inf_obstacle_unexplored << ", inf_object: " << inf_object << ", inf_object_unexplored: " << inf_object_unexplored << ", inf_unexplored: " << inf_unexplored << ", IoU_threshold" << IoU_threshold << "\n";
-            stats << method << "," << world << "," << cheat_mode << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << inf_obstacle << "," << inf_obstacle_unexplored << "," << inf_object << "," << inf_object_unexplored << "," << inf_unexplored << "," << IoU_threshold << ",";
+            detailed_stats << "method: " << method << "world: " << world << "cheat_mode: " << cheat_mode << "min_certainty: " << min_certainty << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", inf_obstacle: " << inf_obstacle << ", inf_obstacle_unexplored: " << inf_obstacle_unexplored << ", inf_object: " << inf_object << ", inf_object_unexplored: " << inf_object_unexplored << ", inf_unexplored: " << inf_unexplored << ", IoU_threshold" << IoU_threshold << "\n";
+            stats << method << "," << world << "," << cheat_mode << "," << min_certainty << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << inf_obstacle << "," << inf_obstacle_unexplored << "," << inf_object << "," << inf_object_unexplored << "," << inf_unexplored << "," << IoU_threshold << ",";
             for (unsigned int gt = 0; gt < nof_objects; ++gt){
               double overlap = comparison_srv.response.overlaps[gt].data;
               double proposal_vol = comparison_srv.response.proposal_vol[gt].data;

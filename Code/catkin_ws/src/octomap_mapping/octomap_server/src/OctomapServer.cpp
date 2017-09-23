@@ -155,6 +155,13 @@ OctomapServer::OctomapServer(ros::NodeHandle private_nh_)
   m_gtsOctree->setClampingThresMin(thresMin);
   m_gtsOctree->setClampingThresMax(thresMax);
 
+  // initialize temp octomap for calculating individual candidate volumes
+  m_tempOctree = new OcTreeT(m_res);
+  m_tempOctree->setProbHit(probHit);
+  m_tempOctree->setProbMiss(probMiss);
+  m_tempOctree->setClampingThresMin(thresMin);
+  m_tempOctree->setClampingThresMax(thresMax);
+
   double r, g, b, a;
   private_nh.param("color/r", r, 0.0);
   private_nh.param("color/g", g, 0.0);
