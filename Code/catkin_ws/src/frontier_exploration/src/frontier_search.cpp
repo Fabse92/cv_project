@@ -31,6 +31,8 @@ void FrontierSearch::setCostmap(costmap_2d::Costmap2D& costmap){
 std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, std::string method, double circle_radius, double horizontal_fov, geometry_msgs::Polygon polygon, ros::NodeHandle nh, std::vector<int> &IoR_map){
 
     std::list<Frontier> frontier_list;
+    bool toSwitch;
+    nh.param<bool>("/switch", toSwitch, false);
 
     //Sanity check that robot is inside costmap bounds before searching
     unsigned int mx,my;
@@ -48,7 +50,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
     
     unsigned int ix, iy, ix0, iy0;
    
-    if(method != "frontier"){   
+    if(method != "frontier" || (method == "frontier_plus" && toSwitch == true)){   
       costmap_.worldToMap(0.0, 0.0, ix0, iy0);
       BOOST_FOREACH(unsigned int point, initialFreeSpace(costmap_.getIndex(ix0,iy0), 3, costmap_)){ 
         costmap_.indexToCells(point,ix,iy);
@@ -129,7 +131,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
             // distinguish between different methods how to find and define 'frontiers'
             // 'frontier' is the original method of the package            
             // the size of a frontier defines the number of connected cells on the border between discovered free cells and undiscovered cells   
-            if(method == "frontier"){
+            if(method == "frontier" || (method == "frontier_plus" && toSwitch == false)){
               //add to queue all free, unvisited cells, use descending search in case initialized on non-free cell
               if(map_[nbr] <= map_[idx] && !visited_flag[nbr]){
                   visited_flag[nbr] = true;
@@ -216,7 +218,7 @@ std::list<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position, st
         }
     }
     
-    if(method != "random" && method != "frontier"){ 
+    if(method != "random" && method != "frontier" && (method != "frontier_plus"  || toSwitch == true)){ 
       BOOST_FOREACH(unsigned obstacle, obstacle_list_){
         IoR_map[obstacle] += 4;      
       }

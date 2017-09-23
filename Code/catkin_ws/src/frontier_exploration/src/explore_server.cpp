@@ -203,6 +203,8 @@ private:
                     ROS_WARN("Finished exploring room");
                     finishedTask(true);
                     return;
+                  } else if (method == "frontier_plus"){
+                    nh_.setParam("switch", true);
                   }                    
 
                 }else if(retry_ == 0 || !ros::ok()){ //search is not successful

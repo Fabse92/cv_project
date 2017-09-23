@@ -133,10 +133,13 @@ namespace frontier_exploration
           std::vector<int> IoR_map(size_x_ * size_y_, 0);
           IoR_map_ = IoR_map;
         }
+        
+        bool toSwitch;
+        nh_.param<bool>("/switch", toSwitch, false);
 
         //initialize frontier search implementation
         FrontierSearch frontierSearch(*(layered_costmap_->getCostmap()));
-        if (method_ != "frontier"){
+        if (method_ != "frontier" && (method_ != "frontier_plus" || toSwitch == true)){
           frontierSearch.setCostmap(original_costmap_);        
         }
         
@@ -208,7 +211,7 @@ namespace frontier_exploration
         next_frontier.header.stamp = ros::Time::now();
 
         //
-        if (method_ == "frontier") {
+        if (method_ == "frontier" || (method_ == "frontier_plus" && toSwitch == false)) {
             if (frontier_travel_point_ == "closest") {
                 next_frontier.pose.position = selected.initial;
             } else if (frontier_travel_point_ == "middle") {
@@ -227,7 +230,7 @@ namespace frontier_exploration
         //next_frontier.pose.position.x = x;
         //next_frontier.pose.position.y = y;
 
-        if (method_ == "frontier") {
+        if (method_ == "frontier" || (method_ == "frontier_plus" && toSwitch == false)) {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw( yawOfVector(start_pose.pose.position, next_frontier.pose.position) );
         } else if (method_ == "random") {
             next_frontier.pose.orientation = tf::createQuaternionMsgFromYaw(fRand(-1.570796,1.570796));
