@@ -96,6 +96,7 @@ private:
         ROS_INFO_STREAM("Evaluation performed!");
       }
       if (restart){
+        ROS_INFO_STREAM("Restarting system after evaluation attempt");
         as_.setSucceeded();
         boost::unique_lock<boost::mutex> lock(move_client_lock_);
         move_client_.cancelGoalsAtAndBeforeTime(ros::Time::now());
@@ -204,6 +205,7 @@ private:
                     finishedTask(true);
                     return;
                   } else if (method == "frontier_plus"){
+                    ROS_WARN("Finished exploring room .. switching to information gain method");
                     nh_.setParam("switch", true);
                   }                    
 

@@ -169,87 +169,89 @@ namespace evaluation
         ros::ServiceClient comparison_client = nh_.serviceClient<evaluation::CompareGroundTruthsToProposals>("octomap_server/compare_ground_truths_to_proposals"); 
         comparison_client.waitForExistence();
         
-        evaluation::CompareGroundTruthsToProposals comparison_srv;
-        comparison_srv.request.ground_truths = array_pc_msg;
-
         int min_certainty;
         nh_.param<int>("/evaluation_server/min_certainty", min_certainty, 1);
-        comparison_srv.request.min_certainty.data = min_certainty;
         
-        ROS_INFO("Requesting to compare ground truths to proposals");
-        if (comparison_client.call(comparison_srv))
-        {
-          ROS_INFO("Received statistics of comparison");
-          std::string method; 
-          nh_.param<std::string>("/evaluation_server/method", method, "unknown");
-          std::string world; 
-          nh_.param<std::string>("/world", world, "unknown");
-          double inf_obstacle, inf_obstacle_unexplored, inf_object, inf_object_unexplored, inf_unexplored; 
-          nh_.param<double>("/explore_server/inf_obstacle", inf_obstacle, -1.0);
-          nh_.param<double>("/explore_server/inf_obstacle_unexplored", inf_obstacle_unexplored, -1.0);
-          nh_.param<double>("/explore_server/inf_object", inf_object, -1.0);
-          nh_.param<double>("/explore_server/inf_object_unexplored", inf_object_unexplored, -1.0);
-          nh_.param<double>("/explore_server/inf_unexplored", inf_unexplored, -1.0);
-          bool cheat_mode;
-          nh_.param<bool>("/cheat_mode", cheat_mode, true);
-          std::ofstream stats, detailed_stats;
-          stats.open(evaluation_package_path + "/statistics/experiment", std::ios_base::app);
-          detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment", std::ios_base::app);
-          
-          for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
-            unsigned int tp = 0, fp = 0, fn = 0;
-            unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
-            unsigned int nof_objects = comparison_srv.response.overlaps.size();
-            detailed_stats << "method: " << method << "world: " << world << "cheat_mode: " << cheat_mode << "min_certainty: " << min_certainty << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", inf_obstacle: " << inf_obstacle << ", inf_obstacle_unexplored: " << inf_obstacle_unexplored << ", inf_object: " << inf_object << ", inf_object_unexplored: " << inf_object_unexplored << ", inf_unexplored: " << inf_unexplored << ", IoU_threshold" << IoU_threshold << "\n";
-            stats << method << "," << world << "," << cheat_mode << "," << min_certainty << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << inf_obstacle << "," << inf_obstacle_unexplored << "," << inf_object << "," << inf_object_unexplored << "," << inf_unexplored << "," << IoU_threshold << ",";
-            for (unsigned int gt = 0; gt < nof_objects; ++gt){
-              double overlap = comparison_srv.response.overlaps[gt].data;
-              double proposal_vol = comparison_srv.response.proposal_vol[gt].data;
-              double groundtruth_vol = comparison_srv.response.groundtruth_vol[gt].data;
-              
-              double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
-              detailed_stats << "IoU: " << IoU << ", overlap: " << overlap << ", proposal_vol: " << proposal_vol << ", groundtruth_vol: " << groundtruth_vol << "\n"; 
-              
-              if (IoU > IoU_threshold){
-                ++tp; // correct candidate
-              } else{
-                ++fn; // no (correct) candidate for ground truth
-              }              
-            }
-            fp = nof_candidates - tp;
-            double recall    = (double) tp / (tp + fn);
-            double precision = (double) tp / (tp + fp);
-            detailed_stats << "recall: " << recall << ", precision: " << precision << ", tp: " << tp << ", fp: " << fp << ", fn: " << fn  << "\n\n";             
-            stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
+        for (; min_certainty <= 3; ++min_certainty) { 
+          evaluation::CompareGroundTruthsToProposals comparison_srv;
+          comparison_srv.request.ground_truths = array_pc_msg;
+          comparison_srv.request.min_certainty.data = min_certainty;
+        
+          ROS_INFO("Requesting to compare ground truths to proposals");
+          if (comparison_client.call(comparison_srv))
+          {
+            ROS_INFO("Received statistics of comparison");
+            std::string method; 
+            nh_.param<std::string>("/evaluation_server/method", method, "unknown");
+            std::string world; 
+            nh_.param<std::string>("/world", world, "unknown");
+            double inf_obstacle, inf_obstacle_unexplored, inf_object, inf_object_unexplored, inf_unexplored; 
+            nh_.param<double>("/explore_server/inf_obstacle", inf_obstacle, -1.0);
+            nh_.param<double>("/explore_server/inf_obstacle_unexplored", inf_obstacle_unexplored, -1.0);
+            nh_.param<double>("/explore_server/inf_object", inf_object, -1.0);
+            nh_.param<double>("/explore_server/inf_object_unexplored", inf_object_unexplored, -1.0);
+            nh_.param<double>("/explore_server/inf_unexplored", inf_unexplored, -1.0);
+            bool cheat_mode;
+            nh_.param<bool>("/cheat_mode", cheat_mode, true);
+            std::ofstream stats, detailed_stats;
+            stats.open(evaluation_package_path + "/statistics/experiment", std::ios_base::app);
+            detailed_stats.open(evaluation_package_path + "/statistics/detailed_experiment", std::ios_base::app);
             
-            /*tp = 0, fp = 0, fn = 0;
-            for (unsigned int gt = 0; gt < nof_objects; ++gt){
-              double overlap = comparison_srv.response.overlaps_ch[gt].data;
-              double proposal_vol = comparison_srv.response.proposal_vol_ch[gt].data;
-              double groundtruth_vol = comparison_srv.response.groundtruth_vol_ch[gt].data;
+            for (double IoU_threshold = 0.1; IoU_threshold < 1.0; IoU_threshold += 0.1){
+              unsigned int tp = 0, fp = 0, fn = 0;
+              unsigned int nof_candidates = comparison_srv.response.nof_candidates.data;
+              unsigned int nof_objects = comparison_srv.response.overlaps.size();
+              detailed_stats << "method: " << method << "world: " << world << "cheat_mode: " << cheat_mode << "min_certainty: " << min_certainty << "nbv_count: " << nbv_count << ", nof_candidates: " << nof_candidates << ", nof_objects: " << nof_objects << ", time: " << now - evaluation_time << ", inf_obstacle: " << inf_obstacle << ", inf_obstacle_unexplored: " << inf_obstacle_unexplored << ", inf_object: " << inf_object << ", inf_object_unexplored: " << inf_object_unexplored << ", inf_unexplored: " << inf_unexplored << ", IoU_threshold" << IoU_threshold << "\n";
+              stats << method << "," << world << "," << cheat_mode << "," << min_certainty << "," << nbv_count << "," << nof_candidates << "," << nof_objects << "," << now - evaluation_time << "," << inf_obstacle << "," << inf_obstacle_unexplored << "," << inf_object << "," << inf_object_unexplored << "," << inf_unexplored << "," << IoU_threshold << ",";
+              for (unsigned int gt = 0; gt < nof_objects; ++gt){
+                double overlap = comparison_srv.response.overlaps[gt].data;
+                double proposal_vol = comparison_srv.response.proposal_vol[gt].data;
+                double groundtruth_vol = comparison_srv.response.groundtruth_vol[gt].data;
+                
+                double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
+                detailed_stats << "IoU: " << IoU << ", overlap: " << overlap << ", proposal_vol: " << proposal_vol << ", groundtruth_vol: " << groundtruth_vol << "\n"; 
+                
+                if (IoU > IoU_threshold){
+                  ++tp; // correct candidate
+                } else{
+                  ++fn; // no (correct) candidate for ground truth
+                }              
+              }
+              fp = nof_candidates - tp;
+              double recall    = (double) tp / (tp + fn);
+              double precision = (double) tp / (tp + fp);
+              detailed_stats << "recall: " << recall << ", precision: " << precision << ", tp: " << tp << ", fp: " << fp << ", fn: " << fn  << "\n\n";             
+              stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
               
-              double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
-              detailed_stats << "IoU_ch: " << IoU << ", overlap_ch: " << overlap << ", proposal_vol_ch: " << proposal_vol << ", groundtruth_vol_ch: " << groundtruth_vol << "\n"; 
-              
-              if (IoU > IoU_threshold){
-                ++tp; // correct candidate
-              } else{
-                ++fn; // no (correct) candidate for ground truth
-              }              
+              /*tp = 0, fp = 0, fn = 0;
+              for (unsigned int gt = 0; gt < nof_objects; ++gt){
+                double overlap = comparison_srv.response.overlaps_ch[gt].data;
+                double proposal_vol = comparison_srv.response.proposal_vol_ch[gt].data;
+                double groundtruth_vol = comparison_srv.response.groundtruth_vol_ch[gt].data;
+                
+                double IoU = overlap / (proposal_vol + groundtruth_vol - overlap);
+                detailed_stats << "IoU_ch: " << IoU << ", overlap_ch: " << overlap << ", proposal_vol_ch: " << proposal_vol << ", groundtruth_vol_ch: " << groundtruth_vol << "\n"; 
+                
+                if (IoU > IoU_threshold){
+                  ++tp; // correct candidate
+                } else{
+                  ++fn; // no (correct) candidate for ground truth
+                }              
+              }
+              fp = nof_candidates - tp;
+              recall    = (double) tp / (tp + fn);
+              precision = (double) tp / (tp + fp);
+              detailed_stats << "recall_ch: " << recall << ", precision_ch: " << precision << ", tp_ch: " << tp << ", fp_ch: " << fp << ", fn_ch: " << fn  << "\n\n";             
+              stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
+              */
             }
-            fp = nof_candidates - tp;
-            recall    = (double) tp / (tp + fn);
-            precision = (double) tp / (tp + fp);
-            detailed_stats << "recall_ch: " << recall << ", precision_ch: " << precision << ", tp_ch: " << tp << ", fp_ch: " << fp << ", fn_ch: " << fn  << "\n\n";             
-            stats << recall << "," << precision << "," << tp << "," << fp << "," << fn  << "\n";
-            */
+            stats.close(); 
+            detailed_stats.close();
           }
-          stats.close(); 
-          detailed_stats.close();
-        }
-        else
-        {
-          ROS_ERROR("Failed to compare ground truths to proposals");
+          else
+          {
+            ROS_ERROR("Failed to compare ground truths to proposals");
+          }
         }
         
         if (req.restart.data){
