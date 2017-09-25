@@ -1,30 +1,30 @@
-Intro										- Fabian 
-Related work								-
+Intro										                - Fabian 
+Related work							             	-
 
 Theoretical background:
-1. Saliency-based object discovery			- Fabian
-2. Frontier exploration						- Fabian
-3. Sampling-based exploration				- Fabian
-4. Particle filter SLAM						- 
-5. Euclidean PC clustering					- 
-6. IoR 										- 
-7. OcTrees									- Phil
+1. Saliency-based object discovery			- Fabian - Done
+2. Frontier exploration						      - Fabian - Done
+3. Sampling-based exploration			    	- Fabian - Done
+(4.) Particle filter SLAM					     	
+(5.) Euclidean PC clustering				   	
+6. IoR 										              - Fabian - Done 
+7. OcTrees									            - Phil
 
 Implementation:
-1. Overview									-
-2. SLAM										-
+1. Overview								             	-
+2. SLAM									               	-
 3.Proposal generation
-  - 2D part 								- Fabian
-  - 3D part 								- Phil
-4. NBV planning								- Fabian
-5. Robot navigation							-
+  - 2D part 								            - Fabian
+  - 3D part 								            - Phil
+4. NBV planning						          		- Fabian
+5. Robot navigation						         	-
 
 Analysis:
-1. Setups									- 
-2. Metrics									- 
-3. Results									- Fabian
+1. Setups									              - 
+2. Metrics								            	- 
+3. Results									            - Fabian
 
 Conclusion
-1. Summary									-
-2. Reflection								-
-3. Future work								-
+1. Summary									            -
+2. Reflection								            -
+3. Future work							           	-

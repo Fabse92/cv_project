@@ -97,6 +97,16 @@ The next goal is then chosen as the viewpoint candidate with highest overall sco
 %\subsection{Particle filter SLAM}
 %\subsection{Euclidean point cloud clustering}
 \subsection{IoR mechanism to guide attention}
+An inhibition of return (IoR) mechanism can be used in computer vision to avoid spending attention on the same region for longer than necessary to process the information of that region.
+Such a method is used in the object detection system by García et al. \cite{garcia2015saliency} to avoid the computation of the same object candidates in consecutive frames of a video sequence.
+The system keeps track of previously considered object candidates through an 3D IoR map, which is a model of the environment built through a reconstruction algorithm (KinectFusion \cite{newcombe2011kinectfusion}) from the depth image of the RGB-D camera, where information about IoR is stored in the voxels of the map.
+To update the IoR information in the map the current 2D camera frame is projected into the 3D map.
+That way, voxels corresponding to the attended object candidates are found.
+The IoR weight for each of these voxels is increased and if a certain threshold is reached an IoR flag is activated, signaling that pixels in the camera frame corresponding to this voxel should be inhibited.
+For each frame that a voxel is not attended its IOR weight decreases and if it reaches zero again the IOR flag is deactivated.
+
+The integration of this 3D IoR mechanism allowed García et al. to find most of the visible objects in a video while considering only a few object candidates per frame.
+
 \subsection{Building a 3D map with octomap data structure}
 
 \section{Implementation}
