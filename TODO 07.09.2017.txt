@@ -1,23 +1,9 @@
-TODO 22.09.2017
-
-1)
-add parameter which allows to decide the minimum certainty required for an candidate to be considered as actual object proposal DONE
-
-- add the necessary code in the octomap server (Philson) DONE
-- add parameter to the serve message and to the evaluation script (Fabi) DONE
+TODO 25.09.2017
 
 
-2) (Dr. Phil)
-Is there something weird happening with the merging process? YES, FIXED.
-Eventually some fine tuning is required?
-
-3)
-do experiments
-
-4) (Fabsen)
 evaluate results further
-
 - plot agains number of candidates
 
-5) 
-add another nbv method which starts with frontier exploration and then continues with inf gain method
+
+write final report
+
