@@ -23,7 +23,7 @@ Since almost every meaningful everyday life task of humans contains interaction 
 One of the first steps for this is object detection, which allows the robot to filter out relevant parts of its environment which are likely to correspond to an actual object. Having a model of nearby object positions and shapes could then allow the robot to go through this internal list and search for an object that might help him for his current task.
 When a robot is visiting a place for the first time it might be a good idea to explore this room to create such a list of available objects.
 This is the situation and the task that we want to solve with our system.
-To be able to do this, it is necessary to perform simultaneous localization and mapping, detect potential objects in the current view, and to compute the next best view which allows to explore the environment.
+To be able to do this, it is necessary to perform simultaneous localization and mapping, detect potential objects in the current view, and to compute the next best view (NBV) which allows to explore the environment.
 
 \subsection{Related work}
 Some existing approaches in the subject of object detection in autonomous robots are the following:
@@ -82,8 +82,20 @@ The robot will then navigate to the closest accessible frontier centroid and the
 Yamauchi performed successful experiments using a Nomad 200 mobile robot in indoor environments.
 
 \subsection{Sampling-based exploration}
-\subsection{Particle filter SLAM}
-\subsection{Euclidean point cloud clustering}
+Sampling-based exploration is another way of finding a next best viewpoint to explore an initially unknown environment.
+The general idea is to randomly sample the accessible area of the robot for possible viewpoints.
+For each viewpoint a information gain score is computed, which depends on the visible area at the particular viewpoint and the distance of this viewpoint to the current robot position.
+
+Such a system has been introduced by Surmann et al. \cite{surmann2003autonomous}.
+For their system they use laser scanner data. From this data they detect obstacles, free space and unknown space.
+The borders between free space and unknown space are called unseen lines.
+Next best viewpoint candidates are randomly sampled from the free space.
+For each of these candidates the number of visible unseen lines is computed, which determines its information gain.
+The final score for each candidate is computed by multiplying the information gain with a punishing factor that depends on the euclidean distance to the current robot position and the angle that the robot would have to rotate for the view.
+The next goal is then chosen as the viewpoint candidate with highest overall score.
+
+%\subsection{Particle filter SLAM}
+%\subsection{Euclidean point cloud clustering}
 \subsection{IoR mechanism to guide attention}
 \subsection{Building a 3D map with octomap data structure}
 
