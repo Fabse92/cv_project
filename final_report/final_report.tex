@@ -58,6 +58,7 @@ In Section \ref{Analysis} we explain the performed experiments and obtained resu
 In this section we present some of the concepts and methods that we utilize in our system.
 
 \subsection{Saliency-based object discovery}
+\label{Theoretical_background:Saliency-based_object_discovery}
 To find objects in the robots current view, we use a saliency-based object discovery system.
 Such a system has been introduced by García et al. \cite{garcia2015saliency}.
 An overview of the method can be seen in Figure \ref{fig:2Dobject_discovery}.
@@ -87,6 +88,7 @@ Afterwards, colour and depth candidates are merged into one set a ranking of pro
 With more than 80\% recall and up to 50\% precision the saliency-based object discovery method performs comparable or better than other state-of-the-art object detection systems tested in the experiments of García et al.
 
 \subsection{Frontier-based exploration}
+\label{Theoretical_background:Frontier-based_exploration}
 A method for autonomous exploration of unknown  environments has been introduced 1997 by Yamauchi \cite{yamauchi1997frontier}.
 He describes the task that he wants to solve as follows: \glqq{}The central question in exploration is: \textit{Given what you know about the world, where should you move to gain as much  new  information  as  possible?}\grqq{}.
 This is the same problem we have to solve for our object seeking robot.
@@ -108,6 +110,7 @@ The robot will then navigate to the closest accessible frontier centroid and the
 Yamauchi performed successful experiments using a Nomad 200 mobile robot in indoor environments.
 
 \subsection{Sampling-based exploration}
+\label{Theoretical_background:Sampling-based_exploration}
 Sampling-based exploration is another way of finding a next best viewpoint to explore an initially unknown environment.
 The general idea is to randomly sample the accessible area of the robot for possible viewpoints.
 For each viewpoint a information gain score is computed, which depends on the visible area at the particular viewpoint and the distance of this viewpoint to the current robot position.
@@ -123,6 +126,7 @@ The next goal is then chosen as the viewpoint candidate with highest overall sco
 %\subsection{Particle filter SLAM}
 %\subsection{Euclidean point cloud clustering}
 \subsection{IoR mechanism to guide attention}
+\label{Theoretical_background:IoR mechanism_to_guide_attention}
 An inhibition of return (IoR) mechanism can be used in computer vision to avoid spending attention on the same region for longer than necessary to process the information of that region.
 Such a method is used in the object detection system by García et al. \cite{garcia2015saliency} to avoid the computation of the same object candidates in consecutive frames of a video sequence.
 The system keeps track of previously considered object candidates through an 3D IoR map, which is a model of the environment built through a reconstruction algorithm (KinectFusion \cite{newcombe2011kinectfusion}) from the depth image of the RGB-D camera, where information about IoR is stored in the voxels of the map.
@@ -134,6 +138,7 @@ For each frame that a voxel is not attended its IoR weight decreases and if it r
 The integration of this 3D IoR mechanism allowed García et al. to find most of the visible objects in a video while considering only a few object candidates per frame.
 
 \subsection{Building a 3D map with octomap data structure}
+\label{Theoretical_background:Building_a_3Dmap_with_octomap_data_structure}
 
 \section{Implementation}
 \label{Implementation}
@@ -158,7 +163,7 @@ It receives the current point cloud from the RGB-D camera and samples the point 
 The closest point for each vertical line is put out to form one horizontal line which is our simulated laser scan.
 
 \subsection{SLAM}
-To solve the simultaneous localization and mapping problem we used the ROS package \textit{GMapping} \footnote{\url{http://wiki.ros.org/gmapping}}.
+To perform simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
 GMapping performs laser-based SLAM using a particle filter.
 It requires laser scan data and the estimated current robot position and provides a 2D occupancy grid map and the transform of the robot's pose into the map frame.
 The occupancy grid map consists of cells of specified size.
@@ -169,6 +174,31 @@ The cell is thereby marked as obstacle, free space, unexplored space or as inscr
 The generation of object proposals is a complex part of the system that consists of five separate processing steps that we describe individually.
 
 \subsubsection{2D Object candidate generation}
+The first step in our method for object proposal generation is to find 2D object proposals in the current colour camera frame.
+To achieve this we use the framework of García et al. presented in Section \ref{Theoretical_background:Saliency-based_object_discovery}.
+We are currently only using the colour candidates. The object proposals contain usually most of the objects in the image and are of good quality, therefore we left the integration of the additional depth candidates for possible future work.
+In Figure \ref{fig:object_generation} an example for the generation of object proposal is depicted.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/object_generation.png}
+		\caption{Left: Current camera image. Middle: First object proposal. Right: Second object proposal.}
+		\label{fig:object_generation}
+	\end{center}
+\end{figure}
+
+In our implementation of the framework of García et al. we start by computing a saliency map using VOCUS2 \cite{frintrop2015traditional}.
+The colour segmentation is done using a C++ implementation of the Felzenszwalb and Huttenlocher algorithm \cite{felzenszwalb2004efficient} by Christoffer Holmstedt \footnote{\url{https://github.com/christofferholmstedt/opencv-wrapper-egbis}}.
+Starting with the pixel with highest saliency, we perform seeded region growing where iteratively neighboring pixels are appended to the current salient region if their saliency value is at least 65\% of the value from the starting pixel.
+In order to only keep actually interesting regions, a salient region is only kept for further processing if it has at least a mean saliency value of 130 (from a maximum of 255).
+In order to prevent a large amount of strongly overlapping salient blobs, we do the following: For each considered saliency maximum the pixels from a seeded region growing, now using minimum similarity of 90\%, are then no longer considered as potential starting points for further salient regions.
+Still some  of the salient regions will have large overlap, if the overlap is greater than 50\% only the one with higher saliency score is kept.
+Where the saliency score is calculated as mean saliency times square root of the area of the corresponding region.
+All of the remaining salient blobs will now correspond to one object proposal.
+At this point the segments from the Felzenszwalb and Huttenlocher algorithm are used.
+For each salient blob we find the corresponding segments that have least 30\% overlap.
+The sum of these segments is the region of the object proposal for this particular salient blob.
+
 \subsubsection{Building the proposal point cloud}
 \subsubsection{Clustering the point cloud}
 \subsubsection{Projection of point cloud into map}
