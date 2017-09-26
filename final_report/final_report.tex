@@ -14,6 +14,7 @@
 \maketitle 
 
 \section{Introduction}
+\label{Introduction}
 %Introduction, which describes the motivation and goal of your project. Describe how your project is connected to existing literature. Include references to scientific papers that are relevant to your topic. Do not copy your text from the intermediate report. Revise and rewrite according to the feedback you got and what the actual outcome of the project was.
 
 In this final report of our project, we want to present our system, how it works, how it changed during the development, and how it performs.
@@ -25,10 +26,33 @@ When a robot is visiting a place for the first time it might be a good idea to e
 This is the situation and the task that we want to solve with our system.
 To be able to do this, it is necessary to perform simultaneous localization and mapping, detect potential objects in the current view, and to compute the next best view (NBV) which allows to explore the environment.
 
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=1\linewidth]{dot/overview.png} 
+		\caption{Overview of the system}
+		\label{fig:overview}
+	\end{center}
+\end{figure}
+
+A general overview of our system is given in Figure \ref{fig:overview}.
+The available input for our computations consists of the odometry from the mobile platform and depth image, colour image, as well as point cloud data from the mounted RGB-D camera. Our SLAM algorithm requires laser scan data and the odometry, therefore we simulate a laser scanner with the point cloud data.
+The SLAM algorithm provides us with an estimate of the robots current pose and a 2D occupancy grid, which is a map of the environment with information about obstacles, free space and unexplored space. 
+Our object proposals are at first generated in 2D from the RGB image, then a corresponding point cloud for the object proposal is generated using the available depth information. To ensure that the object proposal point cloud corresponds to one contiguous volume a clustering algorithm is applied. Further processing is done only on the object proposal point cloud cluster closest to the robot. 
+This point cloud cluster is projected, with help of the estimated robot pose, into a 3D map.
+3D object proposals that already have been integrated into the map previously are updated with the new proposals.
+We try different NBV algorithms, which can work with the information of the robots current pose, the 2D map of the environment, and with knowledge about the approximated object positions.
+As output of each NBV algorithm we receive the next desired robot pose which is then used together with the 2D map and the approximated robot position to navigate the robot.
+
+\medskip
+
+A more detailed description of the implementation of the different parts of our system is given in Section \ref{Implementation}.
+Previously, however, to conclude the introduction we present some existing approaches in the subject of object detection in autonomous robots and then in Section \ref{Theoretical_background} we introduce some of the core methods and concepts used for the implementation of our system.
+In Section \ref{Analysis} we explain the performed experiments and obtained results of them, which allows to access the strengths and weaknesses of the system. In the end Section \ref{Conclusion} concludes this final report with a summary, a short assessment of the changes and learnings we had since the proposal of our project.
+
 \subsection{Related work}
-Some existing approaches in the subject of object detection in autonomous robots are the following:
 
 \section{Theoretical background}
+\label{Theoretical_background}
 %Theoretical background, which provides the descriptions on what existing theories and ideas that are related to your problem statement. The purpose of this section is to ensure that you are knowledgeable about the related key concepts, theories and models. Do not copy your text from the intermediate report. Revise and rewrite according to the feedback you got and what the actual outcome of the project was.
 
 In this section we present some of the concepts and methods that we utilize in our system.
@@ -59,6 +83,8 @@ The result is a list of salient blobs in the saliency map.
 For each salient blob one colour object candidate is created. It contains the pixels of all colour segments that overlap to at least $30\%$ with the pixels of the salient blob.
 The depth candidates are generated analogous to the colour candidates, using the same salient blobs as a basis for the object candidates, but a surface clustering method is used as segmentation algorithm. It divides the image into continuous planes.
 Afterwards, colour and depth candidates are merged into one set a ranking of proposed object candidates in terms of \glqq{}objectiveness\grqq{} takes place.
+
+With more than 80\% recall and up to 50\% precision the saliency-based object discovery method performs comparable or better than other state-of-the-art object detection systems tested in the experiments of García et al.
 
 \subsection{Frontier-based exploration}
 A method for autonomous exploration of unknown  environments has been introduced 1997 by Yamauchi \cite{yamauchi1997frontier}.
@@ -103,20 +129,33 @@ The system keeps track of previously considered object candidates through an 3D 
 To update the IoR information in the map the current 2D camera frame is projected into the 3D map.
 That way, voxels corresponding to the attended object candidates are found.
 The IoR weight for each of these voxels is increased and if a certain threshold is reached an IoR flag is activated, signaling that pixels in the camera frame corresponding to this voxel should be inhibited.
-For each frame that a voxel is not attended its IOR weight decreases and if it reaches zero again the IOR flag is deactivated.
+For each frame that a voxel is not attended its IoR weight decreases and if it reaches zero again the IoR flag is deactivated.
 
 The integration of this 3D IoR mechanism allowed García et al. to find most of the visible objects in a video while considering only a few object candidates per frame.
 
 \subsection{Building a 3D map with octomap data structure}
 
 \section{Implementation}
+\label{Implementation}
 %Implementation, which connects with the section on theoretical background and describes how the required parts were implemented, and how the overall system is constructed.
 
-\subsection{Overview of the system}
-\begin{itemize}
-	\item our hardware
-	\item flowchart
-\end{itemize}
+The general structure of our system has been introduced in Section \ref{Introduction} already.
+We have mostly developed our system inside a physics simulation (Gazebo \footnote{\url{http://gazebosim.org/}}), however we transferred the system with slight adjustments onto a real Pioneer robot as well.
+In the following we will explain how the different parts in Figure \ref{fig:overview} have been implemented. If the simulated and real version are diverging we will point that out in the respective system part description.
+The system is fully developed with the Robot Operating System (ROS \footnote{\url{http://www.ros.org/}}) in the Indigo version, therefore each part of the system consists of one or multiple ROS nodes and services.
+The code for our system can be found online \footnote{\url{https://github.com/Fabse92/cv_project}}.
+
+\subsubsection*{Mobile platform}
+As mobile platform we used a Pioneer P3DX. This robot is providing a first estimate for its own position in form of odometry based on the previous motor control. Mounted onto the platform is a Kinect camera \footnote{\url{https://developer.microsoft.com/en-us/windows/kinect}}. In case of the real version we put the camera on top of the platform, in the physics simulation we are free of physical bounds and put the camera slightly lower in front of the robot to accommodate for our experimental setup in which objects are lying scattered on the floor.
+
+\subsubsection*{RGB-D camera}
+The Kinect camera is directly providing a rectified version of the colour and depth image, which aligns the two frames, therefore pixel coordinates both images are corresponding to each other (\textbf{TODO is this correct?!}).
+Also a point cloud build from the fused information of depth and colour image is directly provided as a ROS topic through the respective camera driver for simulation and real world.
+
+\subsubsection*{Laserscan}
+To simulate a laser scanner we use the ros package \textit{pointcloud\_to\_laserscan} \footnote{\url{http://wiki.ros.org/pointcloud_to_laserscan}}.
+It receives the current point cloud from the RGB-D camera and samples the point cloud between a specified minimal and maximal height.
+The closest point for each vertical line is put out to form one horizontal line which is our simulated laser scan.
 
 \subsection{SLAM}
 \begin{itemize}
@@ -147,9 +186,8 @@ The integration of this 3D IoR mechanism allowed García et al. to find most of 
 	\end{itemize}
 \end{itemize}
 
-\subsection{Robot navigation}
-
 \section{Analysis}
+\label{Analysis}
 % Results, which contain the descriptions of the experiments conducted and presents their results.
 
 \subsection{Experimental setups}
@@ -157,6 +195,7 @@ The integration of this 3D IoR mechanism allowed García et al. to find most of 
 \subsection{Results}
 
 \section{Conclusion}
+\label{Conclusion}
 %Conclusions, which summarizes the work that was done and the results obtained, and gives suggestions for future work. \textbf{Most importantly}, include a section that contrasts the actual outcome of the project to the plan you submitted: what was planned, what was actually achieved, what were the main reasons for the actual outcome, what you consider you have learned during the project, etc.
 
 \subsection{Summary}
