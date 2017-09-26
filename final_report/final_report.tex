@@ -145,46 +145,49 @@ In the following we will explain how the different parts in Figure \ref{fig:over
 The system is fully developed with the Robot Operating System (ROS \footnote{\url{http://www.ros.org/}}) in the Indigo version, therefore each part of the system consists of one or multiple ROS nodes and services.
 The code for our system can be found online \footnote{\url{https://github.com/Fabse92/cv_project}}.
 
-\subsubsection*{Mobile platform}
+\subsection{Mobile platform}
 As mobile platform we used a Pioneer P3DX. This robot is providing a first estimate for its own position in form of odometry based on the previous motor control. Mounted onto the platform is a Kinect camera \footnote{\url{https://developer.microsoft.com/en-us/windows/kinect}}. In case of the real version we put the camera on top of the platform, in the physics simulation we are free of physical bounds and put the camera slightly lower in front of the robot to accommodate for our experimental setup in which objects are lying scattered on the floor.
 
-\subsubsection*{RGB-D camera}
+\subsection{RGB-D camera}
 The Kinect camera is directly providing a rectified version of the colour and depth image, which aligns the two frames, therefore pixel coordinates both images are corresponding to each other (\textbf{TODO is this correct?!}).
 Also a point cloud build from the fused information of depth and colour image is directly provided as a ROS topic through the respective camera driver for simulation and real world.
 
-\subsubsection*{Laserscan}
+\subsection{Laserscan}
 To simulate a laser scanner we use the ros package \textit{pointcloud\_to\_laserscan} \footnote{\url{http://wiki.ros.org/pointcloud_to_laserscan}}.
 It receives the current point cloud from the RGB-D camera and samples the point cloud between a specified minimal and maximal height.
 The closest point for each vertical line is put out to form one horizontal line which is our simulated laser scan.
 
 \subsection{SLAM}
-\begin{itemize}
-	\item input: point cloud to laser scan and odometry from robot
-	\item gmapping
-	\item output: estimate of robot pose and 2d occupancy grid map
-\end{itemize}
+To solve the simultaneous localization and mapping problem we used the ROS package \textit{GMapping} \footnote{\url{http://wiki.ros.org/gmapping}}.
+GMapping performs laser-based SLAM using a particle filter.
+It requires laser scan data and the estimated current robot position and provides a 2D occupancy grid map and the transform of the robot's pose into the map frame.
+The occupancy grid map consists of cells of specified size.
+Each cell can take one of four possible values.
+The cell is thereby marked as obstacle, free space, unexplored space or as inscribed inflated obstacle, which means that this cell is not accessible by the robot since according to its footprint it would be in collision with an obstacle.
 
 \subsection{Generation of object proposals}
+The generation of object proposals is a complex part of the system that consists of five separate processing steps that we describe individually.
 
-\begin{itemize}
-	\item 2D Object candidate generation
-	\item Building the proposal point cloud
-	\item Clustering the point cloud
-	\item Projection of point cloud into map
-	\item merging and handling of candidates in octomap
-\end{itemize}
+\subsubsection{2D Object candidate generation}
+\subsubsection{Building the proposal point cloud}
+\subsubsection{Clustering the point cloud}
+\subsubsection{Projection of point cloud into map}
+\subsubsection{Merging and handling of candidates in octomap}
 
 \subsection{NBV planning}
+In our current system five different next best view algorithms are available, which we will describe in their individual parts.
+The goal of each of these algorithms is to find a next view point with high information gain.
 
-\begin{itemize}
-	\item random
-	\item frontier exploration
-	\item information gain
-	\begin{itemize}
-	\item using the octomap
-	\item IoR mechanism for obstacles
-	\end{itemize}
-\end{itemize}
+\subsubsection{Random NBV}
+\subsubsection{Frontier exploration}
+\subsubsection{Sampling-based exploration using obstacles}
+IoR mechanism for obstacles
+\subsubsection{Sampling-based exploration using obstacles and object proposals}
+\subsubsection{Combination of Frontier and Sampling based exploration}
+
+\subsection{Navigation}
+For navigation we use the \textit{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
+It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been made public.
 
 \section{Analysis}
 \label{Analysis}
