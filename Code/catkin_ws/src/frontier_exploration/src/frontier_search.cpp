@@ -300,7 +300,7 @@ Frontier FrontierSearch::buildInformationGainFrontier(unsigned int robot_positio
               }
             }
             if(map_[line_point] == LETHAL_OBSTACLE){
-              if (IoR_map[line_point] < 6) // is this obstacle not inhibited?
+              if (IoR_map[line_point] < 7) // is this obstacle not inhibited?
                 inf_gain += inf_obstacle;  // obstacle bonus
               obstacle_list.push_back(line_point);
             } else {
