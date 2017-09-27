@@ -4,8 +4,9 @@
 \usepackage{lmodern}
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
-\usepackage{hyperref}      
+\usepackage{hyperref}
 \usepackage{todonotes}
+\usepackage{amsmath}
 
 \begin{document}
 
@@ -38,6 +39,7 @@ To be able to do this, it is necessary to perform simultaneous localization and 
 A general overview of our system is given in Figure \ref{fig:overview}.
 The available input for our computations consists of the odometry from the mobile platform and depth image, colour image, as well as point cloud data from the mounted RGB-D camera. Our SLAM algorithm requires laser scan data and the odometry, therefore we simulate a laser scanner with the point cloud data.
 The SLAM algorithm provides us with an estimate of the robots current pose and a 2D occupancy grid, which is a map of the environment with information about obstacles, free space and unexplored space. 
+A new set of object proposals is computed in our system only at each NBV. The camera data in-between NBV poses are used to improve the map, but not to find further objects.
 Our object proposals are at first generated in 2D from the RGB image, then a corresponding point cloud for the object proposal is generated using the available depth information. To ensure that the object proposal point cloud corresponds to one contiguous volume a clustering algorithm is applied. Further processing is done only on the object proposal point cloud cluster closest to the robot. 
 This point cloud cluster is projected, with help of the estimated robot pose, into a 3D map.
 3D object proposals that already have been integrated into the map previously are updated with the new proposals.
@@ -166,7 +168,7 @@ It receives the current point cloud from the RGB-D camera and samples the point 
 The closest point for each vertical line is put out to form one horizontal line which is our simulated laser scan.
 
 \subsection{SLAM}
-To perform simultaneous localization and mapping we use a ROS wrapper\footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
+To perform simultaneous localization and mapping we use a ROS wrapper \footnote{\url{http://wiki.ros.org/gmapping}} for OpenSlam's GMapping algorithm \cite{grisetti2007}, which is an implementation of Fast SLAM.
 GMapping performs laser-based SLAM using a particle filter.
 It requires laser scan data and the estimated current robot position and provides a 2D occupancy grid map and the transform of the robot's pose into the map frame.
 The occupancy grid map consists of cells of specified size.
@@ -202,22 +204,94 @@ At this point the segments from the Felzenszwalb and Huttenlocher algorithm are 
 For each salient blob we find the corresponding segments that have least 30\% overlap.
 The sum of these segments is the region of the object proposal for this particular salient blob.
 
+\subsubsection{Building the proposal point cloud}
+
+\subsubsection{Clustering of the proposal point cloud}
+One problem with our approach of finding object proposals in the 2D image with subsequent projection into the third dimension using the available depth information is that imprecise or incorrect 2D object boundaries lead to distorted 3D object proposals.
+For example it happens that larger parts of a wall far behind an object or parts of the floor are mistaken as part of the object.
+One anomaly that occurred very often for us can be seen in Figure  \ref{fig:rays}.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{src/rays2.png}
+		\caption{Large parts of the ball are correctly identified; however, some additional voxels at the right side behind the ball are mistaken as belonging to the object.}
+		\label{fig:rays}
+	\end{center}
+\end{figure}
+
+To avoid this behavior we added an additional step. 
+The obtained proposal point cloud is clustered using PCLs Euclidean Cluster Extraction method.
+This is a simple clustering algorithm.
+The user defines a distance threshold.
+All points that are closer as the distance threshold will end up in the same cluster.
+For the further processing we use only the cluster with the closest point to the camera that has at least 50 points.
+This is removing some of the anomalies, because the wrong parts of the object proposal will mostly be behind the actual object.
+
 \input{sections/proposal_generation_3d}
+% \subsubsection{Projection of point cloud into map}
+
+% \subsubsection{Merging and handling of candidates in octomap}
 
 \subsection{NBV planning}
 In our current system five different next best view algorithms are available, which we will describe in their individual parts.
 The goal of each of these algorithms is to find a next view point with high information gain.
+All our methods use the occupancy grid map from GMapping for their computations.
+A view consists of one cell of the map as goal position and a yaw orientation value.
 
 \subsubsection{Random NBV}
+Random NBV is the baseline method which we can use to assess the improvement through more sophisticated NBV methods.
+For this method all currently accessible free space cells of the map are considered as next view position.
+One of these cells is randomly selected and forms together with a random orientation the random NBV.
+
 \subsubsection{Frontier exploration}
+Our NBV method based on frontier exploration, which has been introduced in Section \ref{Theoretical_background:Frontier-based_exploration}, is performing frontier exploration as it has been implemented in the \textit{frontier\_exploration} ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}}.
+The next best view computed at a certain start position is here the centroid of the closest frontier with an orientation that corresponds to the continued line between the start position and the centroid of the closest frontier.
+One essential flaw of this NBV method is that it works only until the environment has been completely discovered. 
+
 \subsubsection{Sampling-based exploration using obstacles}
-IoR mechanism for obstacles
+For this NBV method we use sampling-based exploration as described in Section \ref{Theoretical_background:Sampling-based_exploration}.
+Here all accessible free space cells closer than $2$ meters and further than $20$ centimeters are considered as potential next best view position.
+For each of these cells a random orientation is selected and all cells are found which are closer than $3$ meters and can be seen when the robot is looking in the selected orientation at this particular cell. This considers obstacles, therefore cells behind obstacles do not count as visible. %This is done by computing the part of a $3$ meter radius circle with center point corresponding to the selected orientation and an total angle that corresponds to the camera opening angle. Subsequently, for each pixel of the edge 
+Each visible cell can contribute to the information gain at the potential viewpoint.
+If a visible cell is part of the unexplored space or is an obstacle the information gain increases. Unexplored cells in front of an obstacle contribute an additional information gain bonus.
+The idea is here that obstacles might correspond to objects and are therefore worth looking at.
+Furthermore, unexplored space might contain undiscovered obstacles and objects, and an unexplored cell directly besides an obstacle has a high probability to be also part of this obstacle.
+For each considered accessible free space cell we compute the sum of the information gain values of the visible cells considering the random orientation at the particular cell and multiply this value with a punishing factor depending on the distance of the cell to the current robot position.
+Overall the information gain score $S$ is computed as:
+\begin{align*}
+ S &= (\mbox{sum of information gain})\cdot exp(-d\cdot \mbox{distance})
+\end{align*}
+Where $d$ is a constant that can be used to adjust how strongly distance is punished. We set $d$ to $0.05$ as it has been done in \cite{surmann2003autonomous}.
+The NBV is then selected as the cell with corresponding chosen orientation that has the highest information gain score.
+
+One problem that can occur for this NBV method is that the robot is moving close to a group of objects and the robot gets stuck continuously looking at this group of objects since they are close and looking at them is awarded with a lot of information gain score.
+This is partly a desired behavior since multiple viewpoints on the same objects are necessary to increase the object proposal quality. However, if the robot gets stuck he will not find all objects distributed in the room.
+To avoid getting stuck for too long, we implemented an inhibition of return (IoR) behavior. This concept has been introduced in Section \ref{Theoretical_background:IoR mechanism_to_guide_attention}.
+We keep track of an IoR map that is similar to the occupancy grid map.
+For each viewpoint taken, an the value in the IoR map for the obstacle cells the robot looked at is increased by $3$.
+Obstacle cells that have not been looked at decrease their value in the IoR map by $1$.
+For all future information gain scores obstacle cells with an IoR map value higher than $5$ provide no information gain.
+Therefore, consecutive viewpoints taking a look at the same obstacle group have decreased information gain score, so that at some point the robot should move away from the group.
+
 \subsubsection{Sampling-based exploration using obstacles and object proposals}
-\subsubsection{Combination of Frontier and Sampling based exploration}
+This method is based on the sampling-based exploration using obstacles.
+The difference is that in addition to obstacles the current object proposals are considered as well for the information gain calculation.
+Each visible cell at which currently an object is assumed to be will increase the information gain score and similar as before unexplored cells in front of object proposals will award an additional bonus information gain score.
+The information gain $S_i$ for a cell $i$ with object proposal $j$ depends on the certainty $c_j$ into this proposal:
+\begin{align*}
+ S_i &= \mbox{inf\_object}\cdot 2^{-(c_j-1)}
+\end{align*}
+Where $\mbox{inf\_object}$ is the base value for object information gain. An object proposal with certainty $1$ will for example be awarded with $\mbox{inf\_object}$ information gain, a cell with proposal of certainty $2$, however, will only be awarded $\mbox{inf\_object}/2$.
+The idea is here that object proposals with low certainty are worth more to look at, to increase the certainty.
+
+\subsubsection{Combination of Frontier and sampling-based exploration}
+This method combines frontier exploration and sampling-based exploration using obstacles.
+Until the whole room is explored the frontier exploration method is used after that the sampling-based exploration takes over. 
+The goal of this method is to overcome the limitation of frontier exploration, but exploit the positive behavior of frontier exploration to find a good sequence of views which allow to look at least once at all areas of the environment.
 
 \subsection{Navigation}
 For navigation we use the \textit{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
-It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been made public.
+It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
 
 \section{Analysis}
 \label{Analysis}
@@ -225,6 +299,7 @@ It requires the current robot position approximation, sensor transforms and sens
 
 \subsection{Experimental setups}
 \subsection{Metrics}
+what does time include
 \subsection{Results}
 
 \section{Conclusion}

@@ -1,23 +1,23 @@
 %!TEX root = ../final_report.tex
 
-\subsubsection{Building the proposal point cloud}
-\label{sssec:building_proposal_point_cloud}
+% \subsubsection{Building the proposal point cloud}
+% \label{sssec:building_proposal_point_cloud}
 
-The 2D object proposals are next projected into 3D.
-For each pixel which is part of the 2D proposal, we use the known geometry of the camera to project a ray from the Kinect's optical centre through the centre of the pixel and out into the world.
-The value from the corresponding pixel in the Kinect's rectified depth map tells us how far along this ray the nearest surface is, thus giving us a point in 3D space which lies on the surface of our object candidate.
+% The 2D object proposals are next projected into 3D.
+% For each pixel which is part of the 2D proposal, we use the known geometry of the camera to project a ray from the Kinect's optical centre through the centre of the pixel and out into the world.
+% The value from the corresponding pixel in the Kinect's rectified depth map tells us how far along this ray the nearest surface is, thus giving us a point in 3D space which lies on the surface of our object candidate.
 
-\subsubsection{Clustering the point cloud}
+% \subsubsection{Clustering the point cloud}
 
-An issue which we discovered during the implementation phase was that the projection just described in \ref{sssec:building_proposal_point_cloud} has a certain amount of error.
-Because of this error, the pixels on the outer edge of the 2D candidate would often be projected not onto the object surface but past it, meaning points on the wall or floor beyond the object would be included in the candidate point cloud (see figure\todo{FIGURE}). 
+% An issue which we discovered during the implementation phase was that the projection just described in \ref{sssec:building_proposal_point_cloud} has a certain amount of error.
+% Because of this error, the pixels on the outer edge of the 2D candidate would often be projected not onto the object surface but past it, meaning points on the wall or floor beyond the object would be included in the candidate point cloud (see figure\todo{FIGURE}). 
 
-We first attempted to overcome this difficulty by simply eroding the outermost ring of pixels from the 2D candidate before performing the projection.
-However, we found that this only reduced the problem rather than solving it completely, and eroding more than a single ring of pixels from the 2D candidate resulted in an unacceptable distortion of the candidate's shape\todo{Make this sentence better}.
+% We first attempted to overcome this difficulty by simply eroding the outermost ring of pixels from the 2D candidate before performing the projection.
+% However, we found that this only reduced the problem rather than solving it completely, and eroding more than a single ring of pixels from the 2D candidate resulted in an unacceptable distortion of the candidate's shape\todo{Make this sentence better}.
 
-In our final system, we project the entire 2D candidate and then perform Euclidean clustering on the resulting point cloud to remove outliers.
-\todo{Fuller description}
-\todo{References}
+% In our final system, we project the entire 2D candidate and then perform Euclidean clustering on the resulting point cloud to remove outliers.
+% \todo{Fuller description}
+% \todo{References}
 
 \subsubsection{Integration of point cloud into map}
 
