@@ -1,6 +1,7 @@
 digraph G {
-  graph [fontname = "Helvetica-Oblique", fontsize = 36];
-  node [color = white, style = filled];
+  graph [fontname = "Helvetica-Oblique", rankdir=UD];
+  node [color = white, fontsize = 21, style = filled];
+  edge [fontsize = 21]
   "Mobile platform" [color = salmon];
   "RGB-D camera" [color = cyan];
 	"Mobile platform" -> "RGB-D camera";
@@ -19,7 +20,7 @@ digraph G {
 	"Proposal point cloud" [color = burlywood];
 	"Depth image" -> "Proposal point cloud";
 	"Laserscan" -> "SLAM";
-	"2D Object proposals" [color = firebrick];
+	"2D Object proposals" [color = burlywood];
 	"RGB image" -> "2D Object proposals";
 	"SLAM" [color = darkolivegreen3];
 	"2D occupancy grid" [color = darkolivegreen3];
@@ -29,13 +30,13 @@ digraph G {
 	"2D Object proposals" -> "Proposal point cloud";
 	"Point cloud clustering" [color = burlywood];
 	"Proposal point cloud" -> "Point cloud clustering";
-	"3D map with object proposals" [color = steelblue3];
+	"3D map with object proposals" [color = burlywood];
 	"Point cloud clustering" -> "3D map with object proposals" [label = " projection"];
 	"Estimate of robot pose" -> "3D map with object proposals";
 	"NBV planning" [color = darkorchid1];
 	"3D map with object proposals" -> "NBV planning";
 	"2D occupancy grid" -> "NBV planning";
-  "Navigation" [color = salmon];
+  "Navigation" [color = steelblue3];
 	"NBV planning" -> "Navigation";
 	"2D occupancy grid" -> "Navigation";
 	"Estimate of robot pose" -> "Navigation";
