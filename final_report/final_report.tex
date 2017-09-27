@@ -17,42 +17,8 @@
 
 \section{Introduction}
 \label{Introduction}
-%Introduction, which describes the motivation and goal of your project. Describe how your project is connected to existing literature. Include references to scientific papers that are relevant to your topic. Do not copy your text from the intermediate report. Revise and rewrite according to the feedback you got and what the actual outcome of the project was.
 
-In this final report of our project, we want to present our system, how it works, how it changed during the development, and how it performs.
-The goal we had for our project was to develop an autonomous robot that is able to find areas corresponding to objects in its environment.
-For autonomous systems in the future it is desirable that they are able to solve everyday life tasks of humans.
-Since almost every meaningful everyday life task of humans contains interaction with at least some object of the environment, it is important that robots are able to find and use objects.
-One of the first steps for this is object detection, which allows the robot to filter out relevant parts of its environment which are likely to correspond to an actual object. Having a model of nearby object positions and shapes could then allow the robot to go through this internal list and search for an object that might help him for his current task.
-When a robot is visiting a place for the first time it might be a good idea to explore this room to create such a list of available objects.
-This is the situation and the task that we want to solve with our system.
-To be able to do this, it is necessary to perform simultaneous localization and mapping, detect potential objects in the current view, and to compute the next best view (NBV) which allows to explore the environment.
-
-\begin{figure}
-	\begin{center}
-		\includegraphics[width=1\linewidth]{dot/overview.png} 
-		\caption{Overview of the information flow in the system}
-		\label{fig:overview}
-	\end{center}
-\end{figure}
-
-A general overview of our system is given in Figure \ref{fig:overview}.
-The available input for our computations consists of the odometry from the mobile platform and depth image, colour image, as well as point cloud data from the mounted RGB-D camera. Our SLAM algorithm requires laser scan data and the odometry, therefore we simulate a laser scanner with the point cloud data.
-The SLAM algorithm provides us with an estimate of the robots current pose and a 2D occupancy grid, which is a map of the environment with information about obstacles, free space and unexplored space. 
-A new set of object proposals is computed in our system only at each NBV. The camera data in-between NBV poses are used to improve the map, but not to find further objects.
-Our object proposals are at first generated in 2D from the RGB image, then a corresponding point cloud for the object proposal is generated using the available depth information. To ensure that the object proposal point cloud corresponds to one contiguous volume a clustering algorithm is applied. Further processing is done only on the object proposal point cloud cluster closest to the robot. 
-This point cloud cluster is projected, with help of the estimated robot pose, into a 3D map.
-3D object proposals that already have been integrated into the map previously are updated with the new proposals.
-We try different NBV algorithms, which can work with the information of the robots current pose, the 2D map of the environment, and with knowledge about the approximated object positions.
-As output of each NBV algorithm we receive the next desired robot pose which is then used together with the 2D map and the approximated robot position to navigate the robot.
-
-\medskip
-
-A more detailed description of the implementation of the different parts of our system is given in Section \ref{Implementation}.
-Previously, however, to conclude the introduction we present some existing approaches in the subject of object detection in autonomous robots and then in Section \ref{Theoretical_background} we introduce some of the core methods and concepts used for the implementation of our system.
-In Section \ref{Analysis} we explain the performed experiments and obtained results of them, which allows to access the strengths and weaknesses of the system. In the end Section \ref{Conclusion} concludes this final report with a summary, a short assessment of the changes and learnings we had since the proposal of our project.
-
-\subsection{Related work}
+\input{sections/intro}
 
 \section{Theoretical background}
 \label{Theoretical_background}
