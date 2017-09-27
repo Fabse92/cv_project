@@ -8,14 +8,14 @@ Theoretical background:
 (4.) Particle filter SLAM					     	
 (5.) Euclidean PC clustering				   	
 6. IoR 										              - Fabian - Version 1 
-7. OcTrees									            - Phil
+7. OcTrees									            - Phil - v1
 
 Implementation:
 1. Overview								             	- Fabian - Version 1
 2. SLAM									               	- Fabian - Version 1
 3.Proposal generation
   - 2D part 								            - Fabian - Version 1
-  - 3D part 								            - Phil
+  - 3D part 								            - Phil - v1
 4. NBV planning						          		- Fabian - Version 1
 5. Robot navigation						         	- Fabian - Version 1
 
@@ -25,6 +25,6 @@ Analysis:
 3. Results									            - Fabian
 
 Conclusion
-1. Summary									            -
-2. Reflection								            -
-3. Future work							           	-
+1. Summary									            - Phil
+2. Reflection								            - Phil
+3. Future work							           	- Phil

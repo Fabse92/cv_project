@@ -205,6 +205,11 @@ For each salient blob we find the corresponding segments that have least 30\% ov
 The sum of these segments is the region of the object proposal for this particular salient blob.
 
 \subsubsection{Building the proposal point cloud}
+\label{sssec:building_proposal_point_cloud}
+
+The 2D object proposals are next projected into 3D.
+For each pixel which is part of the 2D proposal, we use the known geometry of the camera to project a ray from the Kinect's optical centre through the centre of the pixel and out into the world.
+The value from the corresponding pixel in the Kinect's rectified depth map tells us how far along this ray the nearest surface is, thus giving us a point in 3D space which lies on the surface of our object candidate.
 
 \subsubsection{Clustering of the proposal point cloud}
 One problem with our approach of finding object proposals in the 2D image with subsequent projection into the third dimension using the available depth information is that imprecise or incorrect 2D object boundaries lead to distorted 3D object proposals.
