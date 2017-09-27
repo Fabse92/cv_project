@@ -1,4 +1,4 @@
-Intro										                - Fabian - Version 1
+Intro										                - Fabian, Phil - v2
 Related work							             	-
 
 Theoretical background:
@@ -20,8 +20,8 @@ Implementation:
 5. Robot navigation						         	- Fabian - Version 1
 
 Analysis:
-1. Setups									              - Fabian
-2. Metrics								            	- Fabian
+1. Setups									              - Fabian - v1
+2. Metrics								            	- Fabian - v1
 3. Results									            - Fabian
 
 Conclusion
