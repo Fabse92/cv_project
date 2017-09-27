@@ -1,10 +1,11 @@
 \documentclass[a4paper,11pt,english]{article}
 \usepackage[english]{babel} 
 \usepackage[T1]{fontenc}    
+\usepackage{lmodern}
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
 \usepackage{hyperref}      
-
+\usepackage{todonotes}
 
 \begin{document}
 
@@ -137,8 +138,10 @@ For each frame that a voxel is not attended its IoR weight decreases and if it r
 
 The integration of this 3D IoR mechanism allowed García et al. to find most of the visible objects in a video while considering only a few object candidates per frame.
 
-\subsection{Building a 3D map with octomap data structure}
-\label{Theoretical_background:Building_a_3Dmap_with_octomap_data_structure}
+\subsection{Building a 3D map with octree data structure}
+\label{Theoretical_background:Building_a_3Dmap_with_octree_data_structure}
+
+\input{sections/octrees}
 
 \section{Implementation}
 \label{Implementation}
@@ -199,10 +202,7 @@ At this point the segments from the Felzenszwalb and Huttenlocher algorithm are 
 For each salient blob we find the corresponding segments that have least 30\% overlap.
 The sum of these segments is the region of the object proposal for this particular salient blob.
 
-\subsubsection{Building the proposal point cloud}
-\subsubsection{Clustering the point cloud}
-\subsubsection{Projection of point cloud into map}
-\subsubsection{Merging and handling of candidates in octomap}
+\input{sections/proposal_generation_3d}
 
 \subsection{NBV planning}
 In our current system five different next best view algorithms are available, which we will describe in their individual parts.

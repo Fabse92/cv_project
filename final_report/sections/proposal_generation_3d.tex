@@ -1,0 +1,42 @@
+%!TEX root = ../final_report.tex
+
+\subsubsection{Building the proposal point cloud}
+\label{sssec:building_proposal_point_cloud}
+
+The 2D object proposals are next projected into 3D.
+For each pixel which is part of the 2D proposal, we use the known geometry of the camera to project a ray from the Kinect's optical centre through the centre of the pixel and out into the world.
+The value from the corresponding pixel in the Kinect's rectified depth map tells us how far along this ray the nearest surface is, thus giving us a point in 3D space which lies on the surface of our object candidate.
+
+\subsubsection{Clustering the point cloud}
+
+An issue which we discovered during the implementation phase was that the projection just described in \ref{sssec:building_proposal_point_cloud} has a certain amount of error.
+Because of this error, the pixels on the outer edge of the 2D candidate would often be projected not onto the object surface but past it, meaning points on the wall or floor beyond the object would be included in the candidate point cloud (see figure\todo{FIGURE}). 
+
+We first attempted to overcome this difficulty by simply eroding the outermost ring of pixels from the 2D candidate before performing the projection.
+However, we found that this only reduced the problem rather than solving it completely, and eroding more than a single ring of pixels from the 2D candidate resulted in an unacceptable distortion of the candidate's shape\todo{Make this sentence better}.
+
+In our final system, we project the entire 2D candidate and then perform Euclidean clustering on the resulting point cloud to remove outliers.
+\todo{Fuller description}
+\todo{References}
+
+\subsubsection{Integration of point cloud into map}
+
+The next step in our pipeline is to convert the candidate point cloud into a volumetric representation and integrate it into our octree-based 3D map.
+% The 3D mapping is handled by the ROS packages \textit{octomap_mapping}\footnote{\url{http://wiki.ros.org/octomap_mapping}} and \textit{octomap_server}\footnote{\url{http://wiki.ros.org/octomap_server}}.
+The octree itself is managed by the OctoMap framework\cite{hornung13octomap}, with ROS integration provided by the ROS package \textit{octomap}\footnote{\url{http://wiki.ros.org/octomap}}.
+Off the shelf, the \textit{octomap} package allows for the incremental creation of a 3D occupancy grid map from point cloud data; our system extends this package to store not just occupancy information but also object candidate labels and certainty information at each node.
+% \todo{Does this need more detail?}
+
+% \subsubsection{Merging and handling of candidates in octomap}
+
+For each point in the point cloud, \textit{octomap} calculates into which voxel the point falls, giving a set of voxels occupied by the new candidate.
+This set of voxels is then compared to the data in the octree to see whether we already believe there to be an object at that location or whether we currently believe that the space is free.
+If at least 95\% of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of 1.\todo{Need to make the labelling process and certainty concept clearer}
+However, if more than 5\% of the voxels in the new candidate are already labelled in the octomap, then the system calculates which existing object candidate the new candidate has the greatest overlap with.\todo{Add that the 5\% threshold comes from Garcia et al?}
+Each voxel in the new candidate set is then updated as follows:
+
+\begin{itemize}
+	\item If the voxel is currently unlabelled, it is assigned the label of the greatest overlap candidate and a certainty of 1.
+	\item If the voxel already has the label of the greatest overlap candidate, its certainty is increased by 1.
+	\item If the voxel has a different label to the greatest overlap label, its certainty is reduced by 1. If this results in a certainty of zero, then it is assigned the greatest overlap label with a certainty of 1.
+\end{itemize}
