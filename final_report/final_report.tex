@@ -254,9 +254,9 @@ Furthermore, unexplored space might contain undiscovered obstacles and objects, 
 For each considered accessible free space cell we compute the sum of the information gain values of the visible cells considering the random orientation at the particular cell and multiply this value with a punishing factor depending on the distance of the cell to the current robot position.
 Overall the information gain score $S$ is computed as:
 \begin{align*}
- S &= (\mbox{sum of information gain})\cdot exp(-c\cdot \mbox{distance})
+ S &= (\mbox{sum of information gain})\cdot exp(-d\cdot \mbox{distance})
 \end{align*}
-Where $c$ is a constant that can be used to adjust how strongly distance is punished. We set $c$ to $0.05$ as it has been done in \cite{surmann2003autonomous}.
+Where $d$ is a constant that can be used to adjust how strongly distance is punished. We set $d$ to $0.05$ as it has been done in \cite{surmann2003autonomous}.
 The NBV is then selected as the cell with corresponding chosen orientation that has the highest information gain score.
 
 One problem that can occur for this NBV method is that the robot is moving close to a group of objects and the robot gets stuck continuously looking at this group of objects since they are close and looking at them is awarded with a lot of information gain score.
@@ -265,17 +265,28 @@ To avoid getting stuck for too long, we implemented an inhibition of return (IoR
 We keep track of an IoR map that is similar to the occupancy grid map.
 For each viewpoint taken, an the value in the IoR map for the obstacle cells the robot looked at is increased by $3$.
 Obstacle cells that have not been looked at decrease their value in the IoR map by $1$.
-For all future information gain scores obstacle cells with an IoR map value higher than $6$ provide no information gain.
+For all future information gain scores obstacle cells with an IoR map value higher than $5$ provide no information gain.
 Therefore, consecutive viewpoints taking a look at the same obstacle group have decreased information gain score, so that at some point the robot should move away from the group.
 
 \subsubsection{Sampling-based exploration using obstacles and object proposals}
+This method is based on the sampling-based exploration using obstacles.
+The difference is that in addition to obstacles the current object proposals are considered as well for the information gain calculation.
+Each visible cell at which currently an object is assumed to be will increase the information gain score and similar as before unexplored cells in front of object proposals will award an additional bonus information gain score.
+The information gain $S_i$ for a cell $i$ with object proposal $j$ depends on the certainty $c_j$ into this proposal:
+\begin{align*}
+ S_i &= \mbox{inf\_object}\cdot 2^{-(c_j-1)}
+\end{align*}
+Where $\mbox{inf\_object}$ is the base value for object information gain. An object proposal with certainty $1$ will for example be awarded with $\mbox{inf\_object}$ information gain, a cell with proposal of certainty $2$, however, will only be awarded $\mbox{inf\_object}/2$.
+The idea is here that object proposals with low certainty are worth more to look at, to increase the certainty.
+
 \subsubsection{Combination of Frontier and sampling-based exploration}
 This method combines frontier exploration and sampling-based exploration using obstacles.
-
+Until the whole room is explored the frontier exploration method is used after that the sampling-based exploration takes over. 
+The goal of this method is to overcome the limitation of frontier exploration, but exploit the positive behavior of frontier exploration to find a good sequence of views which allow to look at least once at all areas of the environment.
 
 \subsection{Navigation}
 For navigation we use the \textit{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
-It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been made public.
+It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
 
 \section{Analysis}
 \label{Analysis}

@@ -16,12 +16,12 @@ Implementation:
 3.Proposal generation
   - 2D part 								            - Fabian - Version 1
   - 3D part 								            - Phil
-4. NBV planning						          		- Fabian
+4. NBV planning						          		- Fabian - Version 1
 5. Robot navigation						         	- Fabian - Version 1
 
 Analysis:
-1. Setups									              - 
-2. Metrics								            	- 
+1. Setups									              - Fabian
+2. Metrics								            	- Fabian
 3. Results									            - Fabian
 
 Conclusion

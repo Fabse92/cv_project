@@ -4,7 +4,7 @@
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find octomap_server)/debug_config.conf"/>
   <arg name="use_sim_time" default="true" />
   <arg name="output" default="screen" />
-  <arg name="method" default="information_gain_with_candidates" />
+  <arg name="method" default="information_gain" />
   <arg name="world" default="testing_room_with_objects.world" />
   <arg name="available_time" default="1500.0" />
   <arg name="inf_obstacle" default="10.0" />
