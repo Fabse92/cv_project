@@ -31,7 +31,7 @@ To be able to do this, it is necessary to perform simultaneous localization and 
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=1\linewidth]{dot/overview.png} 
-		\caption{Overview of the system}
+		\caption{Overview of the information flow in the system}
 		\label{fig:overview}
 	\end{center}
 \end{figure}
@@ -301,10 +301,56 @@ It requires the current robot position approximation, sensor transforms and sens
 \section{Analysis}
 \label{Analysis}
 % Results, which contain the descriptions of the experiments conducted and presents their results.
+In this section we describe the our experiments we conducted for the analysis of our system.
+After explaining the experimental setups, we define the metrics we are measuring during system execution, introduce the experimental parameters and finally the results from our different experimental setups are presented.
 
 \subsection{Experimental setups}
+The experiments are done completely inside the simulation.
+We built two different rooms which are used as environments, they can be seen in Figure \ref{fig:rooms}.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=0.49\textwidth]{src/clustered.png}
+		\includegraphics[width=0.49\textwidth]{src/scattered.png}
+		\caption{Our two tested environments. The left one will be called \textit{clustered objects} and the right one \textit{scattered objects}}
+		\label{fig:rooms}
+	\end{center}
+\end{figure}
+
+In both rooms are $12$ of the larger objects from the YCB object and model set \cite{calli2015benchmarking}.
+On the left is our default room which contains two groups of three objects which are close to each other and therefore has also some larger areas without any object.
+On the right is an alternative room with equally distributed objects. The distance between the objects is here always $1.5$ meters. Both rooms have a size of roughly $7$ by $7$ meters.
+In each of our experiments the robot is spawned in the middle of the room and we define the area which is allowed to be used for view positions. This area is slightly smaller than the room, which means that the walls are not included.
+For the frontier exploration method this area also defines what has to be explored.
+For the sampling based methods information gain is only provided for cells inside the boundaries.
+
+During our first experimental test runs, we noticed that the approximated position through GMapping are strongly diverging from the actual robot position.
+This leads to a lot of problems. It means that the map will become imprecise, the navigation becomes difficult and the projection of object candidates into the map frame is strongly diverging from the actual object position.
+The diverging object proposal projection is the largest problem for our system and prevents us from receiving reasonable results. Therefore, we are running our experiments in default using a \textit{cheat mode}.
+In this mode the actual camera position is provided for the object proposal projection into the map frame, the other parts of the system still have to work with the approximated position.
+
 \subsection{Metrics}
-what does time include
+The evaluation of object proposals happens after each view taken by the robot.
+
+One of the simplest things to measure is the expired time since the beginning of the experiment.
+For our time measurement we are subtracting the time used for the evaluation.
+
+To evaluate the object proposals we use the metrics recall and precision on an object level.
+Recall measures the percentage of available objects found by the system and precision measures the percentage of object proposals that where correct.
+To determine if an object has been correctly found, we determine the object proposal with the largest overlap to it and compute the intersection over union (IoU) between the ground truth object and the proposal.
+If the IoU is above some threshold the proposal is considered as correct.
+The overlap between proposal and ground truth is computed by counting the voxels in the octomap which are occupied by both and from the sum of the overlapping voxels we can compute the overlapping volume.
+
+\subsection{Further experimental parameters}
+Besides which of the two environment to use and activated or deactivated cheat mode there are a couple of more parameters to select or vary for the experiments:
+
+\begin{itemize}
+	\item \textbf{Available time:} The time until the experiment is aborted. This is set to 25 minutes for our experiments.
+	\item \textbf{IoU threshold:} Determines the IoU value necessary for an proposal to be considered correct. The threshold is set to $0.1$ for our experiments.
+	\item \textbf{Information gain parameters:} For the sampling-based exploration methods up to five values determining the information gain per cell have to be set. The default values are: 2 for unexplored cells, 10 for cells containing obstacles, 20 for unexplored cells in front of obstacles, 100 for objects (multiplied with the factor depending on the proposal certainty) and 30 for unexplored cells in front of objects.
+	\item \textbf{Minimal required proposal certainty:} The minimal proposal certainty necessary for an proposal to be considered for the evaluation. All proposals with lower certainty will be ignored. This parameter is per default set to $1$.
+\end{itemize}
+
 \subsection{Results}
 
 \section{Conclusion}
