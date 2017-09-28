@@ -1,5 +1,6 @@
 Intro										                - Fabian, Phil - v2
-Related work							             	-
+Related work							             	- Phil, Fabian
+- how is the work related to our project
 
 Theoretical background:
 1. Saliency-based object discovery			- Fabian - Version 1
@@ -28,3 +29,9 @@ Conclusion
 1. Summary									            - Phil
 2. Reflection								            - Phil
 3. Future work							           	- Phil
+
+
+Other
+- clean up the references
+- write Readme for project github page
+
