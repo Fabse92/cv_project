@@ -285,7 +285,7 @@ We built two different rooms which are used as environments, they can be seen in
 \end{figure}
 
 In both rooms are $12$ of the larger objects from the YCB object and model set \cite{calli2015benchmarking}.
-On the left is our default room which contains two groups of three objects which are close to each other and therefore has also some larger areas without any object.
+On the left is an environment which contains two groups of three objects which are close to each other and therefore has also some larger areas without any object.
 On the right is an alternative room with equally distributed objects. The distance between the objects is here always $1.5$ meters. Both rooms have a size of roughly $7$ by $7$ meters.
 In each of our experiments the robot is spawned in the middle of the room and we define the area which is allowed to be used for view positions. This area is slightly smaller than the room, which means that the walls are not included.
 For the frontier exploration method this area also defines what has to be explored.
@@ -319,6 +319,64 @@ Besides which of the two environment to use and activated or deactivated cheat m
 \end{itemize}
 
 \subsection{Results}
+In the following we present the results from our experiments.
+Each experiment setting was run at least 20 times.
+However, the system is crashing regularly. Most often because the robot thinks he is not able to move anymore.
+In particular the \texttt{random NBV} method leads to many situations in which the robot can not move. Therefore, the \texttt{random NBV} method reached at most 13 views, while others were able to take up to 25 view poses.
+
+At first we shall take a look at the development of recall and precision over the number of views taken.
+This is depicted in Figure \ref{fig:recall_vs_nbv_count} and \ref{fig:precision_vs_nbv_count}.
+Here we take the results from our room with scattered objects. Recall and precision curves are of similar shape but with slightly lower values overall for the room with some clustered objects.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/Plots/recall_vs_nbv_count_scattered.png}
+		\caption{Development of recall for all our NBV methods}
+		\label{fig:recall_vs_nbv_count}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/Plots/precision_vs_nbv_count_scattered.png}
+		\caption{Development of precision for all our NBV methods}
+		\label{fig:precision_vs_nbv_count}
+	\end{center}
+\end{figure}
+
+The best performing methods are \texttt{SBE (Obs)} and \texttt{FBE plus} which has the highest values for recall and precision.
+They can reach recall values up to $0.75$ and have precision values between $0.25$ and $0.38$.
+From the two graphs it becomes clear that all of the methods which somehow incorporate an information gain measure are more successful than the baseline method \texttt{random NBV}.
+The \texttt{SBE (Obs+Cands)} is performing worse than than \texttt{SBE (Obs)}, our current assumption is that this is, because only about a quarter of objects are correct, thereby the robot gets more distracted from false object assumptions as he gets drawn to correct ones.
+Variations between \texttt{FBE} and \texttt{FBE plus} and the beginning and between \texttt{FBE plus} and \texttt{SBE (Obs)} later occur through random fluctuations during the experiments.
+
+In Figures \ref{fig:recall_vs_nbv_count_settings} and \ref{fig:precision_vs_nbv_count_settings} a couple of different settings for the information gain parameters of our SBE methods are visualized in their effect on recall and precision.
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/Plots/setting__recall_vs_nbv_count.png}
+		\caption{Recall values for different information gain parameter settings}
+		\label{fig:recall_vs_nbv_count_settings}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/Plots/setting__precision_vs_nbv_count.png}
+		\caption{Precision values for different information gain parameter settings}
+		\label{fig:precision_vs_nbv_count_settings}
+	\end{center}
+\end{figure}
+
+In Figure \ref{fig:nbv_count_vs_time} the average time required to perform a certain number of views can be seen. 
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1\textwidth]{src/Plots/nbv_count_vs_time.png}
+		\caption{Time used per view taken for all methods}
+		\label{fig:nbv_count_vs_time}
+	\end{center}
+\end{figure}
 
 \section{Conclusion}
 \label{Conclusion}

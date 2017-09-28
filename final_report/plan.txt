@@ -1,6 +1,6 @@
 Intro										                - Fabian, Phil - v2
 Related work							             	- Phil, Fabian
-- how is the work related to our project
+- how is the work related to our project-
 
 Theoretical background:
 1. Saliency-based object discovery			- Fabian - Version 1
@@ -32,6 +32,8 @@ Conclusion
 
 
 Other
-- clean up the references
-- write Readme for project github page
-
+- clean up the references               -
+- write Readme for project github page  - Fabian
+- ROS package names with typewriter font-
+- legend for colors in flow chart       - 
+- use abbreviations for methods in text and plots - Fabian
