@@ -1,0 +1,88 @@
+%!TEX root = ../final_report.tex
+
+%Conclusions, which summarizes the work that was done and the results obtained, and gives suggestions for future work. \textbf{Most importantly}, include a section that contrasts the actual outcome of the project to the plan you submitted: what was planned, what was actually achieved, what were the main reasons for the actual outcome, what you consider you have learned during the project, etc.
+
+\subsection{Summary}
+
+\subsection{Reflection}
+
+Looking back on the aims from our initial project proposal, we have achieved everything that we intended, with the minor exception that we did not implement the ``table scenario'' in which objects were positioned on a table and the robot moved around the table to its next best viewpoints, but rather skipped straight to the more complex ``scattered objects scenario'', which we initially planned only as an extension goal.
+This was done partly because we felt that restricting the next best view poses to a circle around the table constrained the problem too much and would make it hard to meaningfully assess our different NBV algorithms, and partly because the table scenario turned out to be significantly harder to implement in the simulation environment\todo{Is this actually true?} while not requiring any less implementation work on the robot system.
+Accordingly, we focussed our efforts on the more challenging and interesting scenario.
+We also achieved our second extension goal of implementing and comparing several different NBV algorithms.
+
+Comparing our actual implementation to the plan we laid out in the intermediate report, we see some significant differences where we discovered during the implementation phase that our original plans needed to be adjusted.
+
+\paragraph{Robot battery life} % (fold)
+\label{par:robot_battery_life}
+
+We originally conceived of making our NBV calculations and termination conditions dependent on the robot's remaining battery power.
+However, given that our maximum experiment duration was \SI{25}{\minute} and the robot's battery life is several hours, we judged this criterion to be largely superfluous.
+Also, performing our experiments in simulation meant that we could bypass the issue of battery life altogether.
+
+% paragraph paragraph_name (end)
+
+\paragraph{Exploration methods} % (fold)
+\label{par:exploration_methods}
+
+The sampling-based exploration method derived from Surmann et al. \cite{surmann2003autonomous} was significantly revised during the implementation.
+The input to Surmann et al.'s system is purely points in continuous space, detected by a laser range finder, which are assumed to lie on object surfaces.
+In our system by contrast, by the time we come to calculate our next best view we already have a discretized occupancy grid which explicitly tells us about unknown, free and occupied space.
+\todo{Complete this}
+
+% paragraph exploration_methods (end)
+
+\paragraph{Additional modules} % (fold)
+\label{par:additional_modules}
+
+Some unanticipated problems emerged during the implementation phase which required us to implement several extra elements in the system over and above our original plans:
+
+\begin{itemize}
+	\item The poor performance of the gmapping SLAM system made it necessary to implement the cheat mode in order to get any sensible test results.
+	\item The ``rays'' resulting from errors in the 3D projection necessitated the implementation of the point cloud clustering algorithm.
+	\item The IoR mechanism became necessary when we found in our early tests that the robot would often take several successive views of the same object(s) rather than trying to explore the whole space.
+	\item The unexpectedly good performance of the method using frontier-based exploration led us to implement the ``frontier\_plus'' method\todo{Where is this actually explained in the report?}, in which the robot initially uses frontier-based exploration and then switches to information gain\todo{Or information gain with candidates?} once the whole room has been discovered.
+	\item We originally discussed and then discarded the idea of implementing a random NBV method, only to find during the implementation that it would actually be a useful baseline measure.
+	\todo{Is this detailed enough?}
+\end{itemize}
+
+% % paragraph additional_modules (end)
+
+% \paragraph{evaluation} % (fold)
+% \label{par:evaluation}
+
+
+
+% % paragraph evaluation (end)
+
+\subsection{Future work}
+
+If we were to start this project again now, the main thing which we would do differently would be to pay more attention to the SLAM problem, because our finished implementation is severely limited by the poor performance of gmapping's SLAM.
+In our tests, gmapping had a localization error of as much as a meter in simulation and performed even worse in real world tests, due to the point cloud from the real world Kinect (and thus also the simulated laser scan generated from said point cloud) being so much noisier.
+
+We originally chose to use gmapping because it is lightweight, allowing us to devote more computational resources to object discovery and NBV, and because it is simple to implement and get running.
+However, we did not take into account that the localization accuracy of our own object candidates would be strongly dependent on the quality of the robot localization.
+Given this realization, it would make more sense to use a SLAM system which is tailor-made for RGBD input; one such system which is already implemented for ROS\footnote{\url{http://wiki.ros.org/rgbdslam}} is \texttt{rgbdslam\_v2} from Endres et al. \cite{endres2014rgbdslam}.
+Switching to a SLAM system which achieves a better localization accuracy would be the most significant single improvement which could be made to our system.
+
+In our intermediate report, we considered several possible extensions to the system:
+\begin{itemize}
+	\setlength\itemsep{1pt}
+	\item using depth information for the computation of object candidates;
+	\item using heuristics to estimate the shape of unseen areas of objects;
+	\item implementing a POMDP-based NBV algorithm.
+\end{itemize}
+
+All three of these extensions remain open.
+The point cloud clustering step in our implemented system does implicitly use depth information, but depth information could be more explicitly applied e.g. by including it in the saliency system.
+
+One drawback of using a saliency-based object detection system is that the saliency of a part of an image is always relative to the overall saliency of that particular image.
+In other words, in a mostly featureless image, even small features become highly salient.
+In our testing environment, the consequence of this is that if the agent takes an image which does not include any objects but only the wall and floor, then a textured area of the wall can become salient enough in comparison to the rest of the image to be detected as an object candidate.
+Experimenting with different threshold values for the absolute saliency required for an area to qualify as a candidate did not yield a satisfactory way of avoiding this.
+
+
+- evaluation
+   - more testing
+   - parameter tuning
+

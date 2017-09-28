@@ -31,12 +31,12 @@ Off the shelf, the \textit{octomap} package allows for the incremental creation 
 
 For each point in the point cloud, \textit{octomap} calculates into which voxel the point falls, giving a set of voxels occupied by the new candidate.
 This set of voxels is then compared to the data in the octree to see whether we already believe there to be an object at that location or whether we currently believe that the space is free.
-If at least 95\% of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of 1.\todo{Need to make the labelling process and certainty concept clearer}
+If at least 95\% of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of \num{1}.\todo{Need to make the labelling process and certainty concept clearer}
 However, if more than 5\% of the voxels in the new candidate are already labelled in the octomap, then the system calculates which existing object candidate the new candidate has the greatest overlap with.\todo{Add that the 5\% threshold comes from Garcia et al?}
 Each voxel in the new candidate set is then updated as follows:
 
 \begin{itemize}
-	\item If the voxel is currently unlabelled, it is assigned the label of the greatest overlap candidate and a certainty of 1.
-	\item If the voxel already has the label of the greatest overlap candidate, its certainty is increased by 1.
-	\item If the voxel has a different label to the greatest overlap label, its certainty is reduced by 1. If this results in a certainty of zero, then it is assigned the greatest overlap label with a certainty of 1.
+	\item If the voxel is currently unlabelled, it is assigned the label of the greatest overlap candidate and a certainty of \num{1}.
+	\item If the voxel already has the label of the greatest overlap candidate, its certainty is increased by \num{1}.
+	\item If the voxel has a different label to the greatest overlap label, its certainty is reduced by \num{1}. If this results in a certainty of zero, then it is assigned the greatest overlap label with a certainty of \num{1}.
 \end{itemize}

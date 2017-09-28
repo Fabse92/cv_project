@@ -7,12 +7,13 @@
 \usepackage{hyperref}
 \usepackage{todonotes}
 \usepackage{amsmath}
+\usepackage{siunitx}
 
 \begin{document}
 
 \title{Active strategies for object discovery}
 \author{Phil Bradfield \and Jan Fabian Schmid}
-	
+
 \maketitle 
 
 \section{Introduction}
@@ -321,30 +322,8 @@ Besides which of the two environment to use and activated or deactivated cheat m
 
 \section{Conclusion}
 \label{Conclusion}
-%Conclusions, which summarizes the work that was done and the results obtained, and gives suggestions for future work. \textbf{Most importantly}, include a section that contrasts the actual outcome of the project to the plan you submitted: what was planned, what was actually achieved, what were the main reasons for the actual outcome, what you consider you have learned during the project, etc.
 
-\subsection{Summary}
-\subsection{Reflections}
-
-Things planned that we did not achieve:\\
-- we wanted to make the NBV computation and the termination dependent on the available energy\\
-- we had the table scenario where the robot is moving around a table, but it did not really make sense anymore later\\
-- we did not implement any of our project extensions (the consideration of depth information is somewhat contained in the proposal point cloud clustering)\\
-
-Things that changed from our original plan:\\
-- the Surmann/sampling-based method has changed. Instead of lines we are directly working with explored and unexplored cells\\
-
-Things we realized during the implementation would be necessary:\\
-- IoR mechanism for obstacles to avoid getting stuck looking at them\\
-- proposal point cloud clustering\\
-- cheat mode :/\\
-- the frontier\_plus method, because we thought frontier would perform much worse\\
-- the random NBV method
-
-\subsection{Future work}
-some way of detecting if an object proposal is actually only a part of the wall (or something else)\\
-heuristics which make assumptions about the unseen parts of an object\\
-use a better SLAM algorithm!
+\input{sections/conclusion}
 
 \newpage
 \bibliographystyle{plain}
