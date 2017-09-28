@@ -46,14 +46,18 @@ Some unanticipated problems emerged during the implementation phase which requir
 	\todo{Is this detailed enough?}
 \end{itemize}
 
-% % paragraph additional_modules (end)
+% paragraph additional_modules (end)
 
-% \paragraph{evaluation} % (fold)
-% \label{par:evaluation}
+Another thing which surprised us during the project was the time and effort required to create a structure within which we could meaningfully evaluate the system, and then to run the evaluation itself.
+By using the YCB object set we saved ourselves from having to physically scan objects, but importing the objects into the Gazebo simulation environment was less straightforward than we expected.
+For each object, a mesh and a point cloud is provided, and we used the mesh in the simulation environment and the corresponding point cloud as our ground truth.
+However, we discovered that the mesh and the point cloud are not in the same coordinate system, so we had to manually specify a transform for each ground truth in order to ensure that it lined up correctly with what was in the environment.
+Additionally, measuring volumes and overlaps in the octomap turned out to be less trivial than we initially believed.
 
-
-
-% % paragraph evaluation (end)
+The runtime for our tests is also an issue. Because the simulation runs in real time, each run can take up to \SI{25}{\minute}.
+Given that we had many different parameters and methods to test, and that we needed to test each scenario as many times as possible in order to limit the effects of random variation, this meant that simply generating results of a sufficient quality took a very long time.
+It also restricted our ability to tune the many parameters which our system contains; some parameters, e.g. the \SI{5}{\percent} overlap threshold for deciding whether to merge an incoming candidate into an existing candidate or to create a new one for it (see section \ref{sssec:point_cloud_into_octomap}) were taken directly from the literature and we did not have time to thoroughly explore whether we could optimize these values for our system.
+Although our planning and timetabling was generally realistic, the evaluation is one phase where we should have planned in significantly more time.
 
 \subsection{Future work}
 
@@ -62,7 +66,7 @@ In our tests, gmapping had a localization error of as much as a meter in simulat
 
 We originally chose to use gmapping because it is lightweight, allowing us to devote more computational resources to object discovery and NBV, and because it is simple to implement and get running.
 However, we did not take into account that the localization accuracy of our own object candidates would be strongly dependent on the quality of the robot localization.
-Given this realization, it would make more sense to use a SLAM system which is tailor-made for RGBD input; one such system which is already implemented for ROS\footnote{\url{http://wiki.ros.org/rgbdslam}} is \texttt{rgbdslam\_v2} from Endres et al. \cite{endres2014rgbdslam}.
+Given this realization, it would make more sense to use a SLAM system which is tailor-made for RGB-D input; one such system which is already implemented for ROS is \texttt{rgbdslam\_v2}\footnote{\url{http://wiki.ros.org/rgbdslam}} from Endres et al.\cite{endres2014rgbdslam}.
 Switching to a SLAM system which achieves a better localization accuracy would be the most significant single improvement which could be made to our system.
 
 In our intermediate report, we considered several possible extensions to the system:
@@ -79,10 +83,7 @@ The point cloud clustering step in our implemented system does implicitly use de
 One drawback of using a saliency-based object detection system is that the saliency of a part of an image is always relative to the overall saliency of that particular image.
 In other words, in a mostly featureless image, even small features become highly salient.
 In our testing environment, the consequence of this is that if the agent takes an image which does not include any objects but only the wall and floor, then a textured area of the wall can become salient enough in comparison to the rest of the image to be detected as an object candidate.
-Experimenting with different threshold values for the absolute saliency required for an area to qualify as a candidate did not yield a satisfactory way of avoiding this.
 
-
-- evaluation
-   - more testing
-   - parameter tuning
+Experimenting with different threshold values for the absolute saliency required for an area to qualify as a candidate did not yield a satisfactory way of avoiding this without also excluding a large number of genuine candidates.
+An alternative solution could be to implement some kind of further heuristic which excludes these kind of candidates, such as placing a limit on candidate size or by detecting and excluding large, flat candidates.
 
