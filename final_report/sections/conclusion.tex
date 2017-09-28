@@ -4,10 +4,17 @@
 
 \subsection{Summary}
 
+The project successfully achieved its aim of developing a system for object discovery on a mobile robot and using it to test NBV algorithms.
+As well as the NBV algorithms themselves, modules were developed for object candidate detection in 2D and for projection of the 2D candidates into 3D; these were combined with off-the-shelf solutions for SLAM, navigation and robot control.
+The experiments were performed in simulation to allow us to fully control the environment and automate the testing process.
+The system was also shown to work on a real robot, however the input which the system received from the real Kinect was too noisy for the SLAM system to cope with, which meant the system could not effectively map and navigate a real world environment for more than a couple of minutes before the navigation module failed.
+\todo{Include a couple of sentences summarizing the results}
+
 \subsection{Reflection}
+\label{ssec:reflection}
 
 Looking back on the aims from our initial project proposal, we have achieved everything that we intended, with the minor exception that we did not implement the ``table scenario'' in which objects were positioned on a table and the robot moved around the table to its next best viewpoints, but rather skipped straight to the more complex ``scattered objects scenario'', which we initially planned only as an extension goal.
-This was done partly because we felt that restricting the next best view poses to a circle around the table constrained the problem too much and would make it hard to meaningfully assess our different NBV algorithms, and partly because the table scenario turned out to be significantly harder to implement in the simulation environment\todo{Is this actually true?} while not requiring any less implementation work on the robot system.
+This was done partly because we felt that restricting the next best view poses to a circle around the table constrained the problem too much and would make it hard to meaningfully assess our different NBV algorithms, and partly because the table scenario turned out to be harder to implement: we would have needed everything that we developed for the scattered object scenario, with the added complication of having separate maps for navigation (the floor) and object discovery (the tabletop).
 Accordingly, we focussed our efforts on the more challenging and interesting scenario.
 We also achieved our second extension goal of implementing and comparing several different NBV algorithms.
 
