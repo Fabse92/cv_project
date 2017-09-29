@@ -231,53 +231,61 @@ One of these cells is randomly selected and forms together with a random orienta
 
 \subsubsection{Frontier-based exploration (\texttt{FBE})}
 Our NBV method based on frontier exploration (see section \ref{Theoretical_background:Frontier-based_exploration}) performs frontier exploration as it has been implemented in the \texttt{frontier\_exploration} ROS package\footnote{\url{http://wiki.ros.org/frontier_exploration}}.
-The next best view pose is computed as the centroid of the closest frontier to the current position with an orientation that corresponds to the continued line between the start position and the centroid of the closest frontier.
+The next best view pose is computed as the centroid of the frontier closest to the current position, with an orientation that corresponds to the continued line between the start position and the centroid of the closest frontier.
 One essential flaw of this NBV method is that it works only until the environment has been completely discovered.
 
 \subsubsection{Sampling-based exploration using obstacles (\texttt{SBE(Obs)})}
-For this NBV method we use sampling-based exploration as described in Section \ref{Theoretical_background:Sampling-based_exploration}.
-Here all accessible free space cells closer than $2$ meters and further than $20$ centimeters are considered as potential next best view position.
-For each of these cells a random orientation is selected and all cells are found which are closer than $3$ meters and can be seen when the robot is looking in the selected orientation at this particular cell. This considers obstacles, therefore cells behind obstacles do not count as visible. %This is done by computing the part of a $3$ meter radius circle with center point corresponding to the selected orientation and an total angle that corresponds to the camera opening angle. Subsequently, for each pixel of the edge 
+For this NBV method we use sampling-based exploration as described in section \ref{Theoretical_background:Sampling-based_exploration}.
+Here all accessible free space cells between \num{20}~centimeters and \num{2}~meters from the robot are considered as potential next best view positions.
+For each of these cells a random orientation is selected and all cells are found which are within \num{3}~meters of the viewpoint cell and visible from it in the selected orientation.
+This considers occlusions, so cells behind known obstacles do not count as visible.
+%This is done by computing the part of a $3$ meter radius circle with center point corresponding to the selected orientation and an total angle that corresponds to the camera opening angle. Subsequently, for each pixel of the edge 
+
 Each visible cell can contribute to the information gain at the potential viewpoint.
 If a visible cell is part of the unexplored space or is an obstacle the information gain increases. Unexplored cells in front of an obstacle contribute an additional information gain bonus.
 The idea is here that obstacles might correspond to objects and are therefore worth looking at.
 Furthermore, unexplored space might contain undiscovered obstacles and objects, and an unexplored cell directly besides an obstacle has a high probability to be also part of this obstacle.
-For each considered accessible free space cell we compute the sum of the information gain values of the visible cells considering the random orientation at the particular cell and multiply this value with a punishing factor depending on the distance of the cell to the current robot position.
+For each considered view pose we compute the sum of the information gain values of the visible cells and multiply this value by a punishing factor which increases as the distance from the robot to the view point increases.
 Overall the information gain score $S$ is computed as:
 \begin{align*}
  S &= (\mbox{sum of information gain})\cdot exp(-d\cdot \mbox{distance})
 \end{align*}
-Where $d$ is a constant that can be used to adjust how strongly distance is punished. We set $d$ to $0.05$ as it has been done in \cite{surmann2003autonomous}.
-The NBV is then selected as the cell with corresponding chosen orientation that has the highest information gain score.
+Where $d$ is a constant that can be used to adjust how strongly distance is punished. We set $d$ to \num{0.05} as it has been done in \cite{surmann2003autonomous}.
+The NBV is then selected as the pose which has the highest information gain score.
 
-One problem that can occur for this NBV method is that the robot is moving close to a group of objects and the robot gets stuck continuously looking at this group of objects since they are close and looking at them is awarded with a lot of information gain score.
-This is partly a desired behavior since multiple viewpoints on the same objects are necessary to increase the object proposal quality. However, if the robot gets stuck he will not find all objects distributed in the room.
-To avoid getting stuck for too long, we implemented an inhibition of return (IoR) behavior. This concept has been introduced in Section \ref{Theoretical_background:IoR mechanism_to_guide_attention}.
+One problem that can occur using this NBV method is that the robot moves close to a group of objects and gets stuck continuously looking at this group of objects since they are close and looking at them is awarded with a lot of information gain score.
+This is partly a desired behavior since multiple viewpoints on the same objects are necessary to increase the object proposal quality.
+However, if the robot gets stuck he will not find all objects distributed in the room.
+To avoid getting stuck for too long, we implemented an inhibition of return (IoR) behavior.
+This concept has been introduced in section \ref{Theoretical_background:IoR mechanism_to_guide_attention}.
+
 We keep track of an IoR map that is similar to the occupancy grid map.
-For each viewpoint taken, an the value in the IoR map for the obstacle cells the robot looked at is increased by $3$.
-Obstacle cells that have not been looked at decrease their value in the IoR map by $1$.
-For all future information gain scores obstacle cells with an IoR map value higher than $5$ provide no information gain.
-Therefore, consecutive viewpoints taking a look at the same obstacle group have decreased information gain score, so that at some point the robot should move away from the group.
+For each viewpoint taken, the value in the IoR map for the obstacle cells the robot looked at is increased by \num{3}.
+Obstacle cells that have not been looked at decrease their value in the IoR map by \num{1}.
+For all future information gain scores obstacle cells with an IoR map value higher than \num{5} provide no information gain.
+Therefore, consecutive viewpoints looking at the same obstacle group have decreased information gain score, so that at some point the robot should move away from the group.
 
 \subsubsection{Sampling-based exploration using obstacles and object candidates (\texttt{SBE(Obs+Cands)})}
-This method is based on \texttt{SBE (obs)}.
-The difference is that in addition to obstacles the current object candidates are considered as well for the information gain calculation.
-Each visible cell at which currently an object is assumed to be will increase the information gain score and similar as before unexplored cells in front of object candidates will award an additional bonus information gain score.
+This method is based on \texttt{SBE(Obs)}.
+The difference is that in addition to obstacles, the current object candidates are also considered in the information gain calculation.
+Each visible cell at which an object is currently assumed to be will increase the information gain score and as before unexplored cells in front of object candidates will award an additional bonus information gain score.
 The information gain $S_i$ for a cell $i$ with object candidate $j$ depends on the certainty $c_j$ into this candidate:
 \begin{align*}
- S_i &= \mbox{inf\_object}\cdot 2^{-(c_j-1)}
+ S_i &= \textit{inf\_object}\cdot 2^{-(c_j-1)}
 \end{align*}
-Where $\mbox{inf\_object}$ is the base value for object information gain. An object candidate with certainty $1$ will for example be awarded with $\mbox{inf\_object}$ information gain, a cell with candidate of certainty $2$, however, will only be awarded $\mbox{inf\_object}/2$.
+where \textit{inf\_object} is the base value for object information gain.
+For example, an object candidate with certainty \num{1} will be awarded with $\textit{inf\_object}$ information gain.
+A cell with candidate of certainty \num{2}, however, will only be awarded $\textit{inf\_object}/2$.
 The idea is here that object candidates with low certainty are worth more to look at, to increase the certainty.
 
 \subsubsection{Combination of frontier and sampling-based exploration (\texttt{FBE plus})}
-This method combines \texttt{FBE} and \texttt{SBE(obs)}.
-Until the whole room is explored the frontier exploration method is used after that the sampling-based exploration takes over. 
-The goal of this method is to overcome the limitation of frontier exploration, but exploit the positive behavior of frontier exploration to find a good sequence of views which allow to look at least once at all areas of the environment.
+This method combines \texttt{FBE} and \texttt{SBE(Obs)}.
+The frontier exploration method is used until the whole room is explored and then the sampling-based exploration takes over. 
+The goal of this method is to overcome the limitation of frontier exploration that it only works for as long as there is unknown space in the map, but exploit the positive aspect that it finds a sequence of views which quickly looks at least once at all areas of the environment.
 
 \subsection{Navigation}
 For navigation we use the \texttt{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
-It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
+It requires the current robot position estimate, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
 
 \section{Analysis}
 \label{Analysis}
