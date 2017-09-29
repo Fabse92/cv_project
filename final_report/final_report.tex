@@ -120,7 +120,7 @@ The general structure of our system has been introduced in Section \ref{Introduc
 We have mostly developed our system inside a physics simulation (Gazebo \footnote{\url{http://gazebosim.org/}}), however we transferred the system with slight adjustments onto a real Pioneer robot as well.
 In the following we will explain how the different parts in Figure \ref{fig:overview} have been implemented. If the simulated and real version are diverging we will point that out in the respective system part description.
 The system is fully developed with the Robot Operating System (ROS \footnote{\url{http://www.ros.org/}}) in the Indigo version, therefore each part of the system consists of one or multiple ROS nodes and services.
-The code for our system can be found online \footnote{\url{https://github.com/Fabse92/cv_project}}.
+The code for our system can be found online \footnote{\url{https://github.com/JanFabianSchmid/NBV-planning-for-object-detection}}.
 
 \subsection{Mobile platform}
 As mobile platform we used a Pioneer P3DX. This robot is providing a first estimate for its own position in form of odometry based on the previous motor control. Mounted onto the platform is a Kinect camera \footnote{\url{https://developer.microsoft.com/en-us/windows/kinect}}. In case of the real version we put the camera on top of the platform, in the physics simulation we are free of physical bounds and put the camera slightly lower in front of the robot to accommodate for our experimental setup in which objects are lying scattered on the floor.

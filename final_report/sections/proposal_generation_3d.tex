@@ -23,14 +23,14 @@
 \label{sssec:point_cloud_into_octomap}
 
 The next step in our pipeline is to convert the candidate point cloud into a volumetric representation and integrate it into our octree-based 3D map.
-% The 3D mapping is handled by the ROS packages \textit{octomap_mapping}\footnote{\url{http://wiki.ros.org/octomap_mapping}} and \textit{octomap_server}\footnote{\url{http://wiki.ros.org/octomap_server}}.
-The octree itself is managed by the OctoMap framework\cite{hornung13octomap}, with ROS integration provided by the ROS package \textit{octomap}\footnote{\url{http://wiki.ros.org/octomap}}.
-Off the shelf, the \textit{octomap} package allows for the incremental creation of a 3D occupancy grid map from point cloud data; our system extends this package to store not just occupancy information but also object candidate labels and certainty information at each node.
+% The 3D mapping is handled by the ROS packages \texttt{octomap_mapping}\footnote{\url{http://wiki.ros.org/octomap_mapping}} and \texttt{octomap_server}\footnote{\url{http://wiki.ros.org/octomap_server}}.
+The octree itself is managed by the OctoMap framework\cite{hornung13octomap}, with ROS integration provided by the ROS package \texttt{octomap}\footnote{\url{http://wiki.ros.org/octomap}}.
+Off the shelf, the \texttt{octomap} package allows for the incremental creation of a 3D occupancy grid map from point cloud data; our system extends this package to store not just occupancy information but also object candidate labels and certainty information at each node.
 % \todo{Does this need more detail?}
 
 % \subsubsection{Merging and handling of candidates in octomap}
 
-For each point in the point cloud, \textit{octomap} calculates into which voxel the point falls, giving a set of voxels occupied by the new candidate.
+For each point in the point cloud, \texttt{octomap} calculates into which voxel the point falls, giving a set of voxels occupied by the new candidate.
 This set of voxels is then compared to the data in the octree to see whether we already believe there to be an object at that location or whether we currently believe that the space is free.
 If at least 95\% of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of \num{1}.\todo{Need to make the labelling process and certainty concept clearer}
 However, if more than 5\% of the voxels in the new candidate are already labelled in the octomap, then the system calculates which existing object candidate the new candidate has the greatest overlap with.\todo{Add that the 5\% threshold comes from Garcia et al?}
