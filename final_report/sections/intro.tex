@@ -10,8 +10,8 @@ The first step in this process is object detection, where the robot identifies w
 Having identified these areas, a model of object positions and shapes can be built, which the robot can use e.g. to speed up the search for a specific object which it needs to accomplish its current task or to aid navigation and object interaction.
 
 The goal of the project was to develop software which would allow an autonomous mobile system to efficiently create such a model, starting with no prior knowledge of the objects or the environment.
-Specifically, we were interested in the next best view (NBV) problem: given the currently available knowledge, where should the robot move to next in order to gain the maximum possible increase in knowledge, and thus biuld its model in the shortest possible time?
-The experimental heart of the project was the implementation of several different NBV algorithms and comparing the performance which they achieve.
+Specifically, we were interested in the next best view (NBV) problem: given the currently available knowledge, where should the robot move to next in order to gain the maximum possible increase in knowledge, and thus build its model in the shortest possible time?
+The experimental heart of the project was the implementation of several different NBV algorithms and the evaluation of the performance which they achieve.
 
 % When a robot is visiting a place for the first time it might be a good idea to explore this room to create such a list of available objects.
 % This is the situation and the task that we want to solve with our system.
@@ -20,14 +20,16 @@ The experimental heart of the project was the implementation of several differen
 % Previously, however, to conclude the introduction we present some existing approaches in the subject of object detection in autonomous robots and then in Section \ref{Theoretical_background} we introduce some of the core methods and concepts used for the implementation of our system.
 % In Section \ref{Analysis} we explain the performed experiments and obtained results of them, which allows to access the strengths and weaknesses of the system. In the end Section \ref{Conclusion} concludes this final report with a summary, a short assessment of the changes and learnings we had since the proposal of our project.
 
-In the remainder of this introduction we present first some recent approaches to this problem (section \ref{sub:related_work}) and then a brief overview of the system we developed (section \ref{sub:system_overview}).
+In the remainder of this introduction we present some recent approaches to this problem.
+Section \ref{sec:system_overview} gives a brief, high level overview of the system we developed.
 The report then introduces some of the core theoretical methods and concepts which we used (section \ref{Theoretical_background}) before detailing our implementation (section \ref{Implementation}).
 The results achieved by the system are presented in section \ref{Analysis}, and in section \ref{Conclusion} we conclude the report and offer our reflections on the project.
 
 \subsection{Related work}
 \label{sub:related_work}
 
-Work on the NBV problem often takes place in the context of either pure 3D surface reconstruction, where the aim is to create a full model of an unknown object or scene without prioritising certain areas over others; or in the context of active object recognition, where bottom-up sensory information is combined with top-down knowledge of pre-learned object models.
+Our take on the NBV problem -- as part of a model-free object detection framework -- is a relatively unusual one.
+Work on the NBV problem more often takes place in the context of either pure 3D surface reconstruction, where the aim is to create a full model of an unknown object or scene without prioritising certain areas over others; or in the context of active object recognition, where bottom-up sensory information is combined with top-down knowledge of pre-learned object models.
 Delmerico et al.\cite{delmerico2017nbvsurvey} recently released of survey and comparison of methods in the former field; \cite{xu2016} and \cite{doumanoglou2016} are two examples among many to recently examine the latter problem.
 
 More directly related to our scenario, Monica and Aleotti\cite{monica2017} propose a system for model-free NBV planning on a robot arm, using data from a Kinect camera.
@@ -43,8 +45,8 @@ Our system focuses on object detection and can be used for all kinds of environm
 % The NBV problem has been well considered in the past, but often purely in the context of 3D surface reconstruction.
 % Delmerico et al.\cite{delmerico2017nbvsurvey} present a survey of approaches in this field; these approaches however often constrain the problem by e.g. considering only a single object at a known location or by 
 
-\subsection{System Overview} % (fold)
-\label{sub:system_overview}
+\section{System Overview} % (fold)
+\label{sec:system_overview}
 
 \begin{figure}[ht]
 	\begin{center}

@@ -8,7 +8,8 @@ The project successfully achieved its aim of developing a system for object disc
 As well as the NBV algorithms themselves, modules were developed for object candidate detection in 2D and for projection of the 2D candidates into 3D; these were combined with off-the-shelf solutions for SLAM, navigation and robot control.
 The experiments were performed in simulation to allow us to fully control the environment and automate the testing process.
 The system was also shown to work on a real robot, however the input which the system received from the real Kinect was too noisy for the SLAM system to cope with, which meant the system could not effectively map and navigate a real world environment for more than a couple of minutes before the navigation module failed.
-\todo{Include a couple of sentences summarizing the results}
+Among the NBV algorithms which we implemented, all which used information gain outperformed the random algorithm.
+The best performing was the \texttt{SBE(Obs)} method, with recall of \num{0.75} and precision of \num{0.25} after \num{25} views.
 
 \subsection{Reflection}
 \label{ssec:reflection}
@@ -34,8 +35,8 @@ Also, performing our experiments in simulation meant that we could bypass the is
 
 The sampling-based exploration method derived from Surmann et al. \cite{surmann2003autonomous} was significantly revised during the implementation.
 The input to Surmann et al.'s system is purely points in continuous space, detected by a laser range finder, which are assumed to lie on object surfaces.
-In our system by contrast, by the time we come to calculate our next best view we already have a discretized occupancy grid which explicitly tells us about unknown, free and occupied space.
-\todo{Complete this}
+They do not distinguish between free and unknown space.
+In our system by contrast, by the time we come to calculate our next best view we already have a discretized occupancy grid which explicitly tells us about unknown, free and occupied space, and we use this extra information in our calculations.
 
 % paragraph exploration_methods (end)
 
