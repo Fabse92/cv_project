@@ -32,8 +32,9 @@ Off the shelf, the \textit{octomap} package allows for the incremental creation 
 
 For each point in the point cloud, \textit{octomap} calculates into which voxel the point falls, giving a set of voxels occupied by the new candidate.
 This set of voxels is then compared to the data in the octree to see whether we already believe there to be an object at that location or whether we currently believe that the space is free.
-If at least 95\% of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of \num{1}.\todo{Need to make the labelling process and certainty concept clearer}
-However, if more than 5\% of the voxels in the new candidate are already labelled in the octomap, then the system calculates which existing object candidate the new candidate has the greatest overlap with.\todo{Add that the 5\% threshold comes from Garcia et al?}
+If at least \SI{95}{\percent} of the voxels in the new candidate are currently believed to be free, then the candidate is simply inserted into the map: the octree is updated such that all voxels in the candidate set are assigned the label of the new candidate with a certainty of \num{1}.\todo{Need to make the labelling process and certainty concept clearer}
+However, if more than \SI{5}{\percent} of the voxels in the new candidate are already labelled in the octomap, then the system calculates which existing object candidate the new candidate has the greatest overlap with.
+Setting this threshold at \SI{5}{\percent} follows \cite{garcia2013computational}.
 Each voxel in the new candidate set is then updated as follows:
 
 \begin{itemize}
