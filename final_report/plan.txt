@@ -23,17 +23,16 @@ Implementation:
 Analysis:
 1. Setups									              - Fabian - v1
 2. Metrics								            	- Fabian - v1
-3. Results									            - Fabian
+3. Results									            - Fabian - v1
 
 Conclusion
-1. Summary									            - Phil
-2. Reflection								            - Phil
-3. Future work							           	- Phil
+1. Summary									            - Phil - v1
+2. Reflection								            - Phil - v1
+3. Future work							           	- Phil - v1
 
 
 Other
-- clean up the references               -
-- write Readme for project github page  - Fabian
-- ROS package names with typewriter font-
+- clean up the references               - Fabian - done
+- write Readme for project github page  - Fabian - done
 - legend for colors in flow chart       - 
-- use abbreviations for methods in text and plots - Fabian
+- use abbreviations for methods in text and plots - Fabian - Done

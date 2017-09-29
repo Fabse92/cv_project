@@ -41,5 +41,5 @@ digraph G {
 	"2D occupancy grid" -> "Navigation";
 	"Estimate of robot pose" -> "Navigation";
 	"Estimate of robot pose" -> "NBV planning";
-	"Navigation" -> "Mobile platform" [label = " Motor control"];
+	"Navigation" -> "Mobile platform";
 }
