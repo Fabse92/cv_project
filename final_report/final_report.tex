@@ -66,7 +66,7 @@ Figure \ref{fig:frontier} presents how frontier-based exploration works.
 
 \begin{figure}[h!]
 	\begin{center}
-		\includegraphics[width=1\textwidth]{src/frontier_exploration.png}
+		\includegraphics[width=.85\textwidth]{src/frontier_exploration.png}
 		\caption{ Processing steps of frontier-based exploration \cite{yamauchi1997frontier}}
 		\label{fig:frontier}
 	\end{center}
@@ -130,7 +130,7 @@ The Kinect camera is directly providing a rectified version of the colour and de
 Also a point cloud build from the fused information of depth and colour image is directly provided as a ROS topic through the respective camera driver for simulation and real world.
 
 \subsection{Laserscan}
-To simulate a laser scanner we use the ros package \textit{pointcloud\_to\_laserscan} \footnote{\url{http://wiki.ros.org/pointcloud_to_laserscan}}.
+To simulate a laser scanner we use the ros package \texttt{pointcloud\_to\_laserscan} \footnote{\url{http://wiki.ros.org/pointcloud_to_laserscan}}.
 It receives the current point cloud from the RGB-D camera and samples the point cloud between a specified minimal and maximal height.
 The closest point for each vertical line is put out to form one horizontal line which is our simulated laser scan.
 
@@ -215,12 +215,12 @@ Random NBV is the baseline method which we can use to assess the improvement thr
 For this method all currently accessible free space cells of the map are considered as next view position.
 One of these cells is randomly selected and forms together with a random orientation the random NBV.
 
-\subsubsection{Frontier exploration}
-Our NBV method based on frontier exploration, which has been introduced in Section \ref{Theoretical_background:Frontier-based_exploration}, is performing frontier exploration as it has been implemented in the \textit{frontier\_exploration} ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}}.
+\subsubsection{Frontier-based exploration (\texttt{FBE})}
+Our NBV method based on frontier exploration, which has been introduced in Section \ref{Theoretical_background:Frontier-based_exploration}, is performing frontier exploration as it has been implemented in the \texttt{frontier\_exploration} ROS package \footnote{\url{http://wiki.ros.org/frontier_exploration}}.
 The next best view computed at a certain start position is here the centroid of the closest frontier with an orientation that corresponds to the continued line between the start position and the centroid of the closest frontier.
-One essential flaw of this NBV method is that it works only until the environment has been completely discovered. 
+One essential flaw of this NBV method is that it works only until the environment has been completely discovered.
 
-\subsubsection{Sampling-based exploration using obstacles}
+\subsubsection{Sampling-based exploration using obstacles (\texttt{SBE(Obs)})}
 For this NBV method we use sampling-based exploration as described in Section \ref{Theoretical_background:Sampling-based_exploration}.
 Here all accessible free space cells closer than $2$ meters and further than $20$ centimeters are considered as potential next best view position.
 For each of these cells a random orientation is selected and all cells are found which are closer than $3$ meters and can be seen when the robot is looking in the selected orientation at this particular cell. This considers obstacles, therefore cells behind obstacles do not count as visible. %This is done by computing the part of a $3$ meter radius circle with center point corresponding to the selected orientation and an total angle that corresponds to the camera opening angle. Subsequently, for each pixel of the edge 
@@ -245,24 +245,24 @@ Obstacle cells that have not been looked at decrease their value in the IoR map 
 For all future information gain scores obstacle cells with an IoR map value higher than $5$ provide no information gain.
 Therefore, consecutive viewpoints taking a look at the same obstacle group have decreased information gain score, so that at some point the robot should move away from the group.
 
-\subsubsection{Sampling-based exploration using obstacles and object proposals}
-This method is based on the sampling-based exploration using obstacles.
-The difference is that in addition to obstacles the current object proposals are considered as well for the information gain calculation.
-Each visible cell at which currently an object is assumed to be will increase the information gain score and similar as before unexplored cells in front of object proposals will award an additional bonus information gain score.
-The information gain $S_i$ for a cell $i$ with object proposal $j$ depends on the certainty $c_j$ into this proposal:
+\subsubsection{Sampling-based exploration using obstacles and object candidates (\texttt{SBE(Obs+Cands)})}
+This method is based on \texttt{SBE (obs)}.
+The difference is that in addition to obstacles the current object candidates are considered as well for the information gain calculation.
+Each visible cell at which currently an object is assumed to be will increase the information gain score and similar as before unexplored cells in front of object candidates will award an additional bonus information gain score.
+The information gain $S_i$ for a cell $i$ with object candidate $j$ depends on the certainty $c_j$ into this candidate:
 \begin{align*}
  S_i &= \mbox{inf\_object}\cdot 2^{-(c_j-1)}
 \end{align*}
-Where $\mbox{inf\_object}$ is the base value for object information gain. An object proposal with certainty $1$ will for example be awarded with $\mbox{inf\_object}$ information gain, a cell with proposal of certainty $2$, however, will only be awarded $\mbox{inf\_object}/2$.
-The idea is here that object proposals with low certainty are worth more to look at, to increase the certainty.
+Where $\mbox{inf\_object}$ is the base value for object information gain. An object candidate with certainty $1$ will for example be awarded with $\mbox{inf\_object}$ information gain, a cell with candidate of certainty $2$, however, will only be awarded $\mbox{inf\_object}/2$.
+The idea is here that object candidates with low certainty are worth more to look at, to increase the certainty.
 
-\subsubsection{Combination of Frontier and sampling-based exploration}
-This method combines frontier exploration and sampling-based exploration using obstacles.
+\subsubsection{Combination of frontier and sampling-based exploration (\texttt{FBE plus})}
+This method combines \texttt{FBE} and \texttt{SBE(obs)}.
 Until the whole room is explored the frontier exploration method is used after that the sampling-based exploration takes over. 
 The goal of this method is to overcome the limitation of frontier exploration, but exploit the positive behavior of frontier exploration to find a good sequence of views which allow to look at least once at all areas of the environment.
 
 \subsection{Navigation}
-For navigation we use the \textit{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
+For navigation we use the \texttt{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
 It requires the current robot position approximation, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
 
 \section{Analysis}
@@ -320,7 +320,7 @@ Besides which of the two environment to use and activated or deactivated cheat m
 
 \subsection{Results}
 In the following we present the results from our experiments.
-Each experiment setting was run at least 20 times.
+Each experiment setting was run 25 times.
 However, the system is crashing regularly. Most often because the robot thinks he is not able to move anymore.
 In particular the \texttt{random NBV} method leads to many situations in which the robot can not move. Therefore, the \texttt{random NBV} method reached at most 13 views, while others were able to take up to 25 view poses.
 
@@ -344,13 +344,11 @@ Here we take the results from our room with scattered objects. Recall and precis
 	\end{center}
 \end{figure}
 
-The best performing methods are \texttt{SBE (Obs)} and \texttt{FBE plus} which has the highest values for recall and precision.
+The best performing methods are \texttt{SBE(Obs)} and \texttt{FBE plus} which has the highest values for recall and precision.
 They can reach recall values up to $0.75$ and have precision values between $0.25$ and $0.38$.
 From the two graphs it becomes clear that all of the methods which somehow incorporate an information gain measure are more successful than the baseline method \texttt{random NBV}.
-The \texttt{SBE (Obs+Cands)} is performing worse than than \texttt{SBE (Obs)}, our current assumption is that this is, because only about a quarter of objects are correct, thereby the robot gets more distracted from false object assumptions as he gets drawn to correct ones.
-Variations between \texttt{FBE} and \texttt{FBE plus} and the beginning and between \texttt{FBE plus} and \texttt{SBE (Obs)} later occur through random fluctuations during the experiments.
-
-In Figures \ref{fig:recall_vs_nbv_count_settings} and \ref{fig:precision_vs_nbv_count_settings} a couple of different settings for the information gain parameters of our SBE methods are visualized in their effect on recall and precision.
+The \texttt{SBE(Obs+Cands)} is performing worse than than \texttt{SBE(Obs)}, our current assumption is that this is, because only about a quarter of objects are correct, thereby the robot gets more distracted from false object assumptions as he gets drawn to correct ones.
+Variations between \texttt{FBE} and \texttt{FBE plus} and the beginning and between \texttt{FBE plus} and \texttt{SBE(Obs)} later occur through random fluctuations during the experiments.
 
 \begin{figure}[h!]
 	\begin{center}
@@ -360,15 +358,18 @@ In Figures \ref{fig:recall_vs_nbv_count_settings} and \ref{fig:precision_vs_nbv_
 	\end{center}
 \end{figure}
 
-\begin{figure}[h!]
-	\begin{center}
-		\includegraphics[width=1\textwidth]{src/Plots/setting__precision_vs_nbv_count.png}
-		\caption{Precision values for different information gain parameter settings}
-		\label{fig:precision_vs_nbv_count_settings}
-	\end{center}
-\end{figure}
+In Figure \ref{fig:recall_vs_nbv_count_settings} different settings for the information gain parameters of our SBE methods are visualized in their effect on the recall. Precision is not strongly affected by the different settings.
+The best performing settings are f) and e). In both of these setting information gain is only provided for cells containing obstacles, in e) a bonus is given for unexplored cells in front of obstacles (e) corresponds to \texttt{SBE (obs)}).
+Setting a) is using the parameters from \texttt{SBE (obs+cands)} and b) is similar, but information gain through objects candidates is halved. c) is also related to a), but non of the bonuses for unexplored cells in front of obstacles or object candidates are given. These three settings perform similar, but much worse than the obstacle focused settings. This corresponds to the overall worse performing \texttt{SBE(Obs+Cands)} method.
+The worst performing setting is d) where information gain is solely provided for cells containing object candidates. This fits to our previous results since this is the only setting that is not considering obstacles for the information gain calculations.
 
-In Figure \ref{fig:nbv_count_vs_time} the average time required to perform a certain number of views can be seen. 
+%\begin{figure}[h!]
+%	\begin{center}
+%		\includegraphics[width=1\textwidth]{src/Plots/setting__precision_vs_nbv_count.png}
+%		\caption{Precision values for different information gain parameter settings}
+%		\label{fig:precision_vs_nbv_count_settings}
+%	\end{center}
+%\end{figure}
 
 \begin{figure}[h!]
 	\begin{center}
@@ -377,6 +378,9 @@ In Figure \ref{fig:nbv_count_vs_time} the average time required to perform a cer
 		\label{fig:nbv_count_vs_time}
 	\end{center}
 \end{figure}
+
+In Figure \ref{fig:nbv_count_vs_time} the average time required to perform a certain number of views can be seen. 
+Interestingly the \texttt{FBE} method is even faster than \texttt{random NBV}, this is because the random views can be far apart from each other, which leads Unsurprisingly, the \texttt{SBE} methods are the slowest solutions, because the computation of sophisticated information gain for many accessible cells is costly. In this graph the \texttt{FBE plus} method can show its advantage against the other \texttt{SBE} methods, because its  benefiting from the fast frontier exploration at the beginning.
 
 \section{Conclusion}
 \label{Conclusion}
