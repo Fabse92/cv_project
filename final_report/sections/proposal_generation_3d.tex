@@ -22,7 +22,7 @@
 \subsubsection{Integration of point cloud into map}
 \label{sssec:point_cloud_into_octomap}
 
-The next step in our pipeline is to convert the candidate point cloud into a volumetric representation and integrate it into our octree-based 3D map.
+The final step in our pipeline is to convert the candidate point cloud into a volumetric representation and integrate it into our octree-based 3D map.
 % The 3D mapping is handled by the ROS packages \texttt{octomap_mapping}\footnote{\url{http://wiki.ros.org/octomap_mapping}} and \texttt{octomap_server}\footnote{\url{http://wiki.ros.org/octomap_server}}.
 The octree itself is managed by the OctoMap framework\cite{hornung13octomap}, with ROS integration provided by the ROS package \texttt{octomap}\footnote{\url{http://wiki.ros.org/octomap}}.
 Off the shelf, the \texttt{octomap} package allows for the incremental creation of a 3D occupancy grid map from point cloud data; our system extends this package to store not just occupancy information but also object candidate labels and certainty information at each node.
