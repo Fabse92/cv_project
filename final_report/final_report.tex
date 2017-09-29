@@ -3,6 +3,7 @@
 \usepackage[english]{babel} 
 \usepackage[T1]{fontenc}    
 \usepackage{lmodern}
+\usepackage{textcomp}
 \usepackage[utf8]{inputenc} 
 \usepackage{graphicx}       
 \usepackage{hyperref}
@@ -285,16 +286,16 @@ The goal of this method is to overcome the limitation of frontier exploration th
 
 \subsection{Navigation}
 For navigation we use the \texttt{move\_base} ROS package \footnote{\url{http://wiki.ros.org/move_base}}.
-It requires the current robot position estimate, sensor transforms and sensor data and provides appropriate velocity commands to navigate the platform once a valid goal pose has been requested.
+It requires the current robot pose estimate, sensor transforms and sensor data and, when a valid goal is requested, provides appropriate velocity commands to navigate the platform through the environment to the goal.
 
 \section{Analysis}
 \label{Analysis}
 % Results, which contain the descriptions of the experiments conducted and presents their results.
-In this section we describe the our experiments we conducted for the analysis of our system.
-After explaining the experimental setups, we define the metrics we are measuring during system execution, introduce the experimental parameters and finally the results from our different experimental setups are presented.
+In this section we describe the experiments we conducted for the analysis of our system.
+After explaining the experimental setups, we define the metrics we are measuring during system execution, introduce the experimental parameters and finally present the results from our different experimental setups.
 
 \subsection{Experimental setups}
-The experiments are done completely inside the simulation.
+The experiments were done completely inside the simulation.
 We built two different rooms which are used as environments, they can be seen in Figure \ref{fig:rooms}.
 
 \begin{figure}[h!]
@@ -306,17 +307,20 @@ We built two different rooms which are used as environments, they can be seen in
 	\end{center}
 \end{figure}
 
-In both rooms are $12$ of the larger objects from the YCB object and model set \cite{calli2015benchmarking}.
-On the left is an environment which contains two groups of three objects which are close to each other and therefore has also some larger areas without any object.
-On the right is an alternative room with equally distributed objects. The distance between the objects is here always $1.5$ meters. Both rooms have a size of roughly $7$ by $7$ meters.
+Both rooms are roughly \num{7}\texttimes\num{7}~meters and contain \num{12} of the larger objects from the YCB object and model set\cite{calli2015benchmarking}.
+On the left is an environment which contains two groups of three objects which are close to each other and some larger areas without any objects.
+On the right is an alternative room with objects distributed equally at \num{1.5}~meter intervals.
+
 In each of our experiments the robot is spawned in the middle of the room and we define the area which is allowed to be used for view positions. This area is slightly smaller than the room, which means that the walls are not included.
 For the frontier exploration method this area also defines what has to be explored.
 For the sampling based methods information gain is only provided for cells inside the boundaries.
 
-During our first experimental test runs, we noticed that the approximated position through Gmapping are strongly diverging from the actual robot position.
-This leads to a lot of problems. It means that the map will become imprecise, the navigation becomes difficult and the projection of object candidates into the map frame is strongly diverging from the actual object position.
-The diverging object proposal projection is the largest problem for our system and prevents us from receiving reasonable results. Therefore, we are running our experiments in default using a \textit{cheat mode}.
-In this mode the actual camera position is provided for the object proposal projection into the map frame, the other parts of the system still have to work with the approximated position.
+During our first experimental test runs, we noticed that the approximated position through Gmapping was strongly diverging from the actual robot position.
+This led to a lot of problems: the map became imprecise, which also made navigation difficult, and the projection of object candidates into the map frame had a very large error.
+The diverging object proposal projection was the largest problem for our system and prevented us from receiving reasonable results.
+Therefore, the default setting for our experiments used a \glqq{}cheat mode\grqq{}.
+In this mode, projecting the object proposal into the map frame is done using the actual camera position, recovered from Gazebo.
+The other parts of the system still work with the approximated position.
 
 \subsection{Metrics}
 The evaluation of object proposals happens after each view taken by the robot.
@@ -324,14 +328,14 @@ The evaluation of object proposals happens after each view taken by the robot.
 One of the simplest things to measure is the expired time since the beginning of the experiment.
 For our time measurement we are subtracting the time used for the evaluation.
 
-To evaluate the object proposals we use the metrics recall and precision on an object level.
-Recall measures the percentage of available objects found by the system and precision measures the percentage of object proposals that where correct.
+To evaluate the object proposals we use recall and precision on an object level.
+Recall measures the percentage of available objects found by the system and precision measures the percentage of object proposals that were correct.
 To determine if an object has been correctly found, we determine the object proposal with the largest overlap to it and compute the intersection over union (IoU) between the ground truth object and the proposal.
-If the IoU is above some threshold the proposal is considered as correct.
-The overlap between proposal and ground truth is computed by counting the voxels in the octomap which are occupied by both and from the sum of the overlapping voxels we can compute the overlapping volume.
+If the IoU is above a threshold the proposal is considered as correct.
+The overlap between proposal and ground truth is computed by counting the voxels in the octomap which are occupied by both and from the sum of the overlapping voxels we can compute the overlap volume.
 
 \subsection{Further experimental parameters}
-Besides which of the two environment to use and activated or deactivated cheat mode there are a couple of more parameters to select or vary for the experiments:
+Besides which of the two environments to use and whether cheat mode was active or not there were several other parameters to select or vary for the experiments:
 
 \begin{itemize}
 	\item \textbf{Available time:} The time until the experiment is aborted. This is set to 25 minutes for our experiments.
