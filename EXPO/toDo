@@ -1,9 +1,14 @@
-- prepare video of system in real life
+- prepare video of system in real life - Fabsen
+-- create splitscreen video 
 
-- Kinect presentation modus: show frames of camera, build map, find object candidates on demand
+- prepare short description - Dr. Phil
 
-- prepare poster or slides for presentation
+- presentation modus - Fabi
+--add a service that can be called with the controler
+
+- prepare poster or slides for presentation - Philander
 -- some results
 -- pictures we used for presentation
 
-- fix bug caused by pointclouds without points
+- fix bug with empty point cloud on clean version master
+
