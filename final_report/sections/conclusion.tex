@@ -4,7 +4,7 @@
 
 \subsection{Summary}
 
-The project successfully achieved its aim of developing a system for object discovery on a mobile robot and using it to test NBV algorithms.
+The project successfully achieved its aim of developing a system for autonomous object discovery on a mobile robot in an unknown environment and using it to test NBV algorithms.
 As well as the NBV algorithms themselves, modules were developed for object candidate detection in 2D and for projection of the 2D candidates into 3D; these were combined with off-the-shelf solutions for SLAM, navigation and robot control.
 The experiments were performed in simulation to allow us to fully control the environment and automate the testing process.
 The system was also shown to work on a real robot, however the input which the system received from the real Kinect was too noisy for the SLAM system to cope with, which meant the system could not effectively map and navigate a real world environment for more than a couple of minutes before the navigation module failed.
@@ -17,7 +17,7 @@ The best performing was the \texttt{SBE(Obs)} method, with recall of \num{0.75} 
 Looking back on the aims from our initial project proposal, we have achieved everything that we intended, with the minor exception that we did not implement the ``table scenario'' in which objects were positioned on a table and the robot moved around the table to its next best viewpoints, but rather skipped straight to the more complex ``scattered objects scenario'', which we initially planned only as an extension goal.
 This was done partly because we felt that restricting the next best view poses to a circle around the table constrained the problem too much and would make it hard to meaningfully assess our different NBV algorithms, and partly because the table scenario turned out to be harder to implement: we would have needed everything that we developed for the scattered object scenario, with the added complication of having separate maps for navigation (the floor) and object discovery (the tabletop).
 Accordingly, we focussed our efforts on the more challenging and interesting scenario.
-We also achieved our second extension goal of implementing and comparing several different NBV algorithms.
+We also achieved our goal of implementing and comparing several different NBV algorithms.
 
 Comparing our actual implementation to the plan we laid out in the intermediate report, we see some significant differences where we discovered during the implementation phase that our original plans needed to be adjusted.
 
@@ -46,10 +46,10 @@ In our system by contrast, by the time we come to calculate our next best view w
 Some unanticipated problems emerged during the implementation phase which required us to implement several extra elements in the system over and above our original plans:
 
 \begin{itemize}
-	\item The poor performance of the gmapping SLAM system made it necessary to implement the cheat mode in order to get any sensible test results.
+	\item The poor performance of the Gmapping SLAM system made it necessary to implement the cheat mode in order to get any sensible test results.
 	\item The ``rays'' resulting from errors in the 3D projection necessitated the implementation of the point cloud clustering algorithm.
 	\item The IoR mechanism became necessary when we found in our early tests that the robot would often take several successive views of the same object(s) rather than trying to explore the whole space.
-	\item The unexpectedly good performance of the method using frontier-based exploration led us to implement the ``frontier\_plus'' method.
+	\item The unexpectedly good performance of the method using frontier-based exploration led us to implement the \texttt{FBE plus} method.
 	\item We originally discussed and then discarded the idea of implementing a random NBV method, only to find during the implementation that it would actually be a useful baseline measure.
 \end{itemize}
 
@@ -64,14 +64,14 @@ Additionally, measuring volumes and overlaps in the octomap turned out to be les
 The runtime for our tests is also an issue. Because the simulation runs in real time, each run can take up to \SI{25}{\minute}.
 Given that we had many different parameters and methods to test, and that we needed to test each scenario as many times as possible in order to limit the effects of random variation, this meant that simply generating results of a sufficient quality took a very long time.
 It also restricted our ability to tune the many parameters which our system contains; some parameters, e.g. the \SI{5}{\percent} threshold mentioned in section \ref{sssec:point_cloud_into_octomap}, were taken directly from the literature and we did not have time to thoroughly explore whether we could optimize these values for our system.
-Although our planning and timetabling was generally realistic, the evaluation is one phase where we should have planned in significantly more time.
+Although our anticipation of how long different tasks would take was generally realistic, the evaluation is one phase where we should have planned in significantly more time.
 
 \subsection{Future work}
 
-If we were to start this project again now, the main thing which we would do differently would be to pay more attention to the SLAM problem, because our finished implementation is severely limited by the poor performance of gmapping's SLAM.
-In our tests, gmapping had a localization error of as much as a meter in simulation and performed even worse in real world tests, due to the point cloud from the real world Kinect (and thus also the simulated laser scan generated from said point cloud) being so much noisier.
+If we were to start this project again now, the main thing which we would do differently would be to pay more attention to the SLAM problem, because our finished implementation is severely limited by the poor performance of Gmapping's SLAM.
+In our tests, Gmapping had a localization error of as much as a meter in simulation and performed even worse in real world tests, due to the point cloud from the real world Kinect (and thus also the simulated laser scan generated from said point cloud) being so much noisier.
 
-We originally chose to use gmapping because it is lightweight, allowing us to devote more computational resources to object discovery and NBV, and because it is simple to implement and get running.
+We originally chose to use Gmapping because it is lightweight, allowing us to devote more computational resources to object discovery and NBV, and because it is simple to implement and get running.
 However, we did not take into account that the localization accuracy of our own object candidates would be strongly dependent on the quality of the robot localization.
 Given this realization, it would make more sense to use a SLAM system which is tailor-made for RGB-D input; one such system which is already implemented for ROS is \texttt{rgbdslam\_v2}\footnote{\url{http://wiki.ros.org/rgbdslam}} from Endres et al.\cite{endres2014rgbdslam}.
 Switching to a SLAM system which achieves a better localization accuracy would be the most significant single improvement which could be made to our system.

@@ -1,5 +1,5 @@
 \documentclass[a4paper,11pt,english]{article}
-\usepackage[margin=1.5in]{geometry}
+\usepackage[margin=1.6in]{geometry}
 \usepackage[english]{babel} 
 \usepackage[T1]{fontenc}    
 \usepackage{lmodern}
@@ -331,17 +331,17 @@ For our time measurement we are subtracting the time used for the evaluation.
 To evaluate the object proposals we use recall and precision on an object level.
 Recall measures the percentage of available objects found by the system and precision measures the percentage of object proposals that were correct.
 To determine if an object has been correctly found, we determine the object proposal with the largest overlap to it and compute the intersection over union (IoU) between the ground truth object and the proposal.
-If the IoU is above a threshold the proposal is considered as correct.
+If the IoU is above a threshold of \num{0.1} then the proposal is considered as correct.
 The overlap between proposal and ground truth is computed by counting the voxels in the octomap which are occupied by both and from the sum of the overlapping voxels we can compute the overlap volume.
 
 \subsection{Further experimental parameters}
 Besides which of the two environments to use and whether cheat mode was active or not there were several other parameters to select or vary for the experiments:
 
 \begin{itemize}
-	\item \textbf{Available time:} The time until the experiment is aborted. This is set to 25 minutes for our experiments.
-	\item \textbf{IoU threshold:} Determines the IoU value necessary for an proposal to be considered correct. The threshold is set to $0.1$ for our experiments.
-	\item \textbf{Information gain parameters:} For the sampling-based exploration methods up to five values determining the information gain per cell have to be set. The default values are: 2 for unexplored cells, 10 for cells containing obstacles, 20 for unexplored cells in front of obstacles, 100 for objects (multiplied with the factor depending on the proposal certainty) and 30 for unexplored cells in front of objects.
-	\item \textbf{Minimal required proposal certainty:} The minimal proposal certainty necessary for an proposal to be considered for the evaluation. All proposals with lower certainty will be ignored. This parameter is per default set to $1$.
+	\item \textbf{Available time:} The time until the experiment is aborted. This is set to \num{25}~minutes for our experiments.
+	% \item \textbf{IoU threshold:} Determines the IoU value necessary for an proposal to be considered correct. The threshold is set to \num{0.1} for our experiments.
+	\item \textbf{Information gain parameters:} For the sampling-based exploration methods up to five values determining the information gain per cell have to be set. The default values are: \num{2} for unexplored cells, \num{10} for cells containing obstacles, \num{20} for unexplored cells in front of obstacles, \num{100} for objects (multiplied by the factor depending on the proposal certainty) and \num{30} for unexplored cells in front of objects.
+	\item \textbf{Minimal required proposal certainty:} The minimal proposal certainty necessary for an proposal to be considered for the evaluation. All proposals with lower certainty will be ignored. This parameter is set to \num{1} by default.
 \end{itemize}
 
 \begin{figure}[h]
@@ -356,13 +356,15 @@ Besides which of the two environments to use and whether cheat mode was active o
 From simply observing the system in action, we observed that it was capable of generating object candidates which closely match to the ground truths (e.g. figure \ref{fig:good_results}).
 In this section we attempt to quantify the system's performance using the results of our experiments.
 
-Each experiment setting was run 25 times.
-However, the system is crashing regularly. Most often because the robot thinks he is not able to move anymore.
-In particular the \texttt{random NBV} method leads to many situations in which the robot can not move. Therefore, the \texttt{random NBV} method reached at most 13 views, while others were able to take up to 25 view poses.
+Each experiment setting was run \num{25} times.
+However, the system crashed regularly, most often because the robot believed it was not able to move any more.
+In particular the \texttt{random NBV} method led to many situations in which the robot could not move.
+Therefore, the \texttt{random NBV} method reached at most \num{13} views, while others were able to take up to \num{25} views.
 
 At first we shall take a look at the development of recall and precision over the number of views taken.
-This is depicted in Figure \ref{fig:recall_vs_nbv_count} and \ref{fig:precision_vs_nbv_count}.
-Here we take the results from our room with scattered objects. Recall and precision curves are of similar shape but with slightly lower values overall for the room with some clustered objects.
+This is depicted in figures \ref{fig:recall_vs_nbv_count} and \ref{fig:precision_vs_nbv_count}.
+Here we take the results from our room with regularly-spaced objects.
+For the room with some clustered objects, the recall and precision curves are of similar shape but with slightly lower values overall.
 
 \begin{figure}[h!]
 	\begin{center}
@@ -380,10 +382,11 @@ Here we take the results from our room with scattered objects. Recall and precis
 	\end{center}
 \end{figure}
 
-The best performing methods are \texttt{SBE(Obs)} and \texttt{FBE plus} which has the highest values for recall and precision.
+The best performing methods are \texttt{SBE(Obs)} and \texttt{FBE plus}, which have the highest values for recall and precision.
 They can reach recall values up to $0.75$ and have precision values between $0.25$ and $0.38$.
 From the two graphs it becomes clear that all of the methods which somehow incorporate an information gain measure are more successful than the baseline method \texttt{random NBV}.
-The \texttt{SBE(Obs+Cands)} is performing worse than than \texttt{SBE(Obs)}, our current assumption is that this is, because only about a quarter of objects are correct, thereby the robot gets more distracted from false object assumptions as he gets drawn to correct ones.
+The \texttt{SBE(Obs+Cands)} performs worse than than \texttt{SBE(Obs)}.
+Our current assumption is that this is because only about a quarter of objects are correct, therefore the robot gets distracted more by false object assumptions as he gets drawn to correct ones.
 Variations between \texttt{FBE} and \texttt{FBE plus} and the beginning and between \texttt{FBE plus} and \texttt{SBE(Obs)} later occur through random fluctuations during the experiments.
 
 \begin{figure}[h]
@@ -394,10 +397,17 @@ Variations between \texttt{FBE} and \texttt{FBE plus} and the beginning and betw
 	\end{center}
 \end{figure}
 
-In Figure \ref{fig:recall_vs_nbv_count_settings} different settings for the information gain parameters of our SBE methods are visualized in their effect on the recall. Precision is not strongly affected by the different settings.
-The best performing settings are f) and e). In both of these setting information gain is only provided for cells containing obstacles, in e) a bonus is given for unexplored cells in front of obstacles (e) corresponds to \texttt{SBE (obs)}).
-Setting a) is using the parameters from \texttt{SBE (obs+cands)} and b) is similar, but information gain through objects candidates is halved. c) is also related to a), but non of the bonuses for unexplored cells in front of obstacles or object candidates are given. These three settings perform similar, but much worse than the obstacle focused settings. This corresponds to the overall worse performing \texttt{SBE(Obs+Cands)} method.
-The worst performing setting is d) where information gain is solely provided for cells containing object candidates. This fits to our previous results since this is the only setting that is not considering obstacles for the information gain calculations.
+In figure \ref{fig:recall_vs_nbv_count_settings} different settings for the information gain parameters of our SBE methods are visualized in their effect on the recall. Precision is not strongly affected by the different settings.
+The best performing settings are f) and e).
+% In both of these setting information gain is only provided for cells containing obstacles, in e) a bonus is given for unexplored cells in front of obstacles (e) corresponds to \texttt{SBE (obs)}).
+Setting e) corresponds to \texttt{SBE(Obs)}; f) corresponds to \texttt{SBE(Obs)} without any additional bonus information gain score for unexplored space next to obstacles.
+Setting a) is using the parameters from \texttt{SBE(Obs+Cands)} and b) is similar, but information gain from object candidates is halved.
+Setting c) is also related to a), but none of the bonuses for unexplored cells in front of obstacles or object candidates are given.
+These three settings perform similarly to each other, but much worse than the obstacle-focused settings.
+% This corresponds to the overall worse performing \texttt{SBE(Obs+Cands)} method.
+This agrees with our earlier observation that including object candidate information degraded system performance.
+The worst performing setting is d) where information gain is solely provided for cells containing object candidates.
+This fits to our previous results since this is the only setting that is not considering obstacles for the information gain calculations.
 
 %\begin{figure}[h!]
 %	\begin{center}
@@ -415,8 +425,9 @@ The worst performing setting is d) where information gain is solely provided for
 	\end{center}
 \end{figure}
 
-In Figure \ref{fig:nbv_count_vs_time} the average time required to perform a certain number of views can be seen. 
-Interestingly the \texttt{FBE} method is even faster than \texttt{random NBV}, this is because the random views can be far apart from each other, which leads Unsurprisingly, the \texttt{SBE} methods are the slowest solutions, because the computation of sophisticated information gain for many accessible cells is costly. In this graph the \texttt{FBE plus} method can show its advantage against the other \texttt{SBE} methods, because its  benefiting from the fast frontier exploration at the beginning.
+In figure \ref{fig:nbv_count_vs_time} the average time required to perform a certain number of views can be seen. 
+Interestingly, the \texttt{FBE} method is even faster than \texttt{random NBV}, this is because the random views can be far apart from each other, which leads to extra travel time for the robot.
+Unsurprisingly, the \texttt{SBE} methods are the slowest solutions, because the computation of sophisticated information gain for many accessible cells is costly. In this graph the \texttt{FBE plus} method shows its advantage against the other \texttt{SBE} methods, because it benefits from the fast frontier exploration at the beginning.
 
 \section{Conclusion}
 \label{Conclusion}
