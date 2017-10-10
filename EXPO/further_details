@@ -1,6 +1,18 @@
 Title: Active stategies for object discovery
-Type of exebition: poster and live demo
-Technical and space requirements: plug sockets; at least one, preferably two large tables (at least 1 by 2 meters) with room to move freely around it 
-Contact person: Phil Bradfield (5bradfie@informatik.uni-hamburg.de), Jan Fabian Schmid (2schmid@informatik.uni-hamburg.de)
-Advisor: Mikko Lauri (lauri@informatik.uni-hamburg.de)
 
+Type of exhibition: poster and live demo
+
+Technical and space requirements: Area of free space at least 3m x 3m for robot demo, with good access to a plug socket; additionally, table for laptops and a place to hang poster
+
+Contact persons: Phil Bradfield (5bradfie@informatik.uni-hamburg.de), Jan Fabian Schmid (2schmid@informatik.uni-hamburg.de)
+
+Advisor: Dr. Mikko Lauri (lauri@informatik.uni-hamburg.de)
+
+Description:
+In a human-made environment, objects - from pens to milk bottles to computer monitors - are highly significant. A robot operating in a human environment needs to be able to interact with objects in order to accomplish even a simple task such as bringing a user some coffee. The first step towards being able to interact with objects is being able to find them; this Master Project, run under the Computer Vision group, developed a software system which allows a mobile robot to autonomously explore an unknown environment and locate objects within it using a Microsoft Kinect RGB-D camera.
+
+The robot's main task is to find the objects and create an accurate internal representation of their form and position. In order to do this, the robot must move around the environment so that it can see around occlusions and look at objects from different angles, and in order to do that as quickly and efficiently as possible, it must solve the "next best view problem": given what the system currently knows about the environment, where should it move to next in order to increase its knowledge as much as possible? The project investigated and compared the performance of different methods for calculating the next best view.
+
+Other problems which had to solved along the way included implementing systems to map and navigate the environment; implementing a saliency system to detect object candidates in the 2D images provided by the Kinect; projecting the 2D candidates into 3D space; and correctly merging multiple candidates into a single coherent object representation.
+
+The project exhibition at the Student Expo will include the results of the project, simulation demonstrations and a live demonstration of the vision system using a Pioneer robot and Kinect camera.
