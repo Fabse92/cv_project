@@ -1,0 +1,11 @@
+%!TEX root = ../poster.tex
+
+\begin{enumerate}
+	\item Pioneer 2 robot moves around the environment and provides odometry information (red).
+	\item Mounted Kinect camera provides RGB images, depth maps, and point clouds (light blue).
+	\item Point cloud is transformed to laserscan (yellow) and combined with odometry data to perform SLAM (green).
+	\item 2D object candidates are detected from the RGB image using the VOCUS2 saliency system\cite{garcia2013computational} and projected into a 3D octomap\cite{hornung13octomap} using the depth values. Overlapping candidates are merged into coherent single entities (brown).
+	\item Map of the environment, estimated robot pose and object candidates are used to calculate the next best view pose (purple).
+	\item The NBV to move to is sent to the navigation system (dark blue) which calculates a path and provides motor instructions to the Pioneer.
+	\item System framework and inter-module communication implemented using ROS
+\end{enumerate}

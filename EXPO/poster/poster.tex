@@ -58,16 +58,19 @@
 \usepackage{graphicx}  % Required for including images
 
 \usepackage{booktabs} % Top and bottom rules for tables
+\usepackage{import}
+
+% \graphicspath{{./src/}}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 
-\title{Unnecessarily Complicated Research Title} % Poster title
+\title{Active strategies for object discovery} % Poster title
 
-\author{John Smith, James Smith and Jane Smith} % Author(s)
+\author{Phil Bradfield and Jan Fabian Schmid} % Author(s)
 
-\institute{Department and University Name} % Institution(s)
+\institute{Master Project in Computer Vision, Fachbereich Informatik, Universit\"{a}t Hamburg} % Institution(s)
 
 %----------------------------------------------------------------------------------------
 
@@ -81,156 +84,122 @@
 
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
 
-\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
+\begin{columns}[t]
+
+\begin{column}{\sepwid}
+\end{column} % Empty spacer column
+
+\begin{column}{\twocolwid} 
+
+	\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column
+
+		\begin{column}{\onecolwid}\vspace{-.6in}
+
+			%----------------------------------------------------------------------------------------
+			%	MOTIVATION
+			%----------------------------------------------------------------------------------------
+
+			\begin{block}{Motivation}
+
+			\import{}{sections/motivation}
+
+			\end{block}
+
+		\end{column}
+
+		\begin{column}{\sepwid}
+		\end{column} % Empty spacer column
+
+		\begin{column}{\onecolwid}\vspace{-.6in}
+
+			%----------------------------------------------------------------------------------------
+			%	OBJECTIVES
+			%----------------------------------------------------------------------------------------
+
+			\begin{block}{Objectives}
+
+			\begin{itemize}
+				\item To develop software for a mobile robot to autonomously explore an unknown environment and discover objects within it.
+				\item To use the system to compare different approaches to the NBV problem.
+			\end{itemize}
+
+			\end{block}
+
+		\end{column}
+
+	\end{columns}
+
+	%----------------------------------------------------------------------------------------
+	%	MATERIALS
+	%----------------------------------------------------------------------------------------
+
+	% \begin{block}{Materials}
+
+	% \begin{itemize}
+	% 	\item Pioneer 2 mobile robot
+	% 	\item YCB object set\cite{calli2015benchmarking}
+	% \end{itemize}
+
+	% \end{block}
+
+	%----------------------------------------------------------------------------------------
+	%	SYSTEM OVERVIEW
+	%----------------------------------------------------------------------------------------
+
+	\begin{block}{System overview}
+
+	\begin{columns}[c,totalwidth=\twocolwid]
+
+		\begin{column}{0.9\onecolwid}
+			\import{}{sections/system_overview_figure}
+		\end{column}
+
+		\begin{column}{\sepwid}
+		\end{column} % Empty spacer column
+
+		\begin{column}{1.1\onecolwid}
+			\import{}{sections/system_overview_text}
+		\end{column}
+
+	\end{columns}
+
+	\end{block}
+
+	%----------------------------------------------------------------------------------------
+	%   EXPERIMENTAL SETUP
+	%----------------------------------------------------------------------------------------
+
+	\begin{block}{Experimental setup}
+
+	\begin{columns}[c,totalwidth=\twocolwid]
+
+		\begin{column}{1.1\onecolwid}
+			\import{}{sections/experimental_setup_text}
+		\end{column}
+
+		\begin{column}{\sepwid}
+		\end{column} % Empty spacer column
+
+		\begin{column}{0.9\onecolwid}
+			\import{}{sections/experimental_setup_figure}
+		\end{column}
+
+	\end{columns}
+
+	\end{block}
+
+	%----------------------------------------------------------------------------------------
+
+\end{column}
 
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
-\begin{column}{\onecolwid} % The first column
+\begin{column}{\twocolwid}
 
-%----------------------------------------------------------------------------------------
-%	OBJECTIVES
-%----------------------------------------------------------------------------------------
-
-\begin{alertblock}{Objectives}
-
-Lorem ipsum dolor sit amet, consectetur, nunc tellus pulvinar tortor, commodo eleifend risus arcu sed odio:
-\begin{itemize}
-\item Mollis dignissim, magna augue tincidunt dolor, interdum vestibulum urna
-\item Sed aliquet luctus lectus, eget aliquet leo ullamcorper consequat. Vivamus eros sem, iaculis ut euismod non, sollicitudin vel orci.
-\item Nascetur ridiculus mus.  
-\item Euismod non erat. Nam ultricies pellentesque nunc, ultrices volutpat nisl ultrices a.
-\end{itemize}
-
-\end{alertblock}
-
-%----------------------------------------------------------------------------------------
-%	INTRODUCTION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Introduction}
-
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit. Sed laoreet accumsan mattis. Integer sapien tellus, auctor ac blandit eget, sollicitudin vitae lorem. Praesent dictum tempor pulvinar. Suspendisse potenti. Sed tincidunt varius ipsum, et porta nulla suscipit et. Etiam congue bibendum felis, ac dictum augue cursus a. \textbf{Donec} magna eros, iaculis sit amet placerat quis, laoreet id est. In ut orci purus, interdum ornare nibh. Pellentesque pulvinar, nibh ac malesuada accumsan, urna nunc convallis tortor, ac vehicula nulla tellus eget nulla. Nullam lectus tortor, \textit{consequat tempor hendrerit} quis, vestibulum in diam. Maecenas sed diam augue.
-
-This statement requires citation \cite{Smith:2012qr}.
-
-\end{block}
-
-%------------------------------------------------
-
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{placeholder.jpg}
-\caption{Figure caption}
-\end{figure}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of the first column
-
-\begin{column}{\sepwid}\end{column} % Empty spacer column
-
-\begin{column}{\twocolwid} % Begin a column which is two columns wide (column 2)
-
-\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column
-
-\begin{column}{\onecolwid}\vspace{-.6in} % The first column within column 2 (column 2.1)
-
-%----------------------------------------------------------------------------------------
-%	MATERIALS
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Materials}
-
-The following materials were required to complete the research:
-
-\begin{itemize}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Eu facilisis est tempus quis
-\end{itemize}
-
-The materials were prepared according to the steps outlined below:
-
-\begin{enumerate}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\item Curabitur pellentesque dignissim
-\end{enumerate}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of column 2.1
-
-\begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
-
-%----------------------------------------------------------------------------------------
-%	METHODS
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Methods}
-
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed laoreet accumsan mattis. Integer sapien tellus, auctor ac blandit eget, sollicitudin vitae lorem. Praesent dictum tempor pulvinar. Suspendisse potenti. Sed tincidunt varius ipsum, et porta nulla suscipit et. Etiam congue bibendum felis, ac dictum augue cursus a. \textbf{Donec} magna eros, iaculis sit amet placerat quis, laoreet id est. In ut orci purus, interdum ornare nibh. Pellentesque pulvinar, nibh ac malesuada accumsan, urna nunc convallis tortor, ac vehicula nulla tellus eget nulla. Nullam lectus tortor, \textit{consequat tempor hendrerit} quis, vestibulum in diam. Maecenas sed diam augue.
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of column 2.2
-
-\end{columns} % End of the split of column 2 - any content after this will now take up 2 columns width
-
-%----------------------------------------------------------------------------------------
-%	IMPORTANT RESULT
-%----------------------------------------------------------------------------------------
-
-\begin{alertblock}{Important Result}
-
-Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
-
-\end{alertblock} 
-
-%----------------------------------------------------------------------------------------
-
-\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column again
-
-\begin{column}{\onecolwid} % The first column within column 2 (column 2.1)
-
-%----------------------------------------------------------------------------------------
-%	MATHEMATICAL SECTION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Mathematical Section}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-  
-\begin{equation}
-E = mc^{2}
-\label{eqn:Einstein}
-\end{equation}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-
-\begin{equation}
-\cos^3 \theta =\frac{1}{4}\cos\theta+\frac{3}{4}\cos 3\theta
-\label{eq:refname}
-\end{equation}
-
-Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin. Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sollicitudin.
-
-\begin{equation}
-\kappa =\frac{\xi}{E_{\mathrm{max}}} %\mathbb{ZNR}
-\end{equation}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
-\end{column} % End of column 2.1
-
-\begin{column}{\onecolwid} % The second column within column 2 (column 2.2)
+	% \begin{figure}
+	% 	\includegraphics[width=0.5\linewidth]{src/drill2.png}
+	% 	\caption{Example object candidates (coloured voxels) which match closely to the ground truth (black point cloud)}
+	% \end{figure}
 
 %----------------------------------------------------------------------------------------
 %	RESULTS
@@ -238,116 +207,123 @@ Nam quis odio enim, in molestie libero. Vivamus cursus mi at nulla elementum sol
 
 \begin{block}{Results}
 
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{placeholder.jpg}
-\caption{Figure caption}
-\end{figure}
+\import{}{sections/results_text}
 
-Nunc tempus venenatis facilisis. Curabitur suscipit consequat eros non porttitor. Sed a massa dolor, id ornare enim:
-
-\begin{table}
-\vspace{2ex}
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\caption{Table caption}
-\end{table}
+\import{}{sections/results_figures}
 
 \end{block}
 
-%----------------------------------------------------------------------------------------
+\begin{columns}[t,totalwidth=\twocolwid]
 
-\end{column} % End of column 2.2
+	\begin{column}{\onecolwid}
 
-\end{columns} % End of the split of column 2
+		%----------------------------------------------------------------------------------------
+		%	CONCLUSION
+		%----------------------------------------------------------------------------------------
 
-\end{column} % End of the second column
+		% \begin{block}{Conclusion}
 
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+		% Nunc tempus venenatis facilisis. \textbf{Curabitur suscipit} consequat eros non porttitor. Sed a massa dolor, id ornare enim. Fusce quis massa dictum tortor \textbf{tincidunt mattis}. Donec quam est, lobortis quis pretium at, laoreet scelerisque lacus. Nam quis odio enim, in molestie libero. Vivamus cursus mi at \textit{nulla elementum sollicitudin}.
 
-\begin{column}{\onecolwid} % The third column
+		% \end{block}
 
-%----------------------------------------------------------------------------------------
-%	CONCLUSION
-%----------------------------------------------------------------------------------------
+		%----------------------------------------------------------------------------------------
+		%	FUTURE WORK
+		%----------------------------------------------------------------------------------------
 
-\begin{block}{Conclusion}
+		\begin{block}{Possible extensions}
+			
+		\begin{itemize}
+			\item Improve SLAM system
+			\item Include depth information in object candidate computation
+			\item Use heuristics to estimate the shapes of unseen areas of objects
+		\end{itemize}
 
-Nunc tempus venenatis facilisis. \textbf{Curabitur suscipit} consequat eros non porttitor. Sed a massa dolor, id ornare enim. Fusce quis massa dictum tortor \textbf{tincidunt mattis}. Donec quam est, lobortis quis pretium at, laoreet scelerisque lacus. Nam quis odio enim, in molestie libero. Vivamus cursus mi at \textit{nulla elementum sollicitudin}.
+		\end{block}
 
-\end{block}
+		%----------------------------------------------------------------------------------------
+		%	REFERENCES
+		%----------------------------------------------------------------------------------------
 
-%----------------------------------------------------------------------------------------
-%	ADDITIONAL INFORMATION
-%----------------------------------------------------------------------------------------
+		\begin{block}{References}
 
-\begin{block}{Additional Information}
+		% \nocite{*} % Insert publications even if they are not cited in the poster
+		\small{\bibliographystyle{unsrt}
+		\bibliography{bib}\vspace{0.75in}}
 
-Maecenas ultricies feugiat velit non mattis. Fusce tempus arcu id ligula varius dictum. 
-\begin{itemize}
-\item Curabitur pellentesque dignissim
-\item Eu facilisis est tempus quis
-\item Duis porta consequat lorem
-\end{itemize}
+		\end{block}
+		
+	\end{column}	
 
-\end{block}
+	\begin{column}{\sepwid}\end{column} % Empty spacer column
 
-%----------------------------------------------------------------------------------------
-%	REFERENCES
-%----------------------------------------------------------------------------------------
+	\begin{column}{\onecolwid}
 
-\begin{block}{References}
+		%----------------------------------------------------------------------------------------
+		%	ACKNOWLEDGEMENTS
+		%----------------------------------------------------------------------------------------
 
-\nocite{*} % Insert publications even if they are not cited in the poster
-\small{\bibliographystyle{unsrt}
-\bibliography{sample}\vspace{0.75in}}
+		% \setbeamercolor{block title}{fg=red,bg=white} % Change the block title color
 
-\end{block}
+		\begin{block}{Acknowledgements}
 
-%----------------------------------------------------------------------------------------
-%	ACKNOWLEDGEMENTS
-%----------------------------------------------------------------------------------------
+		% \small{\rmfamily{Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.}} \\
+		\small{The system was implemented as part of the module Masterprojekt Computer Vision, run by the Computer Vision group in Fachbereich Informatik at Universit\"{a}t Hamburg.}
 
-\setbeamercolor{block title}{fg=red,bg=white} % Change the block title color
+		\end{block}
 
-\begin{block}{Acknowledgements}
+		%----------------------------------------------------------------------------------------
+		%	CONTACT INFORMATION
+		%----------------------------------------------------------------------------------------
 
-\small{\rmfamily{Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.}} \\
+		\setbeamercolor{block alerted title}{fg=black,bg=norange} % Change the alert block title colors
+		\setbeamercolor{block alerted body}{fg=black,bg=white} % Change the alert block body colors
 
-\end{block}
+		\begin{block}{Contact Information}
 
-%----------------------------------------------------------------------------------------
-%	CONTACT INFORMATION
-%----------------------------------------------------------------------------------------
+		\begin{itemize}
+			% \item Email: \href{mailto:Philip.Bradfield@informatik.uni-hamburg.de}{Philip.Bradfield@informatik.uni-hamburg.de}
+			\item Email:\{Philip.Bradfield,Jan.Fabian.Schmid\}\\@informatik.uni-hamburg.de
+			\item The CV Group: \href{https://www.inf.uni-hamburg.de/en/inst/ab/cv.html}{https://www.inf.uni-hamburg.de/en/inst/ab/cv.html}
+		\end{itemize}
 
-\setbeamercolor{block alerted title}{fg=black,bg=norange} % Change the alert block title colors
-\setbeamercolor{block alerted body}{fg=black,bg=white} % Change the alert block body colors
+		\end{block}
 
-\begin{alertblock}{Contact Information}
+		% \vspace{4cm}
 
-\begin{itemize}
-\item Web: \href{http://www.university.edu/smithlab}{http://www.university.edu/smithlab}
-\item Email: \href{mailto:john@smith.com}{john@smith.com}
-\item Phone: +1 (000) 111 1111
-\end{itemize}
+		\begin{center}
+		\begin{tabular}{ccc}
+		\includegraphics[width=0.4\linewidth]{src/infIcon.pdf} & \hfill & \includegraphics[width=0.4\linewidth]{src/uhhIconR.pdf}
+		\end{tabular}
+		\end{center}
+		
+	\end{column}
+	
+\end{columns}
 
-\end{alertblock}
+\end{column}
 
-\begin{center}
-\begin{tabular}{ccc}
-\includegraphics[width=0.4\linewidth]{logo.png} & \hfill & \includegraphics[width=0.4\linewidth]{logo.png}
-\end{tabular}
-\end{center}
 
-%----------------------------------------------------------------------------------------
+% \begin{column}{\onecolwid}
+	
+% 	%----------------------------------------------------------------------------------------
+% 	%	ADDITIONAL INFORMATION
+% 	%----------------------------------------------------------------------------------------
 
-\end{column} % End of the third column
+% 	\begin{block}{Additional Information}
+
+% 	Maecenas ultricies feugiat velit non mattis. Fusce tempus arcu id ligula varius dictum. 
+% 	\begin{itemize}
+% 	\item Curabitur pellentesque dignissim
+% 	\item Eu facilisis est tempus quis
+% 	\item Duis porta consequat lorem
+% 	\end{itemize}
+
+% 	\end{block}
+
+% 	%----------------------------------------------------------------------------------------
+
+% \end{column} % End of the third column
 
 \end{columns} % End of all the columns in the poster
 
