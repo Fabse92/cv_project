@@ -1,12 +1,29 @@
 %!TEX root = ../poster.tex
 
-Experiments were conducted in the Gazebo simulator using the YCB object set\cite{calli2015benchmarking}.
-Five NBV calculation methods were implemented: 
-\begin{itemize}
-	\item \texttt{Random} choice
-	\item Frontier-based exploration (\texttt{FBE}), which seeks to simply view all unseen space as quickly as possible
-	\item Sampling-based exploration, which samples the known free space and calculates the information gain at each sampled point based on only known obstacles (\texttt{SBE (obs)}) or both obstacles and candidates (\texttt{SBE (obs+cands)})
-	\item Frontier+ (\texttt{FBE plus}), which uses \texttt{FBE} in the initial exploration phase, then switches to \texttt{SBE (obs)}
-\end{itemize}
-Sampling-based methods calculated information gain by raycasting from each candidate viewpose, and scoring the pose based on the types of voxels visible from it: unknown voxels scored 2 points, obstacles 10, and unknown voxels next to objects 20.
-Additionally, SBE (obs+cands) awarded extra bonuses for voxels containing candidates and unknown voxels next to candidates.
+\begin{columns}[t,totalwidth=\twocolwid]
+
+\begin{column}{\onecolwid}
+	\begin{itemize}
+		\item Gazebo simulation using the YCB object set\cite{calli2015benchmarking}.
+	\end{itemize}
+\end{column}
+
+\begin{column}{\sepwid}
+\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid}
+	\begin{itemize}
+		\item Five NBV calculation methods compared.
+	\end{itemize}
+\end{column}
+\end{columns}
+
+%\begin{itemize}
+%	\item \texttt{Random} choice
+%	\item Frontier-based exploration (\texttt{FBE}), which seeks to simply view all unseen space as quickly as possible
+%	\item Sampling-based exploration, which samples the known free space and calculates the information gain at each sampled point based on only known obstacles (\texttt{SBE (obs)}) or both obstacles and candidates (\texttt{SBE (obs+cands)})
+%	\item Frontier+ (\texttt{FBE plus}), which uses \texttt{FBE} in the initial exploration phase, then switches to \texttt{SBE (obs)}
+%\end{itemize}
+
+%Sampling-based methods calculated information gain by raycasting from each candidate viewpose, and scoring the pose based on the types of voxels visible from it: unknown voxels scored 2 points, obstacles 10, and unknown voxels next to objects 20.
+%Additionally, SBE (obs+cands) awarded extra bonuses for voxels containing candidates and unknown voxels next to candidates.
