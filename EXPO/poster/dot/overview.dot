@@ -13,21 +13,21 @@ digraph G {
 	"Kinect camera" -> "Depth image";
   "Odometry" [color = salmon];
 	"Odometry" -> "SLAM";
-	"Point Cloud" [color = cyan];
-	"Kinect camera" -> "Point Cloud";
-	"Point Cloud" -> "SLAM"
-	"3D object proposals" [color = burlywood];
-	"Depth image" -> "3D object proposals";
-	"2D object proposals" [color = burlywood];
-	"RGB image" -> "2D object proposals";
+	"Point cloud" [color = cyan];
+	"Kinect camera" -> "Point cloud";
+	"Point cloud" -> "SLAM"
+	"3D object candidates" [color = burlywood];
+	"Depth image" -> "3D object candidates";
+	"2D object candidates" [color = burlywood];
+	"RGB image" -> "2D object candidates";
 	"SLAM" [color = darkolivegreen3];
 	"2D environment map" [color = darkolivegreen3];
 	"SLAM" -> "2D environment map";
 	"Estimate of robot pose" [color = darkolivegreen3];
 	"SLAM" -> "Estimate of robot pose";
-	"2D object proposals" -> "3D object proposals";
+	"2D object candidates" -> "3D object candidates";
 	"Located 3D object candidates" [color = burlywood];
-	"3D object proposals" -> "Located 3D object candidates" [label = " projection"];
+	"3D object candidates" -> "Located 3D object candidates" [label = " projection"];
 	"Estimate of robot pose" -> "Located 3D object candidates";
 	"NBV planning" [color = darkorchid1];
 	"Located 3D object candidates" -> "NBV planning";
