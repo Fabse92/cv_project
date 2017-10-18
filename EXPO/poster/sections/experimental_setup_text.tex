@@ -3,18 +3,32 @@
 \begin{columns}[t,totalwidth=\twocolwid]
 
 \begin{column}{\onecolwid}
-	\begin{itemize}
-		\item Gazebo simulation using the YCB object set\cite{calli2015benchmarking}.
-	\end{itemize}
+
+	\vspace{1cm}
+
+	\large{
+		\begin{itemize}\itemsep48pt
+			\item Gazebo simulation using the Yale-CMU-Berkeley object set\cite{calli2015benchmarking}.
+			\item System running using the Robot Operating System (ROS)
+		\end{itemize}}
+
 \end{column}
 
 \begin{column}{\sepwid}
 \end{column} % Empty spacer column
 
 \begin{column}{\onecolwid}
-	\begin{itemize}
-		\item Five NBV calculation methods compared.
-	\end{itemize}
+	% \begin{itemize}
+	\large{
+		Five next best view calculation methods compared:
+			\begin{itemize}
+				\item \textbf{Random} selection
+				\item \textbf{FBE}: frontier-based exploration
+				\item \textbf{SBE (obs)}: sampling-based exploration with only obstacle information
+				\item \textbf{SBE (obs+cands)}: sampling-based exploration with obstacle and candidate information
+				\item \textbf{FBE plus}: starting with FBE, then switching to SBE (obs)
+			\end{itemize}}
+	% \end{itemize}
 \end{column}
 \end{columns}
 

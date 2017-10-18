@@ -1,8 +1,32 @@
 %!TEX root = ../poster.tex
 
-\begin{itemize}
-	\item \texttt{FBE} was fastest to explore the environment
-	\item \texttt{SBE (obs)} had best overall performance, with recall of 0.75 and precision of 0.25 after 25 views
-	\item \texttt{FBE plus} implemented to combine the best of these two methods
-	\item \texttt{SBE (obs+cands)} failed to improve on the performance of \texttt{SBE (obs)}; presumably because precision of detections too low for extra candidate information to improve performance
-\end{itemize}
+\begin{columns}[t,totalwidth=\twocolwid]
+
+\begin{column}{\onecolwid}
+	
+	\large{
+	  \begin{itemize}
+			% \item \texttt{FBE} was fastest to explore the environment
+			\item \texttt{SBE (obs)} had best overall performance
+			% \item \texttt{FBE plus} implemented to combine the best of these two methods
+			% \item Adding candidate information failed to improve performance
+		\end{itemize}}
+
+\end{column}
+
+\begin{column}{\sepwid}
+\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid}
+	
+	\large{
+	  \begin{itemize}
+			% \item \texttt{FBE} was fastest to explore the environment
+			% \item \texttt{SBE (obs)} had best overall performance
+			% \item \texttt{FBE plus} implemented to combine the best of these two methods
+			\item Adding candidate information failed to improve performance
+		\end{itemize}}
+
+\end{column}
+
+\end{columns}
